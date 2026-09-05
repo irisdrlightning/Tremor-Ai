@@ -1,4 +1,4 @@
-﻿{
+{
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
     "python.analysis.extraPaths": [
         "${workspaceFolder}",
@@ -7,5 +7,17 @@
     "python.autoComplete.extraPaths": [
         "${workspaceFolder}",
         "${workspaceFolder}/.venv/Lib/site-packages"
-    ]
+    ],
+    "C_Cpp.errorSquiggles": "disabled",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/hardware/firmware/stubs"
+    ],
+    "clangd.arguments": [
+        "-I${workspaceFolder}/hardware/firmware/stubs",
+        "--header-insertion=never"
+    ],
+    "files.associations": {
+        "*.ino": "cpp"
+    }
 }

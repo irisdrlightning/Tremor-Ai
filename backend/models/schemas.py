@@ -76,6 +76,7 @@ class LiveGloveTelemetry(BaseModel):
     nodes: List[FrequencyNode]
     waveform: List[float]
     rawImu: Optional[Dict[str, float]] = None
+    conditions: Optional[List[ConditionItem]] = None
 
 class DoseLogRequest(BaseModel):
     patientId: str

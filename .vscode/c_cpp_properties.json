@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "ESP32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/hardware/firmware/stubs"
+            ],
+            "defines": [
+                "ESP32",
+                "ARDUINO=10819"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-clang-x64"
+        }
+    ],
+    "version": 4
+}

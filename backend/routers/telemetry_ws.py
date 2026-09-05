@@ -125,6 +125,51 @@ def generate_telemetry_frame(t: float) -> LiveGloveTelemetry:
         "gz": round(3.1 * math.sin(2 * math.pi * base_freq * t), 2),
     }
 
+    # Live Clinical Conditions & Metrics
+    power_ratio = int(round(76 + 5 * math.sin(0.15 * t)))
+    updrs_score = int(round(46 + 4 * math.sin(0.1 * t)))
+    vol_noise = round(0.8 + 0.1 * math.sin(0.2 * t), 1)
+
+    from backend.models.schemas import ConditionItem
+    live_conditions = [
+        ConditionItem(
+            id="spectral",
+            tag="MODERATE" if power_ratio < 80 else "HIGH",
+            icon="droplet",
+            label="Power Ratio",
+            value=str(power_ratio),
+            unit="%",
+            variant="bars"
+        ),
+        ConditionItem(
+            id="ai",
+            tag="PARKINSON'S",
+            icon="scan",
+            label="AI Detection",
+            value="Parkinson's (PD)",
+            footer="CONFIDENCE 94%",
+            variant="highlight"
+        ),
+        ConditionItem(
+            id="updrs",
+            tag="MODERATE",
+            icon="chart",
+            label="MDS-UPDRS",
+            value=str(updrs_score),
+            unit="/100",
+            variant="steps"
+        ),
+        ConditionItem(
+            id="noise",
+            tag="FILTERED",
+            icon="funnel",
+            label="Voluntary Noise",
+            value=f"{vol_noise:.1f}",
+            unit="Hz",
+            variant="dots"
+        )
+    ]
+
     return LiveGloveTelemetry(
         type="telemetry_update",
         timestamp=time.time(),
@@ -134,6 +179,7 @@ def generate_telemetry_frame(t: float) -> LiveGloveTelemetry:
         nodes=nodes,
         waveform=waveform,
         rawImu=raw_imu,
+        conditions=live_conditions,
     )
 
 @router.websocket("/ws/live-telemetry")

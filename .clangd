@@ -1,0 +1,7 @@
+CompileFlags:
+  Add:
+    - -Ihardware/firmware/stubs
+    - -xc++
+    - -Wno-everything
+Diagnostics:
+  Suppress: "*"
