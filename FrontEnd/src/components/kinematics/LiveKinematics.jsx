@@ -7,21 +7,27 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
   Droplet,
   Filter,
   Hand,
   Phone,
+  Pill,
   Power,
   ScanEye,
   Search,
 } from "lucide-react";
 
+import { useState } from "react";
 import handScan from "@/assets/hand-scan.png";
 import { handScanBase64 } from "@/assets/handScanBase64";
 import tremorIcon from "@/assets/tremor-icon.png";
 import { tremorIconBase64 } from "@/assets/tremorIconBase64";
 import { useRole } from "@/context/RoleContext";
 import { conditions, schedule, sensorNodes, subject } from "@/data/mockKinematics";
+import MedicationAnalytics from "@/components/kinematics/MedicationAnalytics";
+import LogMedicationDose from "@/components/kinematics/LogMedicationDose";
+import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
 
 const icons = {
   droplet: Droplet,
@@ -60,7 +66,7 @@ function Sidebar() {
   );
 }
 
-function TopBar({ initials }) {
+function TopBar({ initials, activeTab, setActiveTab }) {
   return (
     <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6">
       <div className="flex min-w-0 items-center gap-3.5">
@@ -86,16 +92,26 @@ function TopBar({ initials }) {
         <div className="flex min-w-0 items-center gap-1 rounded-full bg-shell p-1">
           <button
             type="button"
-            className="truncate rounded-full px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            onClick={() => setActiveTab?.("kinematics")}
+            className={`truncate rounded-full px-4 py-2 text-sm transition-colors ${
+              activeTab === "kinematics"
+                ? "bg-card font-medium text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             Diagnose
           </button>
           <button
             type="button"
-            className="flex shrink-0 items-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-medium text-primary"
+            onClick={() => setActiveTab?.("analytics")}
+            className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors ${
+              activeTab === "analytics"
+                ? "bg-card font-medium text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Live Kinematics
+            Medication Analytics
           </button>
         </div>
       </div>
@@ -424,66 +440,158 @@ function SensorCard({ node }) {
 export default function LiveKinematics() {
   const { role, user } = useRole();
   const isDoctor = role === "doctor";
+  const [activeTab, setActiveTab] = useState("analytics");
 
   return (
-    <div className="min-h-screen bg-background p-3 md:p-5">
-      <div className="mx-auto flex max-w-[1500px] gap-5">
-        <Sidebar />
-
-        <main className="min-w-0 flex-1 space-y-5">
-          <TopBar initials={user.initials} />
-
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_minmax(0,0.95fr)]">
-            <OverviewCard />
-
-            <div className="space-y-3">
-              <SectionTitle>Tremor Condition</SectionTitle>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {conditions.map((item) => (
-                  <ConditionCard key={item.id} item={item} />
-                ))}
-              </div>
+    <div className="min-h-screen bg-[#060908] text-[#ededed] p-4 md:p-6 lg:p-8">
+      <div className="mx-auto flex max-w-[1500px] gap-6">
+        <aside className="hidden w-16 shrink-0 flex-col items-center justify-between rounded-2xl bg-[#0c100e] border border-[rgba(255,255,255,0.08)] py-5 lg:flex">
+          <div className="flex flex-col items-center gap-6">
+            {/* T+ Brand Icon */}
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#141a17] border border-[rgba(255,255,255,0.08)] text-[#00e599] font-bold text-sm">
+              T<span className="text-xs -ml-0.5">+</span>
             </div>
 
-            {isDoctor ? (
-              <div className="space-y-3">
-                <SectionTitle>My Schedule</SectionTitle>
-                <ScheduleCard />
-              </div>
-            ) : null}
+            <nav className="flex flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveTab("kinematics")}
+                title="Live Kinematics"
+                aria-label="Live kinematics"
+                className={`grid h-10 w-10 place-items-center rounded-xl transition-colors ${
+                  activeTab === "kinematics"
+                    ? "bg-[#00e599] text-[#021a11]"
+                    : "text-[#8a9992] hover:text-[#ededed] hover:bg-[#141a17]"
+                }`}
+              >
+                <Activity className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("analytics")}
+                title="Medication Analytics"
+                aria-label="Medication Analytics"
+                className={`grid h-10 w-10 place-items-center rounded-xl transition-colors ${
+                  activeTab === "analytics"
+                    ? "bg-[#00e599] text-[#021a11]"
+                    : "text-[#8a9992] hover:text-[#ededed] hover:bg-[#141a17]"
+                }`}
+              >
+                <BarChart3 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("log-medicine")}
+                title="Log Medication Dose"
+                aria-label="Log Medicine"
+                className={`grid h-10 w-10 place-items-center rounded-xl transition-colors ${
+                  activeTab === "log-medicine"
+                    ? "bg-[#00e599] text-[#021a11]"
+                    : "text-[#8a9992] hover:text-[#ededed] hover:bg-[#141a17]"
+                }`}
+              >
+                <Pill className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("suggested-regimen")}
+                title="Suggested Regimen"
+                aria-label="Suggested Regimen"
+                className={`grid h-10 w-10 place-items-center rounded-xl transition-colors ${
+                  activeTab === "suggested-regimen"
+                    ? "bg-[#00e599] text-[#021a11]"
+                    : "text-[#8a9992] hover:text-[#ededed] hover:bg-[#141a17]"
+                }`}
+              >
+                <ClipboardList className="h-4 w-4" />
+              </button>
+            </nav>
           </div>
 
-          {isDoctor ? (
-            <div className="space-y-3">
-              <SectionTitle
-                actions={
-                  <div className="flex shrink-0 gap-2">
-                    <button
-                      type="button"
-                      aria-label="Previous nodes"
-                      className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Next nodes"
-                      className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
+          <button
+            type="button"
+            aria-label="Sign out"
+            className="grid h-10 w-10 place-items-center rounded-xl border border-[rgba(255,255,255,0.08)] text-[#8a9992] transition-colors hover:text-[#ededed] hover:border-[rgba(255,255,255,0.18)] hover:bg-[#141a17]"
+          >
+            <Power className="h-4 w-4" />
+          </button>
+        </aside>
+
+        <main className="min-w-0 flex-1 space-y-6">
+          {activeTab === "analytics" ? (
+            <MedicationAnalytics
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              initials={user.initials}
+            />
+          ) : activeTab === "log-medicine" ? (
+            <LogMedicationDose
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
+          ) : activeTab === "suggested-regimen" ? (
+            <SuggestedRegimen
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              initials={user.initials}
+            />
+          ) : (
+            <>
+              <TopBar initials={user.initials} activeTab={activeTab} setActiveTab={setActiveTab} />
+
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_minmax(0,0.95fr)]">
+                <OverviewCard />
+
+                <div className="space-y-3">
+                  <SectionTitle>Tremor Condition</SectionTitle>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {conditions.map((item) => (
+                      <ConditionCard key={item.id} item={item} />
+                    ))}
                   </div>
-                }
-              >
-                Sensor Channels &amp; Nodes
-              </SectionTitle>
-              <div className="grid gap-3 lg:grid-cols-3">
-                {sensorNodes.map((node) => (
-                  <SensorCard key={node.id} node={node} />
-                ))}
+                </div>
+
+                {isDoctor ? (
+                  <div className="space-y-3">
+                    <SectionTitle>My Schedule</SectionTitle>
+                    <ScheduleCard />
+                  </div>
+                ) : null}
               </div>
-            </div>
-          ) : null}
+
+              {isDoctor ? (
+                <div className="space-y-3">
+                  <SectionTitle
+                    actions={
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          type="button"
+                          aria-label="Previous nodes"
+                          className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Next nodes"
+                          className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    }
+                  >
+                    Sensor Channels &amp; Nodes
+                  </SectionTitle>
+                  <div className="grid gap-3 lg:grid-cols-3">
+                    {sensorNodes.map((node) => (
+                      <SensorCard key={node.id} node={node} />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
         </main>
       </div>
     </div>
