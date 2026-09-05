@@ -468,7 +468,7 @@ function ConditionCard({ item }) {
   );
 }
 
-function ScheduleCard() {
+function ScheduleCard({ schedule = initialSchedule }) {
   return (
     <section className="flex h-full flex-col rounded-3xl border border-border bg-card p-5">
       <div className="flex items-center gap-3 rounded-2xl bg-shell p-4">

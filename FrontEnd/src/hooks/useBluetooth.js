@@ -13,28 +13,72 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// ─── BLE UUIDs (update to match your ESP32 firmware) ────────────────────────
-const TREMOR_SERVICE_UUID    = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"; // Nordic NUS
-const TREMOR_TX_CHAR_UUID    = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // NUS TX (notify)
-// const TREMOR_RX_CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // NUS RX (write)
+// ─── BLE UUIDs — must match tremor_ai_esp32.ino exactly ───────────────────
+const TREMOR_SERVICE_UUID = "6f3c1200-1a2b-4c3d-9e8f-000000000001";
+const TREMOR_TX_CHAR_UUID = "6f3c1200-1a2b-4c3d-9e8f-000000000002"; // Data (Notify)
+const DEVICE_NAME_PREFIX  = "TremorAI-Glove";
+// Firmware also exposes:
+//   Command char: "6f3c1200-1a2b-4c3d-9e8f-000000000003" (write 0x00/0x01 to stop/start)
+//   Battery char: "6f3c1200-1a2b-4c3d-9e8f-000000000004" (read battery %)
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 /**
- * Parse a UTF-8 BLE notification payload into a telemetry object.
- * Expected firmware JSON format:
- *   {"tr":5.1,"rms":3.8,"ax":0.12,"ay":-0.05,"az":9.81}
+ * Parse a binary BLE notification payload from the ESP32 firmware.
+ *
+ * Packet layout (112 bytes = 4 samples × 28 bytes each, little-endian):
+ *   Per sample:
+ *     uint32_t  timestamp_ms   (4 bytes)
+ *     float     ax, ay, az     (12 bytes — 3×4)
+ *     float     gx, gy, gz     (12 bytes — 3×4)
+ *   Total per sample: 28 bytes
+ *
+ * Returns the LAST sample in the batch as the "current" reading,
+ * keeping tremorRate as the magnitude of the accel vector.
  */
 function parsePayload(dataView) {
   try {
-    const text = new TextDecoder("utf-8").decode(dataView.buffer);
-    const json = JSON.parse(text);
+    const SAMPLE_BYTES = 28; // 4 + 6*4
+    const BATCH_SIZE   = 4;
+    const expected     = SAMPLE_BYTES * BATCH_SIZE; // 112 bytes
+
+    if (dataView.byteLength < expected) return null;
+
+    // Read all 4 samples; use the last one as the "live" reading
+    let lastSample = null;
+    for (let i = 0; i < BATCH_SIZE; i++) {
+      const offset = i * SAMPLE_BYTES;
+      const ts = dataView.getUint32(offset,      true); // little-endian
+      const ax = dataView.getFloat32(offset + 4,  true);
+      const ay = dataView.getFloat32(offset + 8,  true);
+      const az = dataView.getFloat32(offset + 12, true);
+      const gx = dataView.getFloat32(offset + 16, true);
+      const gy = dataView.getFloat32(offset + 20, true);
+      const gz = dataView.getFloat32(offset + 24, true);
+      lastSample = { ts, ax, ay, az, gx, gy, gz };
+    }
+
+    if (!lastSample) return null;
+
+    // Derive a scalar tremor rate from accel vector magnitude (minus gravity)
+    const mag = Math.sqrt(
+      lastSample.ax ** 2 + lastSample.ay ** 2 + lastSample.az ** 2
+    );
+    const tremorRate = parseFloat(Math.abs(mag - 1.0).toFixed(3)); // deviation from 1g baseline
+    const rms = parseFloat(
+      Math.sqrt((lastSample.ax ** 2 + lastSample.ay ** 2 + lastSample.az ** 2) / 3).toFixed(3)
+    );
+
     return {
-      tremorRate: json.tr  ?? null,
-      rms:        json.rms ?? null,
-      accelX:     json.ax  ?? null,
-      accelY:     json.ay  ?? null,
-      accelZ:     json.az  ?? null,
-      raw:        json,
+      tremorRate,
+      rms,
+      accelX: lastSample.ax,
+      accelY: lastSample.ay,
+      accelZ: lastSample.az,
+      gyroX:  lastSample.gx,
+      gyroY:  lastSample.gy,
+      gyroZ:  lastSample.gz,
+      timestampMs: lastSample.ts,
+      raw: lastSample,
     };
   } catch {
     return null;
@@ -93,8 +137,7 @@ export function useBluetooth() {
     try {
       const device = await navigator.bluetooth.requestDevice({
         filters: [
-          { services: [TREMOR_SERVICE_UUID] },
-          { namePrefix: "TremorGlove" },
+          { namePrefix: DEVICE_NAME_PREFIX },
         ],
         optionalServices: [TREMOR_SERVICE_UUID],
       });
