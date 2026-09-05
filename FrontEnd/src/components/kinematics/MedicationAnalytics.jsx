@@ -43,8 +43,8 @@ export default function MedicationAnalytics({
     setExporting(true);
     setTimeout(() => {
       setExporting(false);
-      window.open("http://localhost:8501", "_blank");
-    }, 800);
+      window.open("http://127.0.0.1:8000/api/reports/PD_01/pdf", "_blank");
+    }, 400);
   };
 
   const handleLogDose = () => {
