@@ -670,11 +670,20 @@ export default function LiveKinematics() {
     };
   }, []);
 
-  // Merge BLE data → WebSocket data → REST data (priority: BLE > WS > REST)
+  const [liveTremorRate, setLiveTremorRate] = useState("0.0");
+  const [liveRms, setLiveRms] = useState("0.000g");
+
+  // Merge BLE data → WebSocket data → REST data (priority: Live DSP/BLE > WS > REST)
   const currentSubject = {
     ...subjectData,
-    tremorRate: bleData?.tremorRate ?? liveData?.tremorRate ?? subjectData.tremorRate,
-    rms:        bleData?.rms        ?? liveData?.rms        ?? subjectData.rms,
+    tremorRate:
+      (parseFloat(liveTremorRate) > 0 ? liveTremorRate : null) ??
+      liveData?.tremorRate ??
+      subjectData.tremorRate,
+    rms:
+      (liveRms && liveRms !== "0.000g" ? liveRms : null) ??
+      liveData?.rms ??
+      subjectData.rms,
   };
 
   const currentNodes = liveData?.nodes || null;
@@ -685,11 +694,11 @@ export default function LiveKinematics() {
   // Track session peak tremor frequency (highest seen this session)
   const [sessionPeakFreq, setSessionPeakFreq] = useState(null);
   useEffect(() => {
-    const incoming = parseFloat(bleData?.tremorRate ?? liveData?.tremorRate);
+    const incoming = parseFloat(liveTremorRate ?? liveData?.tremorRate);
     if (!isNaN(incoming) && incoming > 0) {
       setSessionPeakFreq((prev) => (prev === null || incoming > prev ? incoming : prev));
     }
-  }, [bleData, liveData]);
+  }, [liveTremorRate, liveData]);
 
   // Real-time DSP & AI detection processing for BLE and Live Telemetry
   const dspEngineRef = useRef(null);
@@ -707,8 +716,16 @@ export default function LiveKinematics() {
     if (rawSample) {
       dspEngineRef.current.pushSample(rawSample);
       const dspResult = dspEngineRef.current.process();
-      if (dspResult?.conditions) {
-        setConditionsData(dspResult.conditions);
+      if (dspResult) {
+        if (dspResult.conditions) {
+          setConditionsData(dspResult.conditions);
+        }
+        if (dspResult.dominantFreq && parseFloat(dspResult.dominantFreq) > 0) {
+          setLiveTremorRate(dspResult.dominantFreq);
+        }
+        if (dspResult.rms) {
+          setLiveRms(dspResult.rms);
+        }
       }
 
       // Add to sliding window for exact backend trained ML model inference
@@ -724,8 +741,11 @@ export default function LiveKinematics() {
         api
           .predictWindow(sampleBufferRef.current, 100.0)
           .then((res) => {
-            if (res && res.status === "success" && res.conditions) {
-              setConditionsData(res.conditions);
+            if (res && res.status === "success") {
+              if (res.conditions) setConditionsData(res.conditions);
+              if (res.dominant_frequency > 0) {
+                setLiveTremorRate(res.dominant_frequency.toFixed(1));
+              }
             }
           })
           .catch(() => {});
@@ -734,6 +754,12 @@ export default function LiveKinematics() {
     }
 
     // 2. Fallback to live conditions received directly from backend WebSocket
+    if (liveData?.tremorRate) {
+      setLiveTremorRate(liveData.tremorRate);
+    }
+    if (liveData?.rms) {
+      setLiveRms(liveData.rms);
+    }
     if (liveData?.conditions && Array.isArray(liveData.conditions)) {
       setConditionsData(liveData.conditions);
     }

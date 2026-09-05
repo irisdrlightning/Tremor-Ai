@@ -115,14 +115,13 @@ function parsePayload(dataView) {
 
 function buildTelemetryObject(sample) {
   const mag = Math.sqrt(sample.ax ** 2 + sample.ay ** 2 + sample.az ** 2);
-  const tremorRate = parseFloat(Math.abs(mag - 1.0).toFixed(3)); // deviation from 1g baseline
   const rms = parseFloat(
     Math.sqrt((sample.ax ** 2 + sample.ay ** 2 + sample.az ** 2) / 3).toFixed(3)
   );
 
   return {
-    tremorRate,
     rms,
+    accelMag: parseFloat(mag.toFixed(3)),
     accelX: sample.ax,
     accelY: sample.ay,
     accelZ: sample.az,
