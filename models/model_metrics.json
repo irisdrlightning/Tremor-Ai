@@ -1,0 +1,72 @@
+{
+  "timestamp": "2026-09-05T10:57:45.727197",
+  "total_windows": 464,
+  "train_windows": 371,
+  "test_windows": 93,
+  "active_labels": [
+    "healthy",
+    "pd",
+    "other"
+  ],
+  "random_forest": {
+    "test_accuracy": 0.914,
+    "test_precision": 0.9178,
+    "test_recall": 0.914,
+    "test_f1_score": 0.9137,
+    "cv_mean_accuracy": 0.9137,
+    "cv_mean_f1": 0.9136,
+    "confusion_matrix": [
+      [
+        29,
+        6,
+        0
+      ],
+      [
+        2,
+        33,
+        0
+      ],
+      [
+        0,
+        0,
+        23
+      ]
+    ],
+    "feature_importances": {
+      "harmonic_ratio": 0.226,
+      "tremor_power_ratio": 0.2096,
+      "spectral_entropy": 0.1472,
+      "dominant_frequency": 0.1256,
+      "jerk_rms": 0.1018,
+      "gyro_tremor_power": 0.0603,
+      "tremor_band_power": 0.0555,
+      "signal_amplitude_rms": 0.0444,
+      "peak_to_peak_amplitude": 0.0297
+    }
+  },
+  "svm": {
+    "test_accuracy": 0.9355,
+    "test_precision": 0.9449,
+    "test_recall": 0.9355,
+    "test_f1_score": 0.935,
+    "cv_mean_accuracy": 0.9354,
+    "cv_mean_f1": 0.9348,
+    "confusion_matrix": [
+      [
+        29,
+        6,
+        0
+      ],
+      [
+        0,
+        35,
+        0
+      ],
+      [
+        0,
+        0,
+        23
+      ]
+    ]
+  }
+}

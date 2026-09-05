@@ -1,0 +1,13 @@
+{
+  "dataset_name": "Tremor AI Synthetic Clinical Fallback Dataset",
+  "description": "Simulated IMU recordings for Parkinsonian resting tremor (4-6 Hz), healthy controls, and essential tremor (7-11 Hz)",
+  "sample_rate_hz": 100,
+  "duration_per_session_sec": 45.0,
+  "total_subjects": 16,
+  "counts": {
+    "pd": 6,
+    "healthy": 6,
+    "other": 4
+  },
+  "is_synthetic": true
+}
