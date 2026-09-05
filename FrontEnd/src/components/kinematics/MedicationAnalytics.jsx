@@ -25,6 +25,8 @@ export default function MedicationAnalytics({
   activeTab = "analytics",
   setActiveTab = () => {},
   initials = "RS",
+  liveData = null,
+  bleData = null,
 }) {
   const [data, setData] = useState(initialMedicationData);
 
@@ -39,6 +41,11 @@ export default function MedicationAnalytics({
       active = false;
     };
   }, []);
+
+  // Derive live values (BLE priority > WebSocket)
+  const liveImu  = bleData?.raw ?? liveData?.rawImu ?? null;
+  const liveHz   = bleData?.tremorRate ?? liveData?.tremorRate ?? null;
+  const liveRms  = bleData?.rms ?? liveData?.rms ?? null;
 
   const [doseLogged, setDoseLogged] = useState(false);
   const [activeChannel, setActiveChannel] = useState(2);
@@ -540,15 +547,12 @@ export default function MedicationAnalytics({
               </div>
             </div>
 
-            <svg viewBox="0 0 60 20" className="w-16 h-6 text-[#00e599]">
-              <path
-                d="M0,10 Q15,0 30,10 T60,10"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <div className="text-right">
+              <span className="font-mono text-[9px] uppercase tracking-wider text-[#8a9992] block">RMS</span>
+              <span className="font-mono text-[11px] font-bold text-[#ededed]">
+                {liveRms ?? "—"}
+              </span>
+            </div>
           </article>
 
           {/* Card 2: Hardware Sync */}
@@ -563,13 +567,17 @@ export default function MedicationAnalytics({
                   MPU6050 100 HZ
                 </p>
                 <p className="text-xs font-bold text-[#ededed]">Hardware Sync</p>
-                <p className="font-mono text-[10px] text-[#8a9992]">Zero Drift Calibration</p>
+                <p className="font-mono text-[10px] text-[#8a9992]">
+                  {liveImu
+                    ? `X ${(liveImu.ax ?? liveImu.accelX ?? 0).toFixed(3)}g  Y ${(liveImu.ay ?? liveImu.accelY ?? 0).toFixed(3)}g  Z ${(liveImu.az ?? liveImu.accelZ ?? 0).toFixed(3)}g`
+                    : "Zero Drift Calibration"}
+                </p>
               </div>
             </div>
 
             <div className="text-right">
               <span className="font-mono text-[9px] font-bold text-[#00e599] tracking-wider block">
-                ACTIVE
+                {liveImu ? "LIVE" : "ACTIVE"}
               </span>
               <span className="font-mono text-[10px] text-[#8a9992]">0.02ms lag</span>
             </div>
@@ -586,7 +594,9 @@ export default function MedicationAnalytics({
                   FFT SPECTRUM
                 </p>
                 <p className="text-xs font-bold text-[#ededed]">Frequency Tracking</p>
-                <p className="font-mono text-[10px] text-[#8a9992]">Peak: 4.88 Hz (Suppressed)</p>
+                <p className="font-mono text-[10px] text-[#8a9992]">
+                  {liveHz ? `Live: ${liveHz} Hz` : "Peak: 4.88 Hz (Suppressed)"}
+                </p>
               </div>
             </div>
 

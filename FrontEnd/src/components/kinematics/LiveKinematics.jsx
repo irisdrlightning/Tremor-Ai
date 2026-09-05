@@ -546,10 +546,21 @@ function ScheduleCard({ schedule = initialSchedule }) {
   );
 }
 
-function SensorCard({ node }) {
+function SensorCard({ node, liveImu, peakFreq }) {
   const Icon = node.id === "primary" ? Hand : node.id === "fft" ? BarChart3 : Activity;
   const status = node.status || (node.highlight ? "STREAMING" : "SYNCED");
   const meta = node.meta || (node.highlight ? "6-DOF IMU" : "Active");
+
+  // Dynamic subtitle overrides from live hardware
+  let subtitle = node.subtitle;
+  if (node.id === "esp-994" && liveImu) {
+    const ax = typeof liveImu.ax === "number" ? liveImu.ax.toFixed(3) : liveImu.accelX?.toFixed(3) ?? "0.000";
+    const ay = typeof liveImu.ay === "number" ? liveImu.ay.toFixed(3) : liveImu.accelY?.toFixed(3) ?? "0.000";
+    const az = typeof liveImu.az === "number" ? liveImu.az.toFixed(3) : liveImu.accelZ?.toFixed(3) ?? "0.000";
+    subtitle = `X ${ax}g  Y ${ay}g  Z ${az}g`;
+  } else if (node.id === "fft" && peakFreq) {
+    subtitle = `Peak: ${peakFreq} Hz (Session)`;
+  }
 
   return (
     <article className="group flex items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-3 shadow-sm hover:border-primary/50 hover:bg-card/90 transition-all">
@@ -568,7 +579,7 @@ function SensorCard({ node }) {
             {node.title}
           </p>
           <p className="truncate font-mono-tech text-[10px] text-muted-foreground">
-            {node.subtitle}
+            {subtitle}
           </p>
         </div>
       </div>
@@ -633,6 +644,18 @@ export default function LiveKinematics() {
   };
 
   const currentNodes = liveData?.nodes || null;
+
+  // Live IMU for SensorCard (prefer BLE raw, fall back to WS rawImu)
+  const liveImu = bleData?.raw ?? liveData?.rawImu ?? null;
+
+  // Track session peak tremor frequency (highest seen this session)
+  const [sessionPeakFreq, setSessionPeakFreq] = useState(null);
+  useEffect(() => {
+    const incoming = parseFloat(bleData?.tremorRate ?? liveData?.tremorRate);
+    if (!isNaN(incoming) && incoming > 0) {
+      setSessionPeakFreq((prev) => (prev === null || incoming > prev ? incoming : prev));
+    }
+  }, [bleData, liveData]);
 
   return (
     <div className="min-h-screen bg-[#060908] text-[#ededed] p-4 md:p-6 lg:p-8">
@@ -719,12 +742,16 @@ export default function LiveKinematics() {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               initials={user.initials}
+              liveData={liveData}
+              bleData={bleData}
             />
           ) : activeTab === "log-medicine" ? (
             <LogMedicationDose
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               initials={user.initials}
+              liveData={liveData}
+              bleData={bleData}
             />
 
           ) : activeTab === "suggested-regimen" ? (
@@ -732,6 +759,8 @@ export default function LiveKinematics() {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               initials={user.initials}
+              liveData={liveData}
+              bleData={bleData}
             />
           ) : (
             <>
@@ -784,7 +813,12 @@ export default function LiveKinematics() {
                   </SectionTitle>
                   <div className="grid gap-3 lg:grid-cols-3">
                     {sensorNodesData.map((node) => (
-                      <SensorCard key={node.id} node={node} />
+                      <SensorCard
+                        key={node.id}
+                        node={node}
+                        liveImu={liveImu}
+                        peakFreq={sessionPeakFreq}
+                      />
                     ))}
                   </div>
                 </div>

@@ -3,9 +3,9 @@
 export const subject = {
   name: "George Peter",
   id: "TR-90241",
-  tremorRate: "5.1",
-  sampling: "100 Hz UART",
-  rms: "0.142g",
+  tremorRate: "0.0",
+  sampling: "100 Hz BLE",
+  rms: "0.000g",
 };
 
 export const conditions = [

@@ -1,4 +1,4 @@
-import { Bell, Check, CheckCircle2, Info, Phone, Search, User, X } from "lucide-react";
+import { Bell, Check, CheckCircle2, Clock, Info, Phone, Search, User, X } from "lucide-react";
 import { useState } from "react";
 import api from "@/services/api";
 
@@ -6,6 +6,8 @@ export default function LogMedicationDose({
   activeTab = "log-medicine",
   setActiveTab = () => {},
   initials = "RS",
+  liveData = null,
+  bleData = null,
 }) {
 
   const [quickTime, setQuickTime] = useState("just-now");
@@ -15,8 +17,35 @@ export default function LogMedicationDose({
   const [searchQuery, setSearchQuery] = useState("");
   const [targetDose, setTargetDose] = useState({ levodopa: 100, carbidopa: 25 });
   const [dosesTaken, setDosesTaken] = useState(1);
+  const [doseLog, setDoseLog] = useState([]);
+
+  // Free-form medication fields
+  const [medicationName, setMedicationName] = useState("");
+  const [dosageQty, setDosageQty] = useState("");
+  const [dosageUnit, setDosageUnit] = useState("mg");
+
+  const timingLabel = { "just-now": "Just Now", "15m": "15 min ago", "30m": "30 min ago" };
+  const UNITS = ["mg", "mcg", "ml", "units"];
 
   const handleLogDose = () => {
+    const now = new Date();
+    const med = medicationName.trim() || "Levodopa / Carbidopa";
+    const qty = dosageQty.trim() || `${targetDose.levodopa}/${targetDose.carbidopa}`;
+    const record = {
+      id: Date.now(),
+      medicationName: med,
+      dosageQty: qty,
+      dosageUnit,
+      levodopa: targetDose.levodopa,
+      carbidopa: targetDose.carbidopa,
+      timing: quickTime,
+      timingLabel: timingLabel[quickTime] ?? quickTime,
+      motorState,
+      loggedAt: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      loggedDate: now.toLocaleDateString([], { month: "short", day: "numeric" }),
+      tremorHz: bleData?.tremorRate ?? liveData?.tremorRate ?? null,
+    };
+    setDoseLog((prev) => [record, ...prev]);
     setDoseLogged(true);
     setDosesTaken((prev) => Math.min(3, prev + 1));
     api.logDose({
@@ -24,7 +53,7 @@ export default function LogMedicationDose({
       levodopa: targetDose.levodopa,
       carbidopa: targetDose.carbidopa,
       timing: quickTime,
-      motorState: motorState,
+      motorState,
     }).catch((err) => console.warn("Failed to post dose log:", err));
     setTimeout(() => setDoseLogged(false), 3000);
   };
@@ -134,29 +163,100 @@ export default function LogMedicationDose({
       <div className="grid gap-6 lg:grid-cols-12 items-start">
         {/* LEFT COLUMN: Formulation & Quick Adjuster (Cols 1-6) */}
         <div className="lg:col-span-6 space-y-6">
-          {/* Card 1: Rx Formulation */}
+          {/* Card 1: Rx Formulation — interactive medication entry */}
           <article className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
             <div className="flex items-center justify-between font-mono text-[10px]">
               <span className="uppercase text-[#8a9992]">Rx Formulation</span>
               <span className="text-[#00e599] font-medium">Prescribed 3x/Day</span>
             </div>
 
-            <div className="mt-5 flex items-baseline justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-[#ededed]">Levodopa / Carbidopa</h3>
-                <p className="mt-1 text-xs text-[#8a9992]">Oral Absorption • Fast-Release</p>
-              </div>
-              <div className="text-right">
-                <p className="font-mono text-2xl font-black text-[#ededed]">
-                  {targetDose.levodopa} <span className="text-base text-[#8a9992]">/</span>{" "}
-                  {targetDose.carbidopa}{" "}
-                  <span className="text-xs font-normal text-[#8a9992]">mg</span>
-                </p>
-                <span className="font-mono text-[9px] uppercase tracking-wider text-[#00e599] block mt-0.5">
-                  Target Dose
-                </span>
+            {/* Medication Name — free text with suggestions */}
+            <div className="mt-5">
+              <label
+                htmlFor="med-name-input"
+                className="block font-mono text-[10px] uppercase tracking-wider text-[#8a9992] mb-2"
+              >
+                Medication Name
+              </label>
+              <input
+                id="med-name-input"
+                list="med-suggestions"
+                type="text"
+                value={medicationName}
+                onChange={(e) => setMedicationName(e.target.value)}
+                placeholder="e.g. Levodopa / Carbidopa"
+                autoComplete="off"
+                className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-4 py-3 text-sm font-semibold text-[#ededed] placeholder:text-[#8a9992] focus:border-[#00e599]/60 focus:outline-none transition-colors"
+              />
+              {/* Common Parkinson's medication suggestions */}
+              <datalist id="med-suggestions">
+                <option value="Levodopa / Carbidopa" />
+                <option value="Levodopa / Carbidopa / Entacapone" />
+                <option value="Pramipexole (Mirapex)" />
+                <option value="Ropinirole (Requip)" />
+                <option value="Rotigotine (Neupro patch)" />
+                <option value="Rasagiline (Azilect)" />
+                <option value="Selegiline (Eldepryl)" />
+                <option value="Amantadine" />
+                <option value="Entacapone (Comtan)" />
+                <option value="Tolcapone (Tasmar)" />
+                <option value="Trihexyphenidyl" />
+                <option value="Benztropine (Cogentin)" />
+                <option value="Apomorphine (Apokyn)" />
+                <option value="Istradefylline (Nourianz)" />
+                <option value="Opicapone (Ongentys)" />
+              </datalist>
+            </div>
+
+            {/* Dose Quantity + Unit */}
+            <div className="mt-4">
+              <label
+                htmlFor="med-qty-input"
+                className="block font-mono text-[10px] uppercase tracking-wider text-[#8a9992] mb-2"
+              >
+                Dose Quantity
+              </label>
+              <div className="flex items-stretch gap-2">
+                <input
+                  id="med-qty-input"
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={dosageQty}
+                  onChange={(e) => setDosageQty(e.target.value)}
+                  placeholder="e.g. 100"
+                  className="flex-1 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-4 py-3 text-sm font-bold text-[#ededed] placeholder:text-[#8a9992] focus:border-[#00e599]/60 focus:outline-none transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                {/* Unit toggle pills */}
+                <div className="flex items-center gap-1 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-2">
+                  {UNITS.map((u) => (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => setDosageUnit(u)}
+                      className={`rounded-lg px-2.5 py-1.5 font-mono text-[10px] font-bold transition-colors ${
+                        dosageUnit === u
+                          ? "bg-[#00e599] text-[#021a11]"
+                          : "text-[#8a9992] hover:text-[#ededed]"
+                      }`}
+                    >
+                      {u}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
+
+            {/* Live preview of what will be logged */}
+            {(medicationName || dosageQty) && (
+              <div className="mt-4 flex items-center justify-between rounded-xl border border-[#00e599]/20 bg-[#00e599]/5 px-4 py-2.5">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#8a9992]">Will log</span>
+                <span className="font-mono text-xs font-bold text-[#00e599]">
+                  {medicationName || "Medication"}
+                  {dosageQty ? ` · ${dosageQty} ${dosageUnit}` : ""}
+                </span>
+              </div>
+            )}
           </article>
 
           {/* Card 2: Quick Time Adjuster & Action */}
@@ -213,7 +313,7 @@ export default function LogMedicationDose({
               <span>
                 {doseLogged
                   ? "Dose Recorded Successfully!"
-                  : `Log Dose (${targetDose.levodopa} / ${targetDose.carbidopa} mg)`}
+                  : `Log Dose${medicationName ? ` — ${medicationName}` : ""}${dosageQty ? ` ${dosageQty}${dosageUnit}` : ""}`}
               </span>
             </button>
           </article>
@@ -318,6 +418,71 @@ export default function LogMedicationDose({
           </article>
         </div>
       </div>
+
+      {/* Dose History Log */}
+      {doseLog.length > 0 && (
+        <section className="space-y-3 border-t border-[rgba(255,255,255,0.08)] pt-6">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
+              <h3 className="text-xs font-semibold text-[#ededed]">Dose History — This Session</h3>
+            </div>
+            <span className="font-mono text-[10px] text-[#8a9992]">{doseLog.length} logged</span>
+          </div>
+
+          <div className="space-y-2">
+            {doseLog.map((entry) => {
+              const motorColor =
+                entry.motorState === "on-state"
+                  ? "#00e599"
+                  : entry.motorState === "wearing-off"
+                  ? "#f59e0b"
+                  : "#ef4444";
+              return (
+                <article
+                  key={entry.id}
+                  className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] px-4 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#141a17]">
+                      <Clock className="h-3.5 w-3.5 text-[#00e599]" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-[#ededed]">
+                        {entry.medicationName || `${entry.levodopa} / ${entry.carbidopa} mg`}
+                        {entry.dosageQty ? (
+                          <span className="ml-2 font-mono text-[10px] font-normal text-[#8a9992]">
+                            {entry.dosageQty} {entry.dosageUnit}
+                          </span>
+                        ) : (
+                          <span className="ml-2 font-mono text-[10px] font-normal text-[#8a9992]">
+                            Levodopa / Carbidopa
+                          </span>
+                        )}
+                      </p>
+                      <p className="font-mono text-[10px] text-[#8a9992] mt-0.5">
+                        {entry.timingLabel} &nbsp;•&nbsp; {entry.loggedDate} {entry.loggedAt}
+                        {entry.tremorHz ? ` · ${entry.tremorHz} Hz at log` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className="font-mono text-[9px] font-bold uppercase tracking-wider"
+                      style={{ color: motorColor }}
+                    >
+                      {entry.motorState.replace("-", " ")}
+                    </span>
+                    <div className="mt-0.5">
+                      <Check className="h-3 w-3 text-[#00e599] ml-auto" />
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

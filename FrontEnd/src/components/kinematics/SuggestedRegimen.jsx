@@ -18,6 +18,8 @@ export default function SuggestedRegimen({
   activeTab = "suggested-regimen",
   setActiveTab = () => {},
   initials = "RS",
+  liveData = null,
+  bleData = null,
 }) {
   const [confirmed, setConfirmed] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
@@ -25,6 +27,10 @@ export default function SuggestedRegimen({
   const [nocturnalMg, setNocturnalMg] = useState(100);
   const [activeDoseIdx, setActiveDoseIdx] = useState(null);
   const [timeIndex, setTimeIndex] = useState(0);
+
+  // Derive live values (BLE priority > WebSocket)
+  const liveImu = bleData?.raw ?? liveData?.rawImu ?? null;
+  const liveHz  = bleData?.tremorRate ?? liveData?.tremorRate ?? null;
 
   const handleSaveParameters = () => {
     setShowAdjustModal(false);
@@ -500,13 +506,17 @@ export default function SuggestedRegimen({
                   MPU6050 100 HZ
                 </p>
                 <p className="text-xs font-bold text-[#ededed]">Hardware Sync</p>
-                <p className="font-mono text-[10px] text-[#8a9992]">Zero Drift Calibrated</p>
+                <p className="font-mono text-[10px] text-[#8a9992]">
+                  {liveImu
+                    ? `X ${(liveImu.ax ?? liveImu.accelX ?? 0).toFixed(3)}g  Y ${(liveImu.ay ?? liveImu.accelY ?? 0).toFixed(3)}g  Z ${(liveImu.az ?? liveImu.accelZ ?? 0).toFixed(3)}g`
+                    : "Zero Drift Calibrated"}
+                </p>
               </div>
             </div>
 
             <div className="text-right">
               <span className="font-mono text-[9px] font-bold text-[#00e599] tracking-wider block">
-                ACTIVE
+                {liveImu ? "LIVE" : "ACTIVE"}
               </span>
               <span className="font-mono text-[10px] text-[#8a9992]">0.02ms lag</span>
             </div>
@@ -522,7 +532,9 @@ export default function SuggestedRegimen({
                   FFT SPECTRUM
                 </p>
                 <p className="text-xs font-bold text-[#ededed]">Frequency Tracking</p>
-                <p className="font-mono text-[10px] text-[#8a9992]">Peak: 4.88 Hz (Suppressed)</p>
+                <p className="font-mono text-[10px] text-[#8a9992]">
+                  {liveHz ? `Live: ${liveHz} Hz` : "Peak: 4.88 Hz (Suppressed)"}
+                </p>
               </div>
             </div>
 
