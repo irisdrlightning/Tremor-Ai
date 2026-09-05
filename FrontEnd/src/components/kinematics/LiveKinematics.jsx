@@ -4,6 +4,9 @@ import {
   ArrowUpRight,
   BarChart3,
   Bell,
+  Bluetooth,
+  BluetoothConnected,
+  BluetoothOff,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -32,6 +35,7 @@ import {
 } from "@/data/mockKinematics";
 import api from "@/services/api";
 import { useLiveTelemetry } from "@/services/websocket";
+import { useBluetooth, BLE_STATE } from "@/hooks/useBluetooth";
 import MedicationAnalytics from "@/components/kinematics/MedicationAnalytics";
 import LogMedicationDose from "@/components/kinematics/LogMedicationDose";
 import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
@@ -44,7 +48,23 @@ const icons = {
   funnel: Filter,
 };
 
-function TopBar({ initials }) {
+function TopBar({ initials, bleState, deviceName, errorMessage, isSupported, onConnect, onDisconnect }) {
+  const isConnected  = bleState === BLE_STATE.CONNECTED;
+  const isBusy       = bleState === BLE_STATE.SCANNING || bleState === BLE_STATE.CONNECTING;
+  const isUnsupported = bleState === BLE_STATE.UNSUPPORTED;
+
+  const bleLabel = isConnected
+    ? `Connected · ${deviceName ?? "ESP32 Glove"}`
+    : isBusy
+    ? bleState === BLE_STATE.SCANNING ? "Scanning…" : "Connecting…"
+    : bleState === BLE_STATE.DISCONNECTED
+    ? "Reconnect Glove"
+    : isUnsupported
+    ? "BLE Not Supported"
+    : "Connect Glove";
+
+  const BleIcon = isConnected ? BluetoothConnected : isBusy ? Bluetooth : BluetoothOff;
+
   return (
     <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6">
       <div className="flex min-w-0 items-center gap-2">
@@ -67,6 +87,39 @@ function TopBar({ initials }) {
       </label>
 
       <div className="flex shrink-0 items-center gap-2 md:gap-3">
+        {/* ── BLE Connect Button ───────────────────────────────────────────── */}
+        <div className="flex flex-col items-end gap-0.5">
+          <button
+            id="ble-connect-btn"
+            type="button"
+            aria-label={bleLabel}
+            title={bleLabel}
+            disabled={isBusy || isUnsupported}
+            onClick={isConnected ? onDisconnect : onConnect}
+            className={[
+              "flex items-center gap-1.5 rounded-full px-3 py-2 font-mono-tech text-[11px] font-semibold transition-all",
+              isConnected
+                ? "bg-primary/15 border border-primary/50 text-primary hover:bg-primary/25"
+                : isBusy
+                ? "bg-card border border-border text-muted-foreground cursor-wait"
+                : isUnsupported
+                ? "bg-card border border-border text-muted-foreground/50 cursor-not-allowed"
+                : "bg-card border border-border/80 text-foreground hover:border-primary/50 hover:text-primary",
+            ].join(" ")}
+          >
+            <BleIcon
+              className={[
+                "h-3.5 w-3.5 shrink-0",
+                isBusy ? "animate-pulse" : "",
+              ].join(" ")}
+            />
+            <span className="hidden sm:inline">{bleLabel}</span>
+          </button>
+          {errorMessage ? (
+            <span className="font-mono-tech text-[10px] text-destructive pr-1">{errorMessage}</span>
+          ) : null}
+        </div>
+
         <button
           type="button"
           aria-label="Call clinic"
@@ -542,6 +595,17 @@ export default function LiveKinematics() {
   // Live WebSocket streaming hook
   const { liveData } = useLiveTelemetry();
 
+  // BLE glove hook
+  const {
+    bleState,
+    deviceName,
+    bleData,
+    errorMessage: bleError,
+    isSupported: bleSupported,
+    connect:    bleConnect,
+    disconnect: bleDisconnect,
+  } = useBluetooth();
+
   // Hydrate REST API on mount
   useEffect(() => {
     let active = true;
@@ -561,14 +625,12 @@ export default function LiveKinematics() {
     };
   }, []);
 
-  // Update subject with live telemetry if active
-  const currentSubject = liveData
-    ? {
-        ...subjectData,
-        tremorRate: liveData.tremorRate || subjectData.tremorRate,
-        rms: liveData.rms || subjectData.rms,
-      }
-    : subjectData;
+  // Merge BLE data → WebSocket data → REST data (priority: BLE > WS > REST)
+  const currentSubject = {
+    ...subjectData,
+    tremorRate: bleData?.tremorRate ?? liveData?.tremorRate ?? subjectData.tremorRate,
+    rms:        bleData?.rms        ?? liveData?.rms        ?? subjectData.rms,
+  };
 
   const currentNodes = liveData?.nodes || null;
 
@@ -673,7 +735,15 @@ export default function LiveKinematics() {
             />
           ) : (
             <>
-              <TopBar initials={user.initials} />
+              <TopBar
+                initials={user.initials}
+                bleState={bleState}
+                deviceName={deviceName}
+                errorMessage={bleError}
+                isSupported={bleSupported}
+                onConnect={bleConnect}
+                onDisconnect={bleDisconnect}
+              />
 
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)]">
                 <OverviewCard subjectData={currentSubject} nodes={currentNodes} />
