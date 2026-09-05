@@ -17,15 +17,29 @@ import {
   TrendingDown,
   X,
 } from "lucide-react";
-import { useState } from "react";
-import { medicationAnalyticsData } from "@/data/mockMedicationAnalytics";
+import { useEffect, useState } from "react";
+import { medicationAnalyticsData as initialMedicationData } from "@/data/mockMedicationAnalytics";
+import api from "@/services/api";
 
 export default function MedicationAnalytics({
   activeTab = "analytics",
   setActiveTab = () => {},
   initials = "RS",
 }) {
-  const data = medicationAnalyticsData;
+  const [data, setData] = useState(initialMedicationData);
+
+  useEffect(() => {
+    let active = true;
+    api.getMedicationAnalytics().then((res) => {
+      if (active && res) {
+        setData(res);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const [doseLogged, setDoseLogged] = useState(false);
   const [activeChannel, setActiveChannel] = useState(2);
   const [timeIndex, setTimeIndex] = useState(0);

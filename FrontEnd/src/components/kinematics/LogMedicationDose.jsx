@@ -1,7 +1,13 @@
 import { Bell, Check, CheckCircle2, Info, Phone, Search, User, X } from "lucide-react";
 import { useState } from "react";
+import api from "@/services/api";
 
-export default function LogMedicationDose({ activeTab = "log-medicine", setActiveTab = () => {} }) {
+export default function LogMedicationDose({
+  activeTab = "log-medicine",
+  setActiveTab = () => {},
+  initials = "RS",
+}) {
+
   const [quickTime, setQuickTime] = useState("just-now");
   const [motorState, setMotorState] = useState("on-state");
   const [doseLogged, setDoseLogged] = useState(false);
@@ -13,8 +19,16 @@ export default function LogMedicationDose({ activeTab = "log-medicine", setActiv
   const handleLogDose = () => {
     setDoseLogged(true);
     setDosesTaken((prev) => Math.min(3, prev + 1));
+    api.logDose({
+      patientId: "TR-90241",
+      levodopa: targetDose.levodopa,
+      carbidopa: targetDose.carbidopa,
+      timing: quickTime,
+      motorState: motorState,
+    }).catch((err) => console.warn("Failed to post dose log:", err));
     setTimeout(() => setDoseLogged(false), 3000);
   };
+
 
   return (
     <div className="flex flex-col gap-6 max-w-[1440px]">

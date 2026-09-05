@@ -18,16 +18,24 @@ import {
   Search,
 } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import handScan from "@/assets/hand-scan.png";
 import { handScanBase64 } from "@/assets/handScanBase64";
 import tremorIcon from "@/assets/tremor-icon.png";
 import { tremorIconBase64 } from "@/assets/tremorIconBase64";
 import { useRole } from "@/context/RoleContext";
-import { conditions, schedule, sensorNodes, subject } from "@/data/mockKinematics";
+import {
+  conditions as initialConditions,
+  schedule as initialSchedule,
+  sensorNodes as initialSensorNodes,
+  subject as initialSubject,
+} from "@/data/mockKinematics";
+import api from "@/services/api";
+import { useLiveTelemetry } from "@/services/websocket";
 import MedicationAnalytics from "@/components/kinematics/MedicationAnalytics";
 import LogMedicationDose from "@/components/kinematics/LogMedicationDose";
 import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
+
 
 const icons = {
   droplet: Droplet,
@@ -96,10 +104,10 @@ function SectionTitle({ children, actions }) {
   );
 }
 
-function HandImageCard() {
+function HandImageCard({ subjectData, nodes }) {
   const [activeNode, setActiveNode] = useState(null);
 
-  const frequencyNodes = [
+  const frequencyNodes = nodes && nodes.length > 0 ? nodes : [
     {
       id: "node-d1",
       name: "Thumb (D1)",
@@ -183,7 +191,7 @@ function HandImageCard() {
       {/* Hand Scan Image */}
       <img
         src={imgSrc}
-        alt={`Hand tremor scan for subject ${subject.id}`}
+        alt={`Hand tremor scan for subject ${subjectData.id}`}
         className="h-[88%] w-[88%] object-contain rounded-2xl pointer-events-none select-none filter contrast-110 drop-shadow-[0_10px_24px_rgba(0,0,0,0.5)]"
       />
 
@@ -259,7 +267,7 @@ function HandImageCard() {
   );
 }
 
-function OverviewCard() {
+function OverviewCard({ subjectData, nodes }) {
   return (
     <section className="rounded-3xl border border-border bg-card p-6 md:p-8">
       <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight md:text-5xl">
@@ -269,11 +277,11 @@ function OverviewCard() {
       </h1>
       <p className="mt-3 flex items-center gap-2 font-mono-tech text-xs uppercase tracking-widest text-muted-foreground">
         <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-        Subject: {subject.name} ({subject.id})
+        Subject: {subjectData.name} ({subjectData.id})
       </p>
 
       <div className="relative mt-6">
-        <HandImageCard />
+        <HandImageCard subjectData={subjectData} nodes={nodes} />
 
         <div className="mt-4 rounded-2xl border border-primary/40 bg-shell/80 p-4 backdrop-blur sm:absolute sm:bottom-4 sm:left-0 sm:mt-0 sm:w-44 z-20">
           <p className="flex items-center gap-2 font-mono-tech text-[11px] text-muted-foreground">
@@ -281,7 +289,7 @@ function OverviewCard() {
             Tremor Rate
           </p>
           <p className="mt-1 font-display text-3xl font-bold">
-            {subject.tremorRate} <span className="text-sm text-primary">Hz</span>
+            {subjectData.tremorRate} <span className="text-sm text-primary">Hz</span>
           </p>
           <svg viewBox="0 0 140 28" className="mt-2 h-7 w-full text-primary">
             <path
@@ -295,12 +303,13 @@ function OverviewCard() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-2 font-mono-tech text-xs text-muted-foreground">
-        <span>Sampling: {subject.sampling}</span>
-        <span className="text-primary">RMS {subject.rms}</span>
+        <span>Sampling: {subjectData.sampling}</span>
+        <span className="text-primary">RMS {subjectData.rms}</span>
       </div>
     </section>
   );
 }
+
 
 function ConditionCard({ item }) {
   const Icon = icons[item.icon] ?? Droplet;
@@ -526,6 +535,43 @@ export default function LiveKinematics() {
   const isDoctor = role === "doctor";
   const [activeTab, setActiveTab] = useState("kinematics");
 
+  const [subjectData, setSubjectData] = useState(initialSubject);
+  const [conditionsData, setConditionsData] = useState(initialConditions);
+  const [sensorNodesData, setSensorNodesData] = useState(initialSensorNodes);
+
+  // Live WebSocket streaming hook
+  const { liveData } = useLiveTelemetry();
+
+  // Hydrate REST API on mount
+  useEffect(() => {
+    let active = true;
+
+    api.getPatientOverview().then((res) => {
+      if (active && res) setSubjectData((prev) => ({ ...prev, ...res }));
+    });
+    api.getConditions().then((res) => {
+      if (active && res && Array.isArray(res)) setConditionsData(res);
+    });
+    api.getSensorNodes().then((res) => {
+      if (active && res && Array.isArray(res)) setSensorNodesData(res);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Update subject with live telemetry if active
+  const currentSubject = liveData
+    ? {
+        ...subjectData,
+        tremorRate: liveData.tremorRate || subjectData.tremorRate,
+        rms: liveData.rms || subjectData.rms,
+      }
+    : subjectData;
+
+  const currentNodes = liveData?.nodes || null;
+
   return (
     <div className="min-h-screen bg-[#060908] text-[#ededed] p-4 md:p-6 lg:p-8">
       <div className="mx-auto flex max-w-[1500px] gap-6">
@@ -613,7 +659,12 @@ export default function LiveKinematics() {
               initials={user.initials}
             />
           ) : activeTab === "log-medicine" ? (
-            <LogMedicationDose activeTab={activeTab} setActiveTab={setActiveTab} />
+            <LogMedicationDose
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              initials={user.initials}
+            />
+
           ) : activeTab === "suggested-regimen" ? (
             <SuggestedRegimen
               activeTab={activeTab}
@@ -625,12 +676,12 @@ export default function LiveKinematics() {
               <TopBar initials={user.initials} />
 
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)]">
-                <OverviewCard />
+                <OverviewCard subjectData={currentSubject} nodes={currentNodes} />
 
                 <div className="space-y-3">
                   <SectionTitle>Tremor Condition</SectionTitle>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {conditions.map((item) => (
+                    {conditionsData.map((item) => (
                       <ConditionCard key={item.id} item={item} />
                     ))}
                   </div>
@@ -662,7 +713,7 @@ export default function LiveKinematics() {
                     Sensor Channels &amp; Nodes
                   </SectionTitle>
                   <div className="grid gap-3 lg:grid-cols-3">
-                    {sensorNodes.map((node) => (
+                    {sensorNodesData.map((node) => (
                       <SensorCard key={node.id} node={node} />
                     ))}
                   </div>
@@ -675,3 +726,4 @@ export default function LiveKinematics() {
     </div>
   );
 }
+

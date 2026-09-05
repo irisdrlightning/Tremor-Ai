@@ -1,8 +1,8 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import api from "@/services/api";
 
 /**
- * Auth/role context. No backend yet — the role is mocked here and will later be
- * hydrated from the REST API (env-configured base URL).
+ * Auth/role context. Hydrated from the REST API (env-configured base URL).
  */
 const RoleContext = createContext({
   role: "doctor",
@@ -12,17 +12,31 @@ const RoleContext = createContext({
 
 export function RoleProvider({ children, initialRole = "doctor" }) {
   const [role, setRole] = useState(initialRole);
+  const [user, setUser] = useState(() =>
+    role === "doctor"
+      ? { name: "Dr. Rita Sharma", initials: "RS" }
+      : { name: "George Peter", initials: "GP" },
+  );
+
+  useEffect(() => {
+    let active = true;
+    api.getMe(role).then((res) => {
+      if (active && res?.user) {
+        setUser(res.user);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [role]);
 
   const value = useMemo(
     () => ({
       role,
       setRole,
-      user:
-        role === "doctor"
-          ? { name: "Dr. Rita Sharma", initials: "RS" }
-          : { name: "George Peter", initials: "GP" },
+      user,
     }),
-    [role],
+    [role, user],
   );
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;
@@ -33,3 +47,4 @@ export function useRole() {
 }
 
 export default RoleContext;
+
