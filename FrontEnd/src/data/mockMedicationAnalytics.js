@@ -1,92 +1,96 @@
+// Initial / default medication analytics data.
+// All numeric readings start at 0; text fields use purposeful defaults.
+// Values update from the backend API (/api/medication/analytics) on mount.
+
 export const medicationAnalyticsData = {
   subject: {
-    name: "Biromon Jr.",
+    name: "George Peter",
     id: "TR-90241",
-    status: "STABLE",
-    updrsScore: 38,
+    status: "NO SESSION",
+    updrsScore: 0,                                  // MDS-UPDRS score — 0 until scored
     updrsMax: 108,
-    confidenceText: "MEDICATION EFFECTIVE (96% Confidence)",
-    meanRestTremor: "1.82 Hz",
-    meanRestDelta: "(-44%)",
-    onStateStability: "88.4%",
+    confidenceText: "AWAITING SENSOR DATA",
+    meanRestTremor: "0.00 Hz",                      // Hz — updated from session data
+    meanRestDelta: "(—)",                           // % change — no baseline yet
+    onStateStability: "0.0%",                       // % on-state time — no session
     onStateLabel: "Time",
   },
   titration: {
-    updatedTime: "4m AGO",
+    updatedTime: "NOT UPDATED",
     spectralPower: {
-      tremorReduction: "-42.8%",
+      tremorReduction: "0.0%",                      // % reduction — no baseline yet
       reductionUnit: "%",
-      status: "Status: Active Regimen",
-      sparkline: [12, 14, 13, 16, 15, 18, 17, 21, 25, 23, 27, 30],
+      status: "Status: Awaiting session",
+      sparkline: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     dosageStatus: {
-      tag: "TI-01",
-      medication: "Levodopa / Carb",
-      dosage: "100/25",
+      tag: "NO RX",
+      medication: "Not prescribed",
+      dosage: "—",
       unit: "mg",
-      nextDose: "Next Dose: 42 mins",
-      window: "Window: Controlled",
+      nextDose: "Next Dose: Not scheduled",
+      window: "Window: No regimen active",
     },
     kineticBand: {
-      tag: "BAND PASS",
+      tag: "NO DATA",
       label: "Drift Variance",
-      value: "0.084",
+      value: "0.000",                               // g RMS — 0 until sensor streams
       unit: "g RMS",
       channels: [
-        { label: "CH1", active: false, level: 25 },
-        { label: "CH2", active: false, level: 35 },
-        { label: "CH3", active: true, level: 85 },
-        { label: "CH4", active: true, level: 70 },
-        { label: "CH5", active: false, level: 30 },
+        { label: "CH1", active: false, level: 0 },
+        { label: "CH2", active: false, level: 0 },
+        { label: "CH3", active: false, level: 0 },
+        { label: "CH4", active: false, level: 0 },
+        { label: "CH5", active: false, level: 0 },
       ],
     },
     compliance: {
-      rate: "100%",
+      rate: "0%",                                   // dose adherence — no doses logged
       label: "Dose Adherence",
-      taken: 28,
-      total: 28,
-      skippedText: "0 Skipped in 7 days",
+      taken: 0,                                     // doses taken today
+      total: 0,                                     // total prescribed today
+      skippedText: "No doses logged yet",
     },
   },
   timeline: {
-    rangeLabel: "OCT 01 - OCT 30",
+    rangeLabel: "No data yet",
     subtitle: "Daily peak tremor amplitude suppression",
     legend: [
       { label: "Controlled", color: "#16362e" },
       { label: "Flare Window", color: "#00e599" },
     ],
-    // 30 days of data
+    // 30 days — all zero until backend populates real session history
     days: [
-      { day: "01", val: 45, isFlare: false },
-      { day: "02", val: 48, isFlare: false },
-      { day: "03", val: 52, isFlare: false },
-      { day: "04", val: 42, isFlare: false },
-      { day: "05", val: 68, isFlare: true }, // flare window
-      { day: "06", val: 40, isFlare: false },
-      { day: "07", val: 38, isFlare: false },
-      { day: "08", val: 44, isFlare: false },
-      { day: "09", val: 36, isFlare: false },
-      { day: "10", val: 39, isFlare: false },
-      { day: "11", val: 42, isFlare: false },
-      { day: "12", val: 65, isFlare: true }, // flare window
-      { day: "13", val: 35, isFlare: false },
-      { day: "14", val: 37, isFlare: false },
-      { day: "15", val: 34, isFlare: false },
-      { day: "16", val: 33, isFlare: false },
-      { day: "17", val: 32, isFlare: false },
-      { day: "18", val: 35, isFlare: false },
-      { day: "19", val: 30, isFlare: false },
-      { day: "20", val: 28, isFlare: false },
-      { day: "21", val: 31, isFlare: false },
-      { day: "22", val: 29, isFlare: false },
-      { day: "23", val: 58, isFlare: true }, // flare window
-      { day: "24", val: 26, isFlare: false },
-      { day: "25", val: 25, isFlare: false },
-      { day: "26", val: 24, isFlare: false },
-      { day: "27", val: 22, isFlare: false },
-      { day: "28", val: 20, isFlare: false },
-      { day: "29", val: 24, isFlare: false },
-      { day: "30", val: 28, isFlare: true },
+      { day: "01", val: 0, isFlare: false },
+      { day: "02", val: 0, isFlare: false },
+      { day: "03", val: 0, isFlare: false },
+      { day: "04", val: 0, isFlare: false },
+      { day: "05", val: 0, isFlare: false },
+      { day: "06", val: 0, isFlare: false },
+      { day: "07", val: 0, isFlare: false },
+      { day: "08", val: 0, isFlare: false },
+      { day: "09", val: 0, isFlare: false },
+      { day: "10", val: 0, isFlare: false },
+      { day: "11", val: 0, isFlare: false },
+      { day: "12", val: 0, isFlare: false },
+      { day: "13", val: 0, isFlare: false },
+      { day: "14", val: 0, isFlare: false },
+      { day: "15", val: 0, isFlare: false },
+      { day: "16", val: 0, isFlare: false },
+      { day: "17", val: 0, isFlare: false },
+      { day: "18", val: 0, isFlare: false },
+      { day: "19", val: 0, isFlare: false },
+      { day: "20", val: 0, isFlare: false },
+      { day: "21", val: 0, isFlare: false },
+      { day: "22", val: 0, isFlare: false },
+      { day: "23", val: 0, isFlare: false },
+      { day: "24", val: 0, isFlare: false },
+      { day: "25", val: 0, isFlare: false },
+      { day: "26", val: 0, isFlare: false },
+      { day: "27", val: 0, isFlare: false },
+      { day: "28", val: 0, isFlare: false },
+      { day: "29", val: 0, isFlare: false },
+      { day: "30", val: 0, isFlare: false },
     ],
     footer: {
       format: "Format: Clinician HL7 / FHIR",
@@ -98,7 +102,7 @@ export const medicationAnalyticsData = {
       id: "diurnal",
       category: "DIURNAL CURVE",
       title: "Hourly Variance",
-      subtitle: "08:00 - 20:00 (12h)",
+      subtitle: "Awaiting session data",          // updates once sessions recorded
       type: "sine",
       icon: "activity",
     },
@@ -106,18 +110,18 @@ export const medicationAnalyticsData = {
       id: "hardware-sync",
       category: "MPU6050 100 HZ",
       title: "Hardware Sync",
-      subtitle: "Zero Drift Calibration",
-      status: "ACTIVE",
-      badge: "0.02ms lag",
+      subtitle: "X 0.000g  Y 0.000g  Z 0.000g",  // overwritten by live IMU data
+      status: "WAITING",
+      badge: "No device",
       icon: "radio",
     },
     {
       id: "fft-spectrum",
       category: "FFT SPECTRUM",
       title: "Frequency Tracking",
-      subtitle: "Peak: 4.88 Hz (Suppressed)",
+      subtitle: "Peak: 0.00 Hz (No session)",     // overwritten by live tremorRate
       metricLabel: "SPECTRAL Q",
-      metricVal: "0.82 ratio",
+      metricVal: "0.00 ratio",                    // updated from signal processing
       icon: "bar-chart",
     },
   ],

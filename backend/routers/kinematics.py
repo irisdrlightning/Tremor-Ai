@@ -7,53 +7,53 @@ router = APIRouter(prefix="/api", tags=["kinematics"])
 SUBJECT_DATA = SubjectOverview(
     name="George Peter",
     id="TR-90241",
-    tremorRate="5.1",
-    sampling="100 Hz UART",
-    rms="0.142g"
+    tremorRate="0.0",        # Hz — updated from live BLE session
+    sampling="100 Hz BLE",
+    rms="0.000g"             # g RMS — updated from live BLE session
 )
 
 CONDITIONS_DATA: List[ConditionItem] = [
     ConditionItem(
         id="spectral",
-        tag="SPECTRAL",
+        tag="PENDING",
         icon="droplet",
         label="Power Ratio",
-        value="84",
+        value="0",
         unit="%",
         variant="bars"
     ),
     ConditionItem(
         id="ai",
-        tag="94.2%",
+        tag="—",
         icon="scan",
         label="AI Detection",
-        value="Parkinson's",
-        footer="CONFIRMED",
+        value="Awaiting data",
+        footer="NO SESSION",
         variant="highlight"
     ),
     ConditionItem(
         id="updrs",
-        tag="MODERATE",
+        tag="NOT SCORED",
         icon="chart",
         label="MDS-UPDRS",
-        value="42",
+        value="0",
         unit="/100",
         variant="steps"
     ),
     ConditionItem(
         id="noise",
-        tag="ISOLATED",
+        tag="BASELINE",
         icon="funnel",
         label="Voluntary Noise",
-        value="< 0.8",
+        value="0.0",
         unit="Hz",
         variant="dots"
     )
 ]
 
 SCHEDULE_DATA = ScheduleData(
-    nextCheckup="Fri, 24 Oct",
-    weekLabel="20-Oct — 26-Oct",
+    nextCheckup="Not scheduled",
+    weekLabel="No session active",
     days=[20, 21, 22, 23, 24],
     activeDay=24,
     team=[
@@ -68,23 +68,23 @@ SENSOR_NODES_DATA: List[SensorNode] = [
         id="esp-994",
         code="ESP-994",
         title="Wrist IMU Node",
-        subtitle="Pitch +2.4° • Roll -1.1°",
-        status="SYNCED",
+        subtitle="X 0.000g  Y 0.000g  Z 0.000g",  # overwritten by live BLE data
+        status="WAITING",
         meta="100 Hz"
     ),
     SensorNode(
         id="primary",
         code="PRIMARY STREAM",
         title="Active Hand Twin",
-        subtitle="Dual 6-DOF Sensor Array",
+        subtitle="Awaiting device connection",
         highlight=True
     ),
     SensorNode(
         id="fft",
         code="FFT SPECTRUM",
         title="Sub-band Distribution",
-        subtitle="Peak: 5.12 Hz (Power: 2.81)",
-        status="WINDOW",
+        subtitle="Peak: 0.00 Hz (No session)",     # overwritten by session peak
+        status="IDLE",
         meta="Hann 512"
     )
 ]
