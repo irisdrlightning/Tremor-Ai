@@ -9,6 +9,17 @@ class AuthMeResponse(BaseModel):
     role: str
     user: UserProfile
 
+class LoginRequest(BaseModel):
+    portal: str = "patient"  # "patient" or "doctor"
+    identifier: str = "TR-90241"
+    passcode: Optional[str] = None
+
+class LoginResponse(BaseModel):
+    status: str = "success"
+    role: str
+    user: UserProfile
+    token: Optional[str] = "stub-jwt-token-tremor-ai"
+
 class SubjectOverview(BaseModel):
     name: str
     id: str

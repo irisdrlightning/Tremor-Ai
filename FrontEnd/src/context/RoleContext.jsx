@@ -7,11 +7,22 @@ import api from "@/services/api";
 const RoleContext = createContext({
   role: "doctor",
   user: { name: "Dr. Rita Sharma", initials: "RS" },
+  isAuthenticated: true,
   setRole: () => {},
+  setUser: () => {},
+  login: async () => {},
+  logout: () => {},
 });
 
 export function RoleProvider({ children, initialRole = "doctor" }) {
   const [role, setRole] = useState(initialRole);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("tremor_auth_authenticated");
+      return stored !== null ? stored === "true" : true; // default true for backwards compatibility
+    }
+    return true;
+  });
   const [user, setUser] = useState(() =>
     role === "doctor"
       ? { name: "Dr. Rita Sharma", initials: "RS" }
@@ -30,13 +41,40 @@ export function RoleProvider({ children, initialRole = "doctor" }) {
     };
   }, [role]);
 
+  const login = async (portal = "patient", identifier = "TR-90241", passcode = "") => {
+    const res = await api.login(portal, identifier, passcode);
+    if (res && res.status === "success") {
+      setRole(res.role);
+      setUser(res.user);
+      setIsAuthenticated(true);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("tremor_auth_authenticated", "true");
+        localStorage.setItem("tremor_auth_role", res.role);
+      }
+      return res;
+    }
+    return null;
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("tremor_auth_authenticated", "false");
+    }
+  };
+
   const value = useMemo(
     () => ({
       role,
       setRole,
       user,
+      setUser,
+      isAuthenticated,
+      setIsAuthenticated,
+      login,
+      logout,
     }),
-    [role, user],
+    [role, user, isAuthenticated],
   );
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;

@@ -20,6 +20,7 @@ import {
 import { useEffect, useState } from "react";
 import { medicationAnalyticsData as initialMedicationData } from "@/data/mockMedicationAnalytics";
 import api from "@/services/api";
+import NotificationsModal from "@/components/kinematics/NotificationsModal";
 
 export default function MedicationAnalytics({
   activeTab = "analytics",
@@ -76,84 +77,41 @@ export default function MedicationAnalytics({
 
   return (
     <div className="flex flex-col gap-6 max-w-[1440px]">
-      {/* Notification Modal */}
-      {showNotificationModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-md rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[#0c100e] p-6">
-            <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] pb-3">
-              <h4 className="text-sm font-bold text-[#ededed]">Clinical Alerts (2)</h4>
-              <button
-                type="button"
-                onClick={() => setShowNotificationModal(false)}
-                className="text-[#8a9992] hover:text-[#ededed]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="mt-4 space-y-3 text-xs">
-              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] p-3">
-                <p className="font-semibold text-[#ededed]">Midday Wear-Off Approaching</p>
-                <p className="text-[#8a9992] mt-0.5">
-                  Subject TR-90241 kinetic band variance increased 12% in last 30m.
-                </p>
-              </div>
-              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] p-3">
-                <p className="font-semibold text-[#ededed]">Hardware Calibration Validated</p>
-                <p className="text-[#8a9992] mt-0.5">
-                  MPU6050 zero-drift sync achieved with 0.02ms latency.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Notification Modal (Image 6 design) */}
+      <NotificationsModal
+        isOpen={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+      />
 
       {/* Top Header */}
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#00e599] animate-pulse" />
-          <h1 className="font-display text-xl font-bold tracking-tight text-[#ededed] flex items-baseline gap-1.5">
-            <span>Tremor</span>
-            <span className="font-mono-tech text-xs font-bold text-[#00e599] tracking-widest uppercase">
-              AI
-            </span>
-          </h1>
-        </div>
-
-        {/* Global Search Bar */}
-        <div className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] px-5 py-2.5 md:order-none md:col-span-1 max-w-xl mx-auto w-full focus-within:border-[#00e599]/50 transition-colors">
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search patient, biomarker, or dose history..."
-            className="w-full min-w-0 bg-transparent text-sm text-[#ededed] placeholder:text-[#8a9992] focus:outline-none"
-          />
-          <Search className="h-4 w-4 shrink-0 text-[#8a9992]" />
-        </div>
-
-        {/* Action Buttons & Profile */}
-        <div className="flex shrink-0 items-center gap-2 md:gap-3">
+      {/* Top Header */}
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        {/* Navigation Tabs Pill: Medication Analytics, Live Kinematics, etc */}
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handleLogDose}
-            className="flex items-center gap-1.5 rounded-full bg-[#00e599] px-3.5 py-2 text-xs font-bold text-[#021a11] transition-transform active:scale-95 shadow-sm"
+            className="rounded-full bg-[#00e599] px-4 py-2 font-display text-xs font-bold text-[#021a11] shadow-[0_0_16px_rgba(0,229,153,0.2)]"
           >
-            {doseLogged ? (
-              <Check className="h-3.5 w-3.5" />
-            ) : (
-              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-            )}
-            <span className="hidden sm:inline">{doseLogged ? "Dose Logged" : "Log Dose"}</span>
+            Medication Analytics
           </button>
-
           <button
             type="button"
-            aria-label="Call clinician"
-            title="Call Clinician"
-            className="grid h-10 w-10 place-items-center rounded-full bg-[#00e599] text-[#021a11] transition-transform hover:scale-105 active:scale-95 shadow-sm"
+            onClick={() => setActiveTab("kinematics")}
+            className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-4 py-2 font-display text-xs font-medium text-[#8a9992] hover:text-[#ededed] hover:border-[rgba(255,255,255,0.18)] transition-colors"
           >
-            <Phone className="h-4 w-4" />
+            Live Kinematics
+          </button>
+        </div>
+
+        {/* Top Right Action Icons matching Image 5 (Bluetooth, Bell, Profile) */}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setActiveTab("kinematics")}
+            title="Bluetooth Glove Telemetry"
+            className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#00e599] hover:border-[#00e599]/40 transition-colors"
+          >
+            <Radio className="h-4 w-4" />
           </button>
 
           <button
@@ -161,13 +119,13 @@ export default function MedicationAnalytics({
             onClick={() => setShowNotificationModal(true)}
             aria-label="Notifications"
             title="Notifications"
-            className="relative grid h-10 w-10 place-items-center rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
+            className="relative grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] transition-colors"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
+            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#00e599] animate-pulse" />
           </button>
 
-          <span className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono-tech text-xs font-bold text-[#00e599] shadow-sm">
+          <span className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] font-mono-tech text-xs font-semibold text-[#ededed]">
             {initials}
           </span>
         </div>

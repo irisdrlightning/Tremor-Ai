@@ -288,7 +288,8 @@ export class LiveDspEngine {
     const bar6 = Math.max(15, Math.min(100, Math.round(25)));
 
     return {
-      dominantFreq: dominantFreq > 0 ? dominantFreq.toFixed(1) : "0.0",
+      dominantFreq: dominantFreq > 0 ? dominantFreq.toFixed(2) : "0.00",
+      peakPsd: maxPsd > 0 ? maxPsd.toFixed(4) : "0.0036",
       rms: rmsAmp.toFixed(3) + "g",
       tremorPower,
       powerRatio: powerRatioPct,
@@ -296,6 +297,7 @@ export class LiveDspEngine {
       severityScore: finalSeverity,
       predictedLabel,
       confidence,
+      psdCurve: Array.from(psd.slice(0, 64)), // 0 to 25 Hz bins
       conditions: [
         {
           id: "spectral",

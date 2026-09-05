@@ -40,6 +40,27 @@ export const api = {
     return fetchWithFallback(`/api/auth/me?role=${role}`, fallback);
   },
 
+  async login(portal = "patient", identifier = "TR-90241", passcode = "") {
+    const role = portal === "doctor" ? "doctor" : "patient";
+    const fallback = {
+      status: "success",
+      role,
+      user:
+        role === "doctor"
+          ? { name: "Dr. Rita Sharma", initials: "RS" }
+          : { name: "George Peter", initials: "GP" },
+      token: "stub-jwt-token-tremor-ai",
+    };
+    return fetchWithFallback(
+      "/api/auth/login",
+      fallback,
+      {
+        method: "POST",
+        body: JSON.stringify({ portal, identifier, passcode }),
+      }
+    );
+  },
+
   // Patient Overview / Kinematics
   async getPatientOverview() {
     return fetchWithFallback("/api/patient/overview", mockSubject);

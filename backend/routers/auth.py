@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.models.schemas import AuthMeResponse, UserProfile
+from backend.models.schemas import AuthMeResponse, UserProfile, LoginRequest, LoginResponse
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -17,4 +17,23 @@ def get_current_user(role: str = "doctor"):
     return AuthMeResponse(
         role="patient",
         user=UserProfile(name="George Peter", initials="GP")
+    )
+
+@router.post("/login", response_model=LoginResponse)
+def login(request: LoginRequest):
+    """
+    Authenticates portal users (Patient or Doctor).
+    Preserves role info and returns verified profile.
+    """
+    role = "doctor" if request.portal == "doctor" else "patient"
+    user = (
+        UserProfile(name="Dr. Rita Sharma", initials="RS")
+        if role == "doctor"
+        else UserProfile(name="George Peter", initials="GP")
+    )
+    return LoginResponse(
+        status="success",
+        role=role,
+        user=user,
+        token="stub-jwt-token-tremor-ai",
     )

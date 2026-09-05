@@ -40,6 +40,9 @@ import MedicationAnalytics from "@/components/kinematics/MedicationAnalytics";
 import LogMedicationDose from "@/components/kinematics/LogMedicationDose";
 import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
 import { LiveDspEngine } from "@/lib/dspEngine";
+import WearableConnectModal from "@/components/kinematics/WearableConnectModal";
+import KinematicsGraphsPanel from "@/components/kinematics/KinematicsGraphsPanel";
+import NotificationsModal from "@/components/kinematics/NotificationsModal";
 
 
 const icons = {
@@ -49,7 +52,18 @@ const icons = {
   funnel: Filter,
 };
 
-function TopBar({ initials, bleState, deviceName, errorMessage, isSupported, onConnect, onDisconnect }) {
+function TopBar({
+  initials,
+  bleState,
+  deviceName,
+  errorMessage,
+  isSupported,
+  onConnect,
+  onDisconnect,
+  onOpenWearables,
+  onOpenNotifications,
+  onSignOut,
+}) {
   const isConnected  = bleState === BLE_STATE.CONNECTED;
   const isBusy       = bleState === BLE_STATE.SCANNING || bleState === BLE_STATE.CONNECTING;
   const isUnsupported = bleState === BLE_STATE.UNSUPPORTED;
@@ -81,14 +95,14 @@ function TopBar({ initials, bleState, deviceName, errorMessage, isSupported, onC
       <label className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-shell px-5 py-2.5 md:order-none md:col-span-1 border border-border/50 max-w-xl mx-auto w-full focus-within:border-primary/50 transition-colors">
         <input
           type="search"
-          placeholder="Search patient, biomarker, or telemetry node..."
+          placeholder="Search patient or biomarker..."
           className="w-full min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
         <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
       </label>
 
       <div className="flex shrink-0 items-center gap-2 md:gap-3">
-        {/* ── BLE Connect Button ───────────────────────────────────────────── */}
+        {/* ── BLE Connect Button (Triggers hardware modal or reconnect) ─────── */}
         <div className="flex flex-col items-end gap-0.5">
           <button
             id="ble-connect-btn"
@@ -96,11 +110,11 @@ function TopBar({ initials, bleState, deviceName, errorMessage, isSupported, onC
             aria-label={bleLabel}
             title={bleLabel}
             disabled={isBusy || isUnsupported}
-            onClick={isConnected ? onDisconnect : onConnect}
+            onClick={isConnected ? onDisconnect : (onOpenWearables || onConnect)}
             className={[
-              "flex items-center gap-1.5 rounded-full px-3 py-2 font-mono-tech text-[11px] font-semibold transition-all",
+              "flex items-center gap-1.5 rounded-full px-3.5 py-2 font-mono-tech text-[11px] font-semibold transition-all",
               isConnected
-                ? "bg-primary/15 border border-primary/50 text-primary hover:bg-primary/25"
+                ? "bg-primary/15 border border-primary/50 text-primary hover:bg-primary/25 shadow-[0_0_12px_rgba(0,229,153,0.15)]"
                 : isBusy
                 ? "bg-card border border-border text-muted-foreground cursor-wait"
                 : isUnsupported
@@ -129,18 +143,26 @@ function TopBar({ initials, bleState, deviceName, errorMessage, isSupported, onC
         >
           <Phone className="h-4 w-4" />
         </button>
+
         <button
           type="button"
           aria-label="Notifications"
           title="Notifications"
+          onClick={onOpenNotifications}
           className="relative grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-transform hover:scale-105 active:scale-95"
         >
           <Bell className="h-4 w-4" />
           <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-destructive animate-pulse" />
         </button>
-        <span className="grid h-10 w-10 place-items-center rounded-full border border-primary/50 bg-card font-mono-tech text-xs font-bold text-primary shadow-sm">
+
+        <button
+          type="button"
+          onClick={onSignOut}
+          title="User Profile / Sign Out"
+          className="grid h-10 w-10 place-items-center rounded-full border border-primary/50 bg-card font-mono-tech text-xs font-bold text-primary shadow-sm hover:border-primary transition-colors"
+        >
           {initials}
-        </span>
+        </button>
       </div>
     </header>
   );
@@ -628,10 +650,14 @@ function SensorCard({ node, liveImu, peakFreq }) {
   );
 }
 
-export default function LiveKinematics() {
-  const { role, user } = useRole();
+export default function LiveKinematics({ onSignOut }) {
+  const { role, user, logout } = useRole();
   const isDoctor = role === "doctor";
   const [activeTab, setActiveTab] = useState("kinematics");
+  const [showWearableModal, setShowWearableModal] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [activeGraph, setActiveGraph] = useState("fft"); // "fft" (Image 3) | "oscilloscope" (Image 4)
+  const [psdData, setPsdData] = useState(null);
 
   const [subjectData, setSubjectData] = useState(initialSubject);
   const [conditionsData, setConditionsData] = useState(initialConditions);
@@ -725,6 +751,9 @@ export default function LiveKinematics() {
         }
         if (dspResult.rms) {
           setLiveRms(dspResult.rms);
+        }
+        if (dspResult.psdCurve) {
+          setPsdData(dspResult.psdCurve);
         }
       }
 
@@ -880,57 +909,77 @@ export default function LiveKinematics() {
                 isSupported={bleSupported}
                 onConnect={bleConnect}
                 onDisconnect={bleDisconnect}
+                onOpenWearables={() => setShowWearableModal(true)}
+                onOpenNotifications={() => setShowNotificationsModal(true)}
+                onSignOut={onSignOut || logout}
               />
 
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)]">
+                {/* 3D Hand Model & OverviewCard (Untouched dependency, exactly preserved) */}
                 <OverviewCard subjectData={currentSubject} nodes={currentNodes} />
 
-                <div className="space-y-3">
-                  <SectionTitle>Tremor Condition</SectionTitle>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {conditionsData.map((item) => (
-                      <ConditionCard key={item.id} item={item} />
-                    ))}
-                  </div>
-                </div>
+                {/* Right Column: Graphs Panel matching Image 3 (FFT) & Image 4 (6-DOF Oscilloscope) */}
+                <KinematicsGraphsPanel
+                  activeGraph={activeGraph}
+                  setActiveGraph={setActiveGraph}
+                  liveImu={liveImu}
+                  liveHz={currentSubject.tremorRate}
+                  liveRms={currentSubject.rms}
+                  conditions={conditionsData}
+                  psdData={psdData}
+                />
               </div>
 
-              {isDoctor ? (
-                <div className="space-y-3">
-                  <SectionTitle
-                    actions={
-                      <div className="flex shrink-0 gap-2">
-                        <button
-                          type="button"
-                          aria-label="Previous nodes"
-                          className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="Next nodes"
-                          className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
-                      </div>
-                    }
-                  >
-                    Sensor Channels &amp; Nodes
-                  </SectionTitle>
-                  <div className="grid gap-3 lg:grid-cols-3">
-                    {sensorNodesData.map((node) => (
-                      <SensorCard
-                        key={node.id}
-                        node={node}
-                        liveImu={liveImu}
-                        peakFreq={sessionPeakFreq}
-                      />
-                    ))}
-                  </div>
+              {/* Wearable Connection Modal (Image 2) */}
+              <WearableConnectModal
+                isOpen={showWearableModal}
+                onClose={() => setShowWearableModal(false)}
+                onConnectGlove={bleConnect}
+                bleState={bleState}
+                deviceName={deviceName}
+              />
+
+              {/* Notifications & System Alerts Modal (Image 6) */}
+              <NotificationsModal
+                isOpen={showNotificationsModal}
+                onClose={() => setShowNotificationsModal(false)}
+              />
+
+              {/* Sensor Channels & Validation Nodes (Matching bottom row in Images 2, 3, 4) */}
+              <div className="space-y-3">
+                <SectionTitle
+                  actions={
+                    <div className="flex shrink-0 gap-2">
+                      <button
+                        type="button"
+                        aria-label="Previous nodes"
+                        className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Next nodes"
+                        className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  }
+                >
+                  Sensor Channels &amp; Validation Nodes
+                </SectionTitle>
+                <div className="grid gap-3 lg:grid-cols-3">
+                  {sensorNodesData.map((node) => (
+                    <SensorCard
+                      key={node.id}
+                      node={node}
+                      liveImu={liveImu}
+                      peakFreq={sessionPeakFreq}
+                    />
+                  ))}
                 </div>
-              ) : null}
+              </div>
             </>
           )}
         </main>
