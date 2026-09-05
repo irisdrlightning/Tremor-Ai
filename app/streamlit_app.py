@@ -194,7 +194,13 @@ st.sidebar.title("Tremor Ai Control")
 # 1. Primary Operating Mode
 app_view = st.sidebar.radio(
     "Select Operating View:",
-    ["📊 Single-Session Analysis", "📈 30-Day Longitudinal Monitoring", "⚡ Live Hardware (MPU6050 / Serial)"],
+    [
+        "📊 Single-Session Analysis",
+        "📈 30-Day Longitudinal Monitoring",
+        "⚡ Live Hardware (MPU6050 / Serial)",
+        "📱 Patient Mobile App",
+        "🩺 Doctor Clinical Dashboard",
+    ],
     index=0
 )
 
@@ -761,74 +767,288 @@ elif app_view == "📈 30-Day Longitudinal Monitoring":
 
 
 # -----------------------------------------------------------------------------
-# VIEW 3: LIVE HARDWARE (MPU6050 / SERIAL)
+# VIEW 3: LIVE HARDWARE (MPU6050 / WIRELESS BLE / SERIAL)
 # -----------------------------------------------------------------------------
 elif app_view == "⚡ Live Hardware (MPU6050 / Serial)":
-    st.subheader("Live Wearable IMU Telemetry (ESP32 Serial Bridge)")
+    st.subheader("⚡ Live Wearable IMU Telemetry (Wireless BLE & USB Serial)")
     st.markdown("""
-    <div style="background:#1E293B; border-left:4px solid #0284C7; padding:10px 14px; border-radius:6px; margin-bottom:12px; font-size:12px; color:#CBD5E1;">
-        🔌 <b>Hardware Data Path:</b> Streams 100 Hz 3-axis accelerometer and 3-axis gyroscope data from an ESP32 over USB Serial.
-        The exact same signal filtering, FFT biomarker extraction, and trained ML model are invoked in real-time.
+    <div style="background:#1E293B; border-left:4px solid #00E599; padding:12px 16px; border-radius:8px; margin-bottom:14px; font-size:12px; color:#CBD5E1;">
+        📡 <b>Wireless & Hardware Connection Options:</b><br/>
+        1. <b>Wireless Bluetooth Low Energy (BLE):</b> Connects wirelessly to <code>TremorAi-RING-7842</code> (100 Hz GATT notifications).<br/>
+        2. <b>USB Serial Bridge:</b> Ingests 100 Hz MPU-6050 packets over COM4/USB.<br/>
+        3. <b>Physics Simulator:</b> Ingests dynamic Parkinsonian 4.8 Hz tremor bursts or resting baseline.
     </div>
     """, unsafe_allow_html=True)
 
-    # Auto-detect available COM ports
-    try:
-        import serial.tools.list_ports
-        detected_ports = [p.device for p in serial.tools.list_ports.comports()]
-    except Exception:
-        detected_ports = []
-    
-    default_port = "COM4" if "COM4" in detected_ports else (detected_ports[0] if detected_ports else "COM4")
-    port_options = detected_ports if detected_ports else ["COM4", "COM3"]
-    if default_port not in port_options:
-        port_options.insert(0, default_port)
+    from hardware.bridge.ble_bridge import get_ble_ring_bridge
+    ble_bridge = get_ble_ring_bridge()
 
-    # Hardware connection controls & status
-    hw_col1, hw_col2, hw_col3 = st.columns([1.5, 1.5, 1.2])
-    with hw_col1:
-        port_input = st.selectbox("Serial Port (ESP32):", port_options, index=port_options.index(default_port))
-    with hw_col2:
-        baud_choice = st.selectbox("Baud Rate:", [115200, 921600], index=0)
-    with hw_col3:
-        sim_shake = st.selectbox("Live Stream Mode:", ["Read Physical Serial Port", "Simulate PD Tremor (4.8 Hz)", "Simulate Healthy Baseline"], index=0)
+    # Hardware connection mode tabs
+    conn_type = st.radio(
+        "Select Wireless / Hardware Mode:",
+        ["📡 Wireless Bluetooth Low Energy (BLE)", "🔌 USB Serial (COM Port)", "🧪 Physics Simulator (No Hardware Needed)"],
+        horizontal=True
+    )
 
     telemetry_file = os.path.join(PROJECT_ROOT, "data", "live_telemetry.json")
 
-    # In-app live stream generator (allows live demonstration without opening a second terminal!)
-    ctrl_col1, ctrl_col2, ctrl_col3 = st.columns([1.5, 1.5, 2.0])
-    with ctrl_col1:
-        auto_refresh = st.toggle("🔄 Live Auto-Refresh (1 sec)", value=True)
-    with ctrl_col2:
-        trigger_shake = st.button("⚡ Inject Live Tremor Burst (5s)", key="btn_inject_tremor")
+    if conn_type == "📡 Wireless Bluetooth Low Energy (BLE)":
+        ble_col1, ble_col2 = st.columns([1.8, 1.2])
 
-    # Generate telemetry sample if in simulation mode or trigger requested
-    if trigger_shake or ("Simulate" in sim_shake and auto_refresh):
-        from hardware.bridge.serial_bridge import SerialBridgeRunner
-        shake_arg = "pd" if ("PD" in sim_shake or trigger_shake) else "healthy"
-        runner = SerialBridgeRunner(simulate=True, shake_mode=shake_arg, window_samples=300)
-        # Populate buffer with current time offset so signal evolves dynamically
-        t_base = time.time()
-        for i in range(320):
-            t = t_base + i * 0.01
-            if shake_arg == "pd":
-                ax = 0.30 * np.sin(2 * np.pi * 4.8 * t) + np.random.normal(0, 0.02)
-                ay = 0.22 * np.cos(2 * np.pi * 4.8 * t) + np.random.normal(0, 0.02)
-                az = 0.98 + 0.10 * np.sin(2 * np.pi * 4.8 * t)
-                gx = 28.0 * np.sin(2 * np.pi * 4.8 * t)
-                gy = 18.0 * np.cos(2 * np.pi * 4.8 * t)
-                gz = 35.0 * np.sin(2 * np.pi * 4.8 * t)
+        with ble_col1:
+            st.markdown("#### 📡 Web Bluetooth Direct Pairing")
+            st.caption("Pair your ESP32 ring wirelessly right inside your browser (Chrome / Edge).")
+            
+            # Interactive Web Bluetooth Component
+            web_ble_html = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8" />
+              <style>
+                body {
+                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                  background: #0F172A;
+                  color: #F8FAFC;
+                  margin: 0;
+                  padding: 14px;
+                  border-radius: 12px;
+                  border: 1px solid #334155;
+                }
+                .btn {
+                  background: #00E599;
+                  color: #060908;
+                  border: none;
+                  padding: 10px 18px;
+                  font-size: 13px;
+                  font-weight: 700;
+                  border-radius: 20px;
+                  cursor: pointer;
+                  transition: all 0.2s;
+                }
+                .btn:hover { opacity: 0.9; transform: scale(1.02); }
+                .btn-danger { background: #EF4444; color: #FFF; }
+                .status-badge {
+                  display: inline-block;
+                  padding: 4px 10px;
+                  border-radius: 12px;
+                  font-size: 11px;
+                  font-weight: 600;
+                  font-family: monospace;
+                  background: #1E293B;
+                  color: #94A3B8;
+                  margin-left: 8px;
+                }
+                .status-connected { background: rgba(0, 229, 153, 0.15); color: #00E599; border: 1px solid #00E599; }
+                canvas {
+                  width: 100%;
+                  height: 90px;
+                  background: #0B0F19;
+                  border-radius: 8px;
+                  border: 1px solid #1E293B;
+                  margin-top: 10px;
+                  display: block;
+                }
+              </style>
+            </head>
+            <body>
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <div>
+                  <button id="btnConnect" class="btn" onclick="connectBle()">⚡ Scan &amp; Connect Ring (Web Bluetooth)</button>
+                  <button id="btnDisconnect" class="btn btn-danger" onclick="disconnectBle()" style="display: none;">🛑 Disconnect</button>
+                  <span id="bleStatus" class="status-badge">Standby (Ready to pair)</span>
+                </div>
+                <div id="pktCounter" style="font-size: 11px; font-family: monospace; color: #94A3B8;">Packets: 0</div>
+              </div>
+              <canvas id="liveCanvas" width="600" height="90"></canvas>
+
+              <script>
+                const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+                const CHAR_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+                let bluetoothDevice = null;
+                let charSub = null;
+                let packetCount = 0;
+                let sampleBuffer = [];
+
+                const canvas = document.getElementById("liveCanvas");
+                const ctx = canvas.getContext("2d");
+
+                function drawWaveform() {
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  ctx.strokeStyle = "rgba(148, 163, 184, 0.15)";
+                  ctx.beginPath();
+                  ctx.moveTo(0, canvas.height / 2);
+                  ctx.lineTo(canvas.width, canvas.height / 2);
+                  ctx.stroke();
+
+                  if (sampleBuffer.length > 1) {
+                    const step = canvas.width / (sampleBuffer.length - 1);
+                    ctx.strokeStyle = "#00E599";
+                    ctx.lineWidth = 1.8;
+                    ctx.beginPath();
+                    sampleBuffer.forEach((s, i) => {
+                      const x = i * step;
+                      const y = canvas.height / 2 - (s.ax || 0) * 20;
+                      if (i === 0) ctx.moveTo(x, y);
+                      else ctx.lineTo(x, y);
+                    });
+                    ctx.stroke();
+                  }
+                  requestAnimationFrame(drawWaveform);
+                }
+                drawWaveform();
+
+                async function connectBle() {
+                  try {
+                    document.getElementById("bleStatus").innerText = "Scanning BLE devices...";
+                    bluetoothDevice = await navigator.bluetooth.requestDevice({
+                      filters: [{ namePrefix: "TremorAi" }],
+                      optionalServices: [SERVICE_UUID]
+                    });
+
+                    document.getElementById("bleStatus").innerText = "Connecting to " + bluetoothDevice.name + "...";
+                    const server = await bluetoothDevice.gatt.connect();
+                    const service = await server.getPrimaryService(SERVICE_UUID);
+                    charSub = await service.getCharacteristic(CHAR_UUID);
+
+                    await charSub.startNotifications();
+                    charSub.addEventListener("characteristicvaluechanged", handleNotification);
+
+                    document.getElementById("bleStatus").innerText = "🟢 Connected (" + bluetoothDevice.name + " @ 100 Hz)";
+                    document.getElementById("bleStatus").className = "status-badge status-connected";
+                    document.getElementById("btnConnect").style.display = "none";
+                    document.getElementById("btnDisconnect").style.display = "inline-block";
+
+                    bluetoothDevice.addEventListener("gattserverdisconnected", () => {
+                      document.getElementById("bleStatus").innerText = "Disconnected";
+                      document.getElementById("bleStatus").className = "status-badge";
+                      document.getElementById("btnConnect").style.display = "inline-block";
+                      document.getElementById("btnDisconnect").style.display = "none";
+                    });
+                  } catch (err) {
+                    document.getElementById("bleStatus").innerText = "BLE Error: " + err.message;
+                  }
+                }
+
+                function handleNotification(event) {
+                  const val = new TextDecoder().decode(event.target.value).trim();
+                  const parts = val.split(",");
+                  if (parts.length >= 7) {
+                    const ax = parseFloat(parts[1]) || 0;
+                    const ay = parseFloat(parts[2]) || 0;
+                    const az = parseFloat(parts[3]) || 0;
+                    const gx = parseFloat(parts[4]) || 0;
+                    const gy = parseFloat(parts[5]) || 0;
+                    const gz = parseFloat(parts[6]) || 0;
+                    packetCount++;
+                    document.getElementById("pktCounter").innerText = "Packets: " + packetCount;
+
+                    sampleBuffer.push({ ax, ay, az });
+                    if (sampleBuffer.length > 100) sampleBuffer.shift();
+
+                    if (packetCount % 10 === 0) {
+                      // Post sample burst to FastAPI backend
+                      fetch("http://127.0.0.1:8000/api/telemetry/ingest", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          patient_id: "PD_01",
+                          ax, ay, az, gx, gy, gz,
+                          connection_type: "WEB_BLUETOOTH"
+                        })
+                      }).catch(() => {});
+                    }
+                  }
+                }
+
+                function disconnectBle() {
+                  if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+                    bluetoothDevice.gatt.disconnect();
+                  }
+                }
+              </script>
+            </body>
+            </html>
+            """
+            import streamlit.components.v1 as components
+            components.html(web_ble_html, height=190)
+
+        with ble_col2:
+            st.markdown("#### 🐍 Python BLE Service (Bleak)")
+            st.caption("Runs background BLE worker directly on Windows Bluetooth stack.")
+            
+            status_color = "#00E599" if ble_bridge.is_connected else ("#38BDF8" if ble_bridge.is_running else "#94A3B8")
+            st.markdown(f"""
+            <div style="background:#0F172A; border:1px solid #334155; padding:12px; border-radius:10px; margin-bottom:10px;">
+                <div style="font-size:11px; color:#94A3B8; text-transform:uppercase;">Python BLE Status</div>
+                <div style="font-size:14px; font-weight:bold; color:{status_color}; margin-top:2px;">
+                    {ble_bridge.status_message}
+                </div>
+                <div style="font-size:11px; color:#64748B; margin-top:4px;">
+                    Packets Ingested: <b>{ble_bridge.sample_count}</b>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if not ble_bridge.is_running:
+                if st.button("▶️ Start Python BLE Scanner", key="btn_start_ble_bridge"):
+                    ble_bridge.start_background()
+                    st.rerun()
             else:
-                ax = np.random.normal(0, 0.015)
-                ay = np.random.normal(0, 0.015)
-                az = 0.98 + np.random.normal(0, 0.015)
-                gx = np.random.normal(0, 0.8)
-                gy = np.random.normal(0, 0.8)
-                gz = np.random.normal(0, 0.8)
-            runner.accel_buffer.append([ax, ay, az])
-            runner.gyro_buffer.append([gx, gy, gz])
-            runner.timestamp_buffer.append(t)
-        runner.process_current_window()
+                if st.button("⏹️ Stop Python BLE Stream", key="btn_stop_ble_bridge"):
+                    ble_bridge.stop()
+                    st.rerun()
+
+    elif conn_type == "🔌 USB Serial (COM Port)":
+        # Auto-detect available COM ports
+        try:
+            import serial.tools.list_ports
+            detected_ports = [p.device for p in serial.tools.list_ports.comports()]
+        except Exception:
+            detected_ports = []
+        
+        default_port = "COM4" if "COM4" in detected_ports else (detected_ports[0] if detected_ports else "COM4")
+        port_options = detected_ports if detected_ports else ["COM4", "COM3"]
+        if default_port not in port_options:
+            port_options.insert(0, default_port)
+
+        hw_col1, hw_col2 = st.columns([2, 1])
+        with hw_col1:
+            port_input = st.selectbox("Serial Port (ESP32):", port_options, index=port_options.index(default_port))
+        with hw_col2:
+            baud_choice = st.selectbox("Baud Rate:", [115200, 921600], index=0)
+
+    else:
+        # Physics Simulator Mode
+        sim_col1, sim_col2 = st.columns([2, 1])
+        with sim_col1:
+            sim_state = st.selectbox("Simulator Dynamic Motion:", ["Simulate Resting Baseline (0.0 Hz)", "Simulate Parkinsonian Tremor (4.8 Hz)", "Simulate Essential Tremor (8.5 Hz)"], index=0)
+        with sim_col2:
+            trigger_burst = st.button("⚡ Inject 5-Sec Tremor Wave", key="btn_inject_wave")
+
+        if trigger_burst or "Parkinsonian" in sim_state or "Essential" in sim_state:
+            from hardware.bridge.serial_bridge import SerialBridgeRunner
+            freq_hz = 8.5 if "Essential" in sim_state else 4.8
+            runner = SerialBridgeRunner(simulate=True, shake_mode="pd" if freq_hz > 0 else "healthy", window_samples=300)
+            t_base = time.time()
+            for i in range(320):
+                t = t_base + i * 0.01
+                ax = 0.30 * np.sin(2 * np.pi * freq_hz * t) + np.random.normal(0, 0.02)
+                ay = 0.22 * np.cos(2 * np.pi * freq_hz * t) + np.random.normal(0, 0.02)
+                az = 0.98 + 0.10 * np.sin(2 * np.pi * freq_hz * t)
+                gx = 28.0 * np.sin(2 * np.pi * freq_hz * t)
+                gy = 18.0 * np.cos(2 * np.pi * freq_hz * t)
+                gz = 35.0 * np.sin(2 * np.pi * freq_hz * t)
+                runner.accel_buffer.append([ax, ay, az])
+                runner.gyro_buffer.append([gx, gy, gz])
+                runner.timestamp_buffer.append(t)
+            runner.process_current_window()
+
+    # Controls bar
+    ctrl_col1, ctrl_col2 = st.columns([1.5, 2])
+    with ctrl_col1:
+        auto_refresh = st.toggle("🔄 Live Stream Auto-Refresh (0.4s)", value=True)
+
 
     # Render live telemetry as an isolated auto-updating fragment (0.4s refresh for fluid live response)
     @st.fragment(run_every=0.4 if auto_refresh else None)
@@ -1049,3 +1269,16 @@ elif app_view == "⚡ Live Hardware (MPU6050 / Serial)":
 
     render_live_telemetry_stream()
 
+# -----------------------------------------------------------------------------
+# VIEW 4: PATIENT MOBILE APP VIEW
+# -----------------------------------------------------------------------------
+elif app_view == "📱 Patient Mobile App":
+    from app.patient_app import render_patient_app
+    render_patient_app()
+
+# -----------------------------------------------------------------------------
+# VIEW 5: DOCTOR CLINICAL DASHBOARD VIEW
+# -----------------------------------------------------------------------------
+elif app_view == "🩺 Doctor Clinical Dashboard":
+    from app.doctor_dashboard import render_doctor_dashboard
+    render_doctor_dashboard()

@@ -1,26 +1,25 @@
 /*
  * ============================================================================
- * Tremor AI - ESP32 Bluetooth Low Energy (BLE) & USB Serial Telemetry Firmware
+ * Tremor AI - ESP32 Dual Bluetooth Low Energy (BLE) & USB Serial Firmware
  * Target: ESP32 Dev Module / NodeMCU-32S / ESP32-WROOM
  * 
  * Features:
- *   1. Samples MPU6050 3-axis Accelerometer & 3-axis Gyroscope at 100 Hz (10 ms)
- *   2. Advertises as "TremorAi-RING-7842" over Bluetooth Low Energy (BLE)
+ *   1. Reads MPU6050 3-axis Accelerometer & 3-axis Gyroscope at 100 Hz (10 ms)
+ *   2. Advertises as "TremorAi-RING-7842" over Bluetooth Low Energy
  *   3. BLE Service UUID:        4fafc201-1fb5-459e-8fcc-c5c9c331914b
  *   4. BLE Characteristic UUID: beb5483e-36e1-4688-b7f5-ea07361b26a8 (NOTIFY)
- *   5. Streams 100 Hz CSV packets directly to Web Bluetooth (Chrome / Edge)
+ *   5. Transmits 100 Hz CSV packets directly to Web Bluetooth (Chrome / Edge)
  *      AND mirrors stream over USB Serial at 115200 baud for universal compatibility!
  *
  * Wiring Diagram:
  *   MPU6050 VCC  --> ESP32 3.3V
  *   MPU6050 GND  --> ESP32 GND
- *   MPU6050 SCL  --> ESP32 GPIO 22 (Default I2C Clock)
- *   MPU6050 SDA  --> ESP32 GPIO 21 (Default I2C Data)
- *   MPU6050 AD0  --> GND (Sets I2C address to 0x68)
+ *   MPU6050 SCL  --> ESP32 GPIO 22 (I2C Clock)
+ *   MPU6050 SDA  --> ESP32 GPIO 21 (I2C Data)
+ *   MPU6050 AD0  --> GND (I2C address 0x68)
  *
- * Output Stream Format (100 Hz):
+ * Stream Format:
  *   timestamp_ms,ax,ay,az,gx,gy,gz
- *   Units: ax,ay,az in g; gx,gy,gz in deg/s
  * ============================================================================
  */
 
@@ -30,7 +29,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-// BLE Identity Configuration
+// BLE Configuration
 #define DEVICE_NAME         "TremorAi-RING-7842"
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
@@ -40,24 +39,18 @@ BLECharacteristic* pCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
-// I2C Configuration
+// I2C & MPU6050 Configuration
 #define MPU6050_ADDR 0x68
 #define I2C_SDA 21
 #define I2C_SCL 22
-#define I2C_FREQ 400000 // 400 kHz Fast-Mode I2C
-
-// Sampling Timing: 100 Hz = 10,000 microseconds per sample
-const unsigned long SAMPLE_INTERVAL_US = 10000;
-unsigned long lastSampleTimeUs = 0;
-
-// LED Status indicator (GPIO 2 on most ESP32 dev boards)
+#define I2C_FREQ 400000 // 400 kHz Fast I2C
 #define LED_PIN 2
 
-// Sensitivity scale factors:
-// Accel: +/- 2g range -> 16384 LSB/g
-// Gyro:  +/- 250 deg/s -> 131.0 LSB/(deg/s)
-const float ACCEL_SCALE = 1.0f / 16384.0f;
-const float GYRO_SCALE  = 1.0f / 131.0f;
+const unsigned long SAMPLE_INTERVAL_US = 10000; // 100 Hz = 10,000 us
+unsigned long lastSampleTimeUs = 0;
+
+const float ACCEL_SCALE = 1.0f / 16384.0f; // +/- 2g
+const float GYRO_SCALE  = 1.0f / 131.0f;   // +/- 250 deg/s
 
 bool mpuConnected = false;
 
@@ -66,7 +59,7 @@ class ServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
         deviceConnected = true;
         digitalWrite(LED_PIN, HIGH);
-        Serial.println(">> [BLE] Web Bluetooth connected! 100 Hz notifications active.");
+        Serial.println(">> [BLE] Client connected! 100 Hz Web Bluetooth notifications active.");
     }
 
     void onDisconnect(BLEServer* pServer) {
@@ -80,7 +73,6 @@ void setup() {
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LOW);
 
-    // Initialize Serial
     Serial.begin(115200);
     delay(500);
     Serial.println("==================================================");
@@ -90,38 +82,28 @@ void setup() {
 
     // 1. Initialize I2C and MPU6050
     Wire.begin(I2C_SDA, I2C_SCL, I2C_FREQ);
-
-    // Wake up MPU6050 by writing 0 to PWR_MGMT_1 (Register 0x6B)
     Wire.beginTransmission(MPU6050_ADDR);
-    Wire.write(0x6B);
-    Wire.write(0x00);
-    byte error = Wire.endTransmission();
+    Wire.write(0x6B); // PWR_MGMT_1
+    Wire.write(0x00); // Wake up
+    byte err = Wire.endTransmission();
 
-    if (error == 0) {
+    if (err == 0) {
         mpuConnected = true;
-        digitalWrite(LED_PIN, HIGH);
-        Serial.println("[MPU6050] Sensor calibrated and online at 0x68.");
-
-        // Configure Accel +/- 2g: Register 0x1C (ACCEL_CONFIG) -> 0x00
+        // Accel +/- 2g
         Wire.beginTransmission(MPU6050_ADDR);
         Wire.write(0x1C);
         Wire.write(0x00);
         Wire.endTransmission();
 
-        // Configure Gyro +/- 250 deg/s: Register 0x1B (GYRO_CONFIG) -> 0x00
+        // Gyro +/- 250 deg/s
         Wire.beginTransmission(MPU6050_ADDR);
         Wire.write(0x1B);
         Wire.write(0x00);
         Wire.endTransmission();
 
-        // Configure DLPF (Digital Low Pass Filter) to 44 Hz: Register 0x1A -> 0x03
-        Wire.beginTransmission(MPU6050_ADDR);
-        Wire.write(0x1A);
-        Wire.write(0x03);
-        Wire.endTransmission();
+        Serial.println("[MPU6050] Sensor calibrated and online at 0x68.");
     } else {
-        mpuConnected = false;
-        Serial.printf("[MPU6050] Warning: Sensor not found (code %d). Check wiring.\n", error);
+        Serial.printf("[MPU6050] Warning: Sensor not found (code %d). Retrying in loop.\n", err);
     }
 
     // 2. Initialize BLE Peripheral
@@ -143,7 +125,7 @@ void setup() {
     BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
     pAdvertising->addServiceUUID(SERVICE_UUID);
     pAdvertising->setScanResponse(true);
-    pAdvertising->setMinPreferred(0x06); // functions that help with iPhone/Chromium connections
+    pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections issue
     pAdvertising->setMinPreferred(0x12);
     BLEDevice::startAdvertising();
 
@@ -152,7 +134,7 @@ void setup() {
 }
 
 void loop() {
-    // Reconnection handling for BLE
+    // Reconnection handling
     if (!deviceConnected && oldDeviceConnected) {
         delay(500);
         pServer->startAdvertising();
@@ -162,33 +144,30 @@ void loop() {
         oldDeviceConnected = deviceConnected;
     }
 
-    // MPU6050 reconnect watchdog
+    // MPU reconnect watchdog
     if (!mpuConnected) {
-        static unsigned long lastRetryMs = 0;
-        if (millis() - lastRetryMs > 1000) {
-            lastRetryMs = millis();
-            digitalWrite(LED_PIN, !digitalRead(LED_PIN)); // Flash LED on error
+        static unsigned long lastCheck = 0;
+        if (millis() - lastCheck > 1000) {
+            lastCheck = millis();
             Wire.beginTransmission(MPU6050_ADDR);
             Wire.write(0x6B);
             Wire.write(0x00);
             if (Wire.endTransmission() == 0) {
                 mpuConnected = true;
-                digitalWrite(LED_PIN, HIGH);
-                Serial.println("[MPU6050] Reconnected successfully!");
+                Serial.println("[MPU6050] Sensor re-established!");
             }
         }
         return;
     }
 
-    unsigned long currentUs = micros();
     // 100 Hz Sampling Loop (every 10,000 microseconds)
+    unsigned long currentUs = micros();
     if (currentUs - lastSampleTimeUs >= SAMPLE_INTERVAL_US) {
         lastSampleTimeUs += SAMPLE_INTERVAL_US;
         if (currentUs - lastSampleTimeUs > SAMPLE_INTERVAL_US) {
             lastSampleTimeUs = currentUs;
         }
 
-        // Request 14 bytes starting from register 0x3B (ACCEL_XOUT_H)
         Wire.beginTransmission(MPU6050_ADDR);
         Wire.write(0x3B);
         Wire.endTransmission(false);
@@ -203,7 +182,6 @@ void loop() {
             int16_t raw_gy = (Wire.read() << 8) | Wire.read();
             int16_t raw_gz = (Wire.read() << 8) | Wire.read();
 
-            // Convert to physical units (g and deg/s)
             float ax = raw_ax * ACCEL_SCALE;
             float ay = raw_ay * ACCEL_SCALE;
             float az = raw_az * ACCEL_SCALE;
