@@ -21,7 +21,7 @@ import {
   Search,
 } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import handScan from "@/assets/hand-scan.png";
 import { handScanBase64 } from "@/assets/handScanBase64";
 import tremorIcon from "@/assets/tremor-icon.png";
@@ -39,6 +39,7 @@ import { useBluetooth, BLE_STATE } from "@/hooks/useBluetooth";
 import MedicationAnalytics from "@/components/kinematics/MedicationAnalytics";
 import LogMedicationDose from "@/components/kinematics/LogMedicationDose";
 import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
+import { LiveDspEngine } from "@/lib/dspEngine";
 
 
 const icons = {
@@ -368,32 +369,42 @@ function ConditionCard({ item }) {
   const Icon = icons[item.icon] ?? Droplet;
   const highlight = item.variant === "highlight";
 
+  // Dynamic tag coloring
+  let tagColorClass = "text-primary bg-primary/10 border-primary/20";
+  if (highlight) {
+    tagColorClass = "bg-primary-foreground/15 text-primary-foreground border-transparent";
+  } else if (item.tag === "MODERATE") {
+    tagColorClass = "text-warning bg-warning/10 border-warning/20";
+  } else if (item.tag === "HIGH" || item.tag === "SEVERE" || item.tag === "PARKINSON'S") {
+    tagColorClass = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+  } else if (item.tag === "OTHER DISORDER") {
+    tagColorClass = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+  } else if (item.tag === "HEALTHY" || item.tag === "BASELINE" || item.tag === "FILTERED") {
+    tagColorClass = "text-teal-400 bg-teal-500/10 border-teal-500/20";
+  }
+
   return (
     <article
       className={[
-        "flex min-h-56 flex-col justify-between rounded-3xl border p-5",
+        "flex min-h-56 flex-col justify-between rounded-3xl border p-5 transition-all duration-300",
         highlight
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-card text-foreground",
+          ? "border-primary bg-primary text-primary-foreground shadow-[0_0_24px_rgba(0,229,153,0.15)]"
+          : "border-border bg-card text-foreground shadow-sm hover:border-border/80",
       ].join(" ")}
     >
       <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
         <span
           className={[
             "grid h-9 w-9 place-items-center rounded-full",
-            highlight ? "bg-primary-foreground/15" : "bg-secondary",
+            highlight ? "bg-primary-foreground/15 text-primary-foreground" : "bg-secondary text-primary",
           ].join(" ")}
         >
           <Icon className="h-4 w-4" />
         </span>
         <span
           className={[
-            "justify-self-end truncate rounded-full px-2 py-1 font-mono-tech text-[10px] uppercase tracking-widest",
-            highlight
-              ? "bg-primary-foreground/15"
-              : item.tag === "MODERATE"
-                ? "text-warning"
-                : "text-primary",
+            "justify-self-end truncate rounded-full px-2.5 py-1 font-mono-tech text-[10px] font-semibold uppercase tracking-wider border",
+            tagColorClass,
           ].join(" ")}
         >
           {item.tag}
@@ -403,19 +414,19 @@ function ConditionCard({ item }) {
       <div>
         <p
           className={[
-            "text-sm",
-            highlight ? "text-primary-foreground/70" : "text-muted-foreground",
+            "text-sm font-medium",
+            highlight ? "text-primary-foreground/75" : "text-muted-foreground",
           ].join(" ")}
         >
           {item.label}
         </p>
-        <p className="mt-1 font-display text-2xl font-bold">
+        <p className="mt-1 font-display text-2xl font-bold tracking-tight">
           {item.value}
           {item.unit ? (
             <span
               className={[
                 "ml-1 text-sm font-normal",
-                highlight ? "text-primary-foreground/70" : "text-primary",
+                highlight ? "text-primary-foreground/75" : "text-primary",
               ].join(" ")}
             >
               {item.unit}
@@ -427,30 +438,53 @@ function ConditionCard({ item }) {
       <div className="mt-4">
         {item.variant === "bars" ? (
           <div className="flex h-8 items-end gap-1.5">
-            {[30, 55, 80, 100, 65, 25].map((h, i) => (
-              <span key={i} style={{ height: `${h}%` }} className="w-2 rounded-sm bg-primary/80" />
+            {(item.bars || [30, 55, 80, 100, 65, 25]).map((h, i) => (
+              <span
+                key={i}
+                style={{ height: `${Math.max(10, Math.min(100, h))}%` }}
+                className="w-2 rounded-sm bg-primary/80 transition-all duration-300 hover:bg-primary"
+              />
             ))}
           </div>
         ) : null}
 
         {item.variant === "steps" ? (
           <div className="flex items-center gap-2">
-            <span className="h-1 w-8 rounded-full bg-primary" />
-            <span className="h-1 w-8 rounded-full bg-warning" />
-            <span className="h-1 w-8 rounded-full bg-secondary" />
-            <span className="h-1 w-8 rounded-full bg-secondary" />
+            {[1, 2, 3, 4].map((step) => {
+              const active = (item.activeSteps ?? 2) >= step;
+              return (
+                <span
+                  key={step}
+                  className={[
+                    "h-1.5 flex-1 rounded-full transition-all duration-300",
+                    active
+                      ? step === 1
+                        ? "bg-primary"
+                        : step === 2
+                        ? "bg-teal-400"
+                        : step === 3
+                        ? "bg-warning"
+                        : "bg-destructive"
+                      : "bg-secondary",
+                  ].join(" ")}
+                />
+              );
+            })}
           </div>
         ) : null}
 
         {item.variant === "dots" ? (
-          <div className="font-mono-tech text-[10px] tracking-[0.35em] text-muted-foreground">
-            ..........................
+          <div className="flex items-center gap-1 font-mono-tech text-[10px] text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
+            <span className="tracking-[0.25em] text-muted-foreground/80 pl-1">
+              BANDPASS 0.5–3.8Hz ACTIVE
+            </span>
           </div>
         ) : null}
 
         {highlight ? (
           <div className="flex items-center justify-between gap-3">
-            <svg viewBox="0 0 90 20" className="h-5 w-24 text-primary-foreground">
+            <svg viewBox="0 0 90 20" className="h-5 w-24 text-primary-foreground/90">
               <path
                 d="M0 10 H20 L26 2 L32 18 L38 10 H90"
                 fill="none"
@@ -458,7 +492,7 @@ function ConditionCard({ item }) {
                 strokeWidth="2"
               />
             </svg>
-            <span className="font-mono-tech text-[10px] uppercase tracking-widest">
+            <span className="font-mono-tech text-[10px] uppercase tracking-wider font-semibold opacity-90">
               {item.footer}
             </span>
           </div>
@@ -654,6 +688,54 @@ export default function LiveKinematics() {
     const incoming = parseFloat(bleData?.tremorRate ?? liveData?.tremorRate);
     if (!isNaN(incoming) && incoming > 0) {
       setSessionPeakFreq((prev) => (prev === null || incoming > prev ? incoming : prev));
+    }
+  }, [bleData, liveData]);
+
+  // Real-time DSP & AI detection processing for BLE and Live Telemetry
+  const dspEngineRef = useRef(null);
+  if (!dspEngineRef.current) {
+    dspEngineRef.current = new LiveDspEngine(256, 100);
+  }
+
+  // Sliding sample buffer for trained Random Forest model inference
+  const sampleBufferRef = useRef([]);
+  const lastInferenceTimeRef = useRef(0);
+
+  useEffect(() => {
+    // 1. If BLE raw sample or WebSocket raw IMU arrived, push to client DSP engine
+    const rawSample = bleData?.raw || liveData?.rawImu;
+    if (rawSample) {
+      dspEngineRef.current.pushSample(rawSample);
+      const dspResult = dspEngineRef.current.process();
+      if (dspResult?.conditions) {
+        setConditionsData(dspResult.conditions);
+      }
+
+      // Add to sliding window for exact backend trained ML model inference
+      sampleBufferRef.current.push(rawSample);
+      if (sampleBufferRef.current.length > 256) {
+        sampleBufferRef.current.shift();
+      }
+
+      // Query exact trained Random Forest model every 600ms
+      const now = Date.now();
+      if (sampleBufferRef.current.length >= 50 && now - lastInferenceTimeRef.current > 600) {
+        lastInferenceTimeRef.current = now;
+        api
+          .predictWindow(sampleBufferRef.current, 100.0)
+          .then((res) => {
+            if (res && res.status === "success" && res.conditions) {
+              setConditionsData(res.conditions);
+            }
+          })
+          .catch(() => {});
+      }
+      return;
+    }
+
+    // 2. Fallback to live conditions received directly from backend WebSocket
+    if (liveData?.conditions && Array.isArray(liveData.conditions)) {
+      setConditionsData(liveData.conditions);
     }
   }, [bleData, liveData]);
 

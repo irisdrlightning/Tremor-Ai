@@ -72,6 +72,14 @@ export const api = {
       body: JSON.stringify(doseData),
     });
   },
+
+  // Live Sensor Hardware AI Model Inference
+  async predictWindow(samples, fs = 100.0) {
+    return fetchWithFallback("/api/predict", null, {
+      method: "POST",
+      body: JSON.stringify({ samples, fs }),
+    });
+  },
 };
 
 export default api;
