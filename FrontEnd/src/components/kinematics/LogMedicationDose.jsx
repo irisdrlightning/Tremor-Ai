@@ -1,6 +1,7 @@
 import { Bell, Check, CheckCircle2, Clock, Info, Phone, Search, User, X } from "lucide-react";
 import { useState } from "react";
 import api from "@/services/api";
+import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
 
 export default function LogMedicationDose({
   activeTab = "log-medicine",
@@ -96,49 +97,28 @@ export default function LogMedicationDose({
       )}
 
       {/* Top Bar Header */}
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#00e599] animate-pulse" />
-          <h1 className="font-display text-xl font-bold tracking-tight text-[#ededed] flex items-baseline gap-1.5">
-            <span>Tremor</span>
-            <span className="font-mono-tech text-xs font-bold text-[#00e599] tracking-widest uppercase">
-              AI
-            </span>
-          </h1>
-        </div>
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        {/* Universal Tremor AI Brand Header */}
+        <TremorHeaderBrand title="Log Medication Dose" subtitle="Clinical Rx" />
 
-        {/* Global Search Bar */}
-        <div className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] px-5 py-2.5 md:order-none md:col-span-1 max-w-xl mx-auto w-full focus-within:border-[#00e599]/50 transition-colors">
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search patient, biomarker, or dose history..."
-            className="w-full min-w-0 bg-transparent text-sm text-[#ededed] placeholder:text-[#8a9992] focus:outline-none"
-          />
-          <Search className="h-4 w-4 shrink-0 text-[#8a9992]" />
-        </div>
-
-        {/* Action Buttons & Profile */}
+        {/* Action Buttons: Bluetooth, Notifications, and Profile avatar */}
         <div className="flex shrink-0 items-center gap-2 md:gap-3">
           <button
             type="button"
-            onClick={() => setShowCallModal(true)}
-            aria-label="Call Attending Physician"
-            title="Call Clinician"
-            className="grid h-10 w-10 place-items-center rounded-full bg-[#00e599] text-[#021a11] transition-transform hover:scale-105 active:scale-95 shadow-sm"
+            title="Bluetooth Status"
+            className="grid h-10 w-10 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] hover:border-[rgba(255,255,255,0.18)] transition-colors"
           >
-            <Phone className="h-4 w-4" />
+            <Clock className="h-4 w-4" />
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab("suggested-regimen")}
+            onClick={() => alert("No critical medication alerts at this time. Telemetry within normal limits.")}
             aria-label="Notifications"
-            title="View Suggestions"
-            className="relative grid h-10 w-10 place-items-center rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
+            title="Notifications & Alerts"
+            className="relative grid h-10 w-10 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
+            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#00e599]" />
           </button>
           <span className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono-tech text-xs font-bold text-[#00e599] shadow-sm">
             {initials}
@@ -170,42 +150,65 @@ export default function LogMedicationDose({
               <span className="text-[#00e599] font-medium">Prescribed 3x/Day</span>
             </div>
 
-            {/* Medication Name — free text with suggestions */}
+            {/* Medication Name Input with Suggestions */}
             <div className="mt-5">
-              <label
-                htmlFor="med-name-input"
-                className="block font-mono text-[10px] uppercase tracking-wider text-[#8a9992] mb-2"
-              >
-                Medication Name
-              </label>
-              <input
-                id="med-name-input"
-                list="med-suggestions"
-                type="text"
-                value={medicationName}
-                onChange={(e) => setMedicationName(e.target.value)}
-                placeholder="e.g. Levodopa / Carbidopa"
-                autoComplete="off"
-                className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-4 py-3 text-sm font-semibold text-[#ededed] placeholder:text-[#8a9992] focus:border-[#00e599]/60 focus:outline-none transition-colors"
-              />
-              {/* Common Parkinson's medication suggestions */}
-              <datalist id="med-suggestions">
-                <option value="Levodopa / Carbidopa" />
-                <option value="Levodopa / Carbidopa / Entacapone" />
-                <option value="Pramipexole (Mirapex)" />
-                <option value="Ropinirole (Requip)" />
-                <option value="Rotigotine (Neupro patch)" />
-                <option value="Rasagiline (Azilect)" />
-                <option value="Selegiline (Eldepryl)" />
-                <option value="Amantadine" />
-                <option value="Entacapone (Comtan)" />
-                <option value="Tolcapone (Tasmar)" />
-                <option value="Trihexyphenidyl" />
-                <option value="Benztropine (Cogentin)" />
-                <option value="Apomorphine (Apokyn)" />
-                <option value="Istradefylline (Nourianz)" />
-                <option value="Opicapone (Ongentys)" />
-              </datalist>
+              <div className="flex items-center justify-between mb-2">
+                <label
+                  htmlFor="med-name-input"
+                  className="block font-mono text-[10px] uppercase tracking-wider text-[#8a9992]"
+                >
+                  MEDICATION NAME
+                </label>
+                <span className="font-mono text-[9px] text-[#00e599]">Type custom or pick suggestion</span>
+              </div>
+              
+              <div className="relative">
+                <input
+                  id="med-name-input"
+                  type="text"
+                  list="medication-suggestions"
+                  value={medicationName}
+                  onChange={(e) => setMedicationName(e.target.value)}
+                  placeholder="e.g. Ropinirole (Requip), Sinemet, or enter custom name"
+                  className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-4 py-3 text-sm font-semibold text-[#ededed] placeholder:text-[#8a9992]/60 focus:border-[#00e599] focus:outline-none transition-colors"
+                />
+                <datalist id="medication-suggestions">
+                  <option value="Ropinirole (Requip)" />
+                  <option value="Levodopa / Carbidopa (Sinemet)" />
+                  <option value="Pramipexole (Mirapex)" />
+                  <option value="Rasagiline (Azilect)" />
+                  <option value="Entacapone (Comtan)" />
+                  <option value="Amantadine" />
+                  <option value="Rotigotine (Neupro patch)" />
+                  <option value="Selegiline (Eldepryl)" />
+                  <option value="Trihexyphenidyl (Artane)" />
+                </datalist>
+              </div>
+
+              {/* Medication Suggestion Quick Pills */}
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                <span className="font-mono text-[9px] text-[#8a9992] mr-1">Suggestions:</span>
+                {[
+                  "Ropinirole (Requip)",
+                  "Levodopa / Carbidopa",
+                  "Pramipexole",
+                  "Rasagiline",
+                  "Amantadine",
+                ].map((sugg) => (
+                  <button
+                    key={sugg}
+                    type="button"
+                    onClick={() => setMedicationName(sugg)}
+                    className={`rounded-md px-2 py-0.5 font-mono text-[9px] transition-colors border ${
+                      medicationName === sugg
+                        ? "border-[#00e599] bg-[#00e599]/15 text-[#00e599] font-bold"
+                        : "border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] hover:border-[rgba(255,255,255,0.16)]"
+                    }`}
+                  >
+                    {sugg}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Dose Quantity + Unit */}
@@ -214,7 +217,7 @@ export default function LogMedicationDose({
                 htmlFor="med-qty-input"
                 className="block font-mono text-[10px] uppercase tracking-wider text-[#8a9992] mb-2"
               >
-                Dose Quantity
+                DOSE QUANTITY
               </label>
               <div className="flex items-stretch gap-2">
                 <input
@@ -247,16 +250,14 @@ export default function LogMedicationDose({
               </div>
             </div>
 
-            {/* Live preview of what will be logged */}
-            {(medicationName || dosageQty) && (
-              <div className="mt-4 flex items-center justify-between rounded-xl border border-[#00e599]/20 bg-[#00e599]/5 px-4 py-2.5">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#8a9992]">Will log</span>
-                <span className="font-mono text-xs font-bold text-[#00e599]">
-                  {medicationName || "Medication"}
-                  {dosageQty ? ` · ${dosageQty} ${dosageUnit}` : ""}
-                </span>
-              </div>
-            )}
+            {/* Will Log tag */}
+            <div className="mt-4 flex items-center justify-between pt-2 border-t border-[rgba(255,255,255,0.06)] font-mono text-xs">
+              <span className="text-[10px] uppercase tracking-wider text-[#8a9992]">WILL LOG</span>
+              <span className="font-semibold text-[#00e599]">
+                {medicationName || "Ropinirole (Requip)"}
+                {dosageQty ? ` (${dosageQty} ${dosageUnit})` : ""}
+              </span>
+            </div>
           </article>
 
           {/* Card 2: Quick Time Adjuster & Action */}
@@ -303,31 +304,54 @@ export default function LogMedicationDose({
               </button>
             </div>
 
-            {/* Log Dose Button */}
+            {/* Log Dose Button matching Image 5 */}
             <button
               type="button"
               onClick={handleLogDose}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00e599] py-3.5 text-sm font-bold text-[#021a11] transition-transform active:scale-[0.99]"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00e599] py-3.5 text-sm font-bold text-[#021a11] transition-transform active:scale-[0.99] shadow-[0_4px_16px_rgba(0,229,153,0.25)]"
             >
               <CheckCircle2 className="h-4 w-4 stroke-[2.5]" />
               <span>
                 {doseLogged
                   ? "Dose Recorded Successfully!"
-                  : `Log Dose${medicationName ? ` — ${medicationName}` : ""}${dosageQty ? ` ${dosageQty}${dosageUnit}` : ""}`}
+                  : `Log Dose — ${medicationName || "Ropinirole (Requip)"}`}
               </span>
             </button>
           </article>
         </div>
 
-        {/* RIGHT COLUMN: Today's Regimen & Motor State (Cols 7-12) */}
+        {/* RIGHT COLUMN: Today's Regimen, Safety Protocol & Side-Effect Watchlist (Cols 7-12) */}
         <div className="lg:col-span-6 space-y-6">
           {/* Card 3: Today's Regimen */}
           <article className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
             <div className="flex items-center justify-between font-mono text-[10px]">
-              <span className="uppercase tracking-wider font-bold text-[#ededed]">
-                TODAY'S REGIMEN
-              </span>
-              <span className="text-[#8a9992]">{dosesTaken} of 3 Taken</span>
+              <div className="flex items-center gap-2">
+                <span className="uppercase tracking-wider font-bold text-[#ededed]">
+                  TODAY'S REGIMEN
+                </span>
+                <span className="rounded-full bg-[#00e599]/15 border border-[#00e599]/30 px-2 py-0.5 text-[#00e599] font-bold">
+                  ACTIVE
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[#8a9992]">{dosesTaken} of 3 Taken</span>
+                <div className="flex items-center gap-1 text-[#8a9992]">
+                  <button
+                    type="button"
+                    onClick={() => setDosesTaken((p) => Math.max(0, p - 1))}
+                    className="hover:text-white"
+                  >
+                    &lt;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDosesTaken((p) => Math.min(3, p + 1))}
+                    className="hover:text-white"
+                  >
+                    &gt;
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="mt-5 flex items-baseline justify-between">
@@ -342,79 +366,82 @@ export default function LogMedicationDose({
                   <span className="text-xs font-normal text-[#8a9992]">mg</span>
                 </p>
                 <span className="font-mono text-[9px] uppercase tracking-wider text-[#00e599] block mt-0.5">
-                  Target Dose
+                  Target Dose (Active Regimen)
                 </span>
               </div>
             </div>
-          </article>
 
-          {/* Card 4: Current Motor State */}
-          <article className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-wider font-bold text-[#ededed]">
-                CURRENT MOTOR STATE
-              </span>
-              <span className="text-[11px] text-[#8a9992]">Tap to update</span>
-            </div>
-
-            {/* 3 Motor State Selection Cards */}
-            <div className="mt-5 grid grid-cols-3 gap-3">
-              {/* On-State */}
-              <button
-                type="button"
-                onClick={() => setMotorState("on-state")}
-                className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-colors ${
-                  motorState === "on-state"
-                    ? "border-[#00e599] bg-[#141a17]"
-                    : "border-[rgba(255,255,255,0.08)] bg-[#0c100e] hover:border-[rgba(255,255,255,0.18)]"
-                }`}
-              >
-                <span className="h-2 w-2 rounded-full bg-[#00e599] mb-2.5" />
-                <span className="text-xs font-bold text-[#ededed]">On-State</span>
-                <span className="text-[10px] text-[#8a9992] mt-0.5">Minimal tremor</span>
-              </button>
-
-              {/* Wearing-Off */}
-              <button
-                type="button"
-                onClick={() => setMotorState("wearing-off")}
-                className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-colors ${
-                  motorState === "wearing-off"
-                    ? "border-[#f59e0b] bg-[#1a160c]"
-                    : "border-[rgba(255,255,255,0.08)] bg-[#0c100e] hover:border-[rgba(255,255,255,0.18)]"
-                }`}
-              >
-                <span className="h-2 w-2 rounded-full bg-[#f59e0b] mb-2.5" />
-                <span className="text-xs font-bold text-[#ededed]">Wearing-Off</span>
-                <span className="text-[10px] text-[#8a9992] mt-0.5">Slight stiffness</span>
-              </button>
-
-              {/* Off-State */}
-              <button
-                type="button"
-                onClick={() => setMotorState("off-state")}
-                className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-colors ${
-                  motorState === "off-state"
-                    ? "border-[#ef4444] bg-[#1f1010]"
-                    : "border-[rgba(255,255,255,0.08)] bg-[#0c100e] hover:border-[rgba(255,255,255,0.18)]"
-                }`}
-              >
-                <span className="h-2 w-2 rounded-full bg-[#ef4444] mb-2.5" />
-                <span className="text-xs font-bold text-[#ededed]">Off-State</span>
-                <span className="text-[10px] text-[#8a9992] mt-0.5">Tremor active</span>
-              </button>
+            <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center gap-2 text-xs text-[#00e599]">
+              <Check className="h-3.5 w-3.5 stroke-[3]" />
+              <span>Current baseline</span>
             </div>
           </article>
 
-          {/* Card 5: Safety Protocol Notice */}
+          {/* Card 4: Safety Protocol Notice */}
           <article className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4 flex items-start gap-3">
             <Info className="h-4 w-4 text-[#00e599] shrink-0 mt-0.5" />
             <p className="text-[11px] leading-relaxed text-[#8a9992]">
-              <strong className="text-[#ededed]">Safety Protocol:</strong> Take with a full glass of
-              water. If a dose is missed by over 2 hours, proceed directly with normal titration
-              without doubling up. Kinematics stream syncs automatically at next calibration
-              checkpoint.
+              <strong className="text-[#ededed]">Safety Protocol:</strong> Take with a full glass of water. If a dose is missed by over 2 hours, proceed directly with normal titration without doubling up. Kinematics stream syncs automatically at next calibration checkpoint.
             </p>
+          </article>
+
+          {/* Card 5: Clinical Side-Effect Watchlist (Matching Image 5) */}
+          <article className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-wider font-bold text-[#ededed]">
+                CLINICAL SIDE-EFFECT WATCHLIST
+              </span>
+              <span className="font-mono text-[9px] text-[#8a9992] bg-[#141a17] border border-[rgba(255,255,255,0.08)] px-2 py-0.5 rounded">
+                Levodopa / Carbidopa (100/25 mg)
+              </span>
+            </div>
+
+            {/* 4 Clinical Watchlist Cards in 2x2 Grid */}
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Peak Dyskinesia */}
+              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#ededed]">Peak Dyskinesia</span>
+                  <span className="text-[#f59e0b] font-mono text-sm">⚠</span>
+                </div>
+                <p className="mt-1.5 text-[10px] leading-relaxed text-[#8a9992]">
+                  Involuntary choreic writhing or swaying at maximum Levodopa saturation.
+                </p>
+              </div>
+
+              {/* Postural Dizziness */}
+              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#ededed]">Postural Dizziness</span>
+                  <span className="text-[#38bdf8] font-mono text-sm">🌀</span>
+                </div>
+                <p className="mt-1.5 text-[10px] leading-relaxed text-[#8a9992]">
+                  Orthostatic drops in blood pressure when rising from sitting/lying positions.
+                </p>
+              </div>
+
+              {/* Nausea / GI Upset */}
+              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#ededed]">Nausea / GI Upset</span>
+                  <span className="text-[#00e599] font-mono text-sm">〰</span>
+                </div>
+                <p className="mt-1.5 text-[10px] leading-relaxed text-[#8a9992]">
+                  Gastric sensitivity from peripheral dopamine receptor conversion.
+                </p>
+              </div>
+
+              {/* Sudden Somnolence */}
+              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#ededed]">Sudden Somnolence</span>
+                  <span className="text-[#a855f7] font-mono text-sm">🌙</span>
+                </div>
+                <p className="mt-1.5 text-[10px] leading-relaxed text-[#8a9992]">
+                  Abrupt daytime sleep attacks during active peak drug concentration.
+                </p>
+              </div>
+            </div>
           </article>
         </div>
       </div>

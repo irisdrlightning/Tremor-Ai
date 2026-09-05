@@ -115,11 +115,11 @@ export default function KinematicsGraphsPanel({
               {activeGraph === "fft" ? (
                 <>
                   <ArrowLeft className="h-3 w-3" />
-                  <span>Prev Graph (Oscilloscope)</span>
+                  <span>Prev Graph</span>
                 </>
               ) : (
                 <>
-                  <span>Next Graph (FFT)</span>
+                  <span>Next Graph</span>
                   <ArrowRight className="h-3 w-3" />
                 </>
               )}

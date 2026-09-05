@@ -38,11 +38,12 @@ import { useLiveTelemetry } from "@/services/websocket";
 import { useBluetooth, BLE_STATE } from "@/hooks/useBluetooth";
 import MedicationAnalytics from "@/components/kinematics/MedicationAnalytics";
 import LogMedicationDose from "@/components/kinematics/LogMedicationDose";
-import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
 import { LiveDspEngine } from "@/lib/dspEngine";
 import WearableConnectModal from "@/components/kinematics/WearableConnectModal";
 import KinematicsGraphsPanel from "@/components/kinematics/KinematicsGraphsPanel";
 import NotificationsModal from "@/components/kinematics/NotificationsModal";
+import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
+import TremorSidebar from "@/components/common/TremorSidebar";
 
 
 const icons = {
@@ -54,6 +55,8 @@ const icons = {
 
 function TopBar({
   initials,
+  activeTab = "kinematics",
+  setActiveTab = () => {},
   bleState,
   deviceName,
   errorMessage,
@@ -64,8 +67,8 @@ function TopBar({
   onOpenNotifications,
   onSignOut,
 }) {
-  const isConnected  = bleState === BLE_STATE.CONNECTED;
-  const isBusy       = bleState === BLE_STATE.SCANNING || bleState === BLE_STATE.CONNECTING;
+  const isConnected   = bleState === BLE_STATE.CONNECTED;
+  const isBusy        = bleState === BLE_STATE.SCANNING || bleState === BLE_STATE.CONNECTING;
   const isUnsupported = bleState === BLE_STATE.UNSUPPORTED;
 
   const bleLabel = isConnected
@@ -81,28 +84,13 @@ function TopBar({
   const BleIcon = isConnected ? BluetoothConnected : isBusy ? Bluetooth : BluetoothOff;
 
   return (
-    <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6">
-      <div className="flex min-w-0 items-center gap-2">
-        <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-        <h1 className="font-display text-xl font-bold tracking-tight text-foreground flex items-baseline gap-1.5">
-          <span>Tremor</span>
-          <span className="font-mono-tech text-xs font-bold text-primary tracking-widest uppercase">
-            AI
-          </span>
-        </h1>
-      </div>
+    <header className="flex flex-wrap items-center justify-between gap-4">
+      {/* Universal Tremor AI Brand Header */}
+      <TremorHeaderBrand title="Live Kinematics" subtitle="Real-Time Telemetry" />
 
-      <label className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-shell px-5 py-2.5 md:order-none md:col-span-1 border border-border/50 max-w-xl mx-auto w-full focus-within:border-primary/50 transition-colors">
-        <input
-          type="search"
-          placeholder="Search patient or biomarker..."
-          className="w-full min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-        />
-        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </label>
-
+      {/* Action Icons: Bluetooth, Notifications, and Profile avatar */}
       <div className="flex shrink-0 items-center gap-2 md:gap-3">
-        {/* ── BLE Connect Button (Triggers hardware modal or reconnect) ─────── */}
+        {/* BLE Connect Button / Hardware Status */}
         <div className="flex flex-col items-end gap-0.5">
           <button
             id="ble-connect-btn"
@@ -112,23 +100,16 @@ function TopBar({
             disabled={isBusy || isUnsupported}
             onClick={isConnected ? onDisconnect : (onOpenWearables || onConnect)}
             className={[
-              "flex items-center gap-1.5 rounded-full px-3.5 py-2 font-mono-tech text-[11px] font-semibold transition-all",
-              isConnected
-                ? "bg-primary/15 border border-primary/50 text-primary hover:bg-primary/25 shadow-[0_0_12px_rgba(0,229,153,0.15)]"
-                : isBusy
-                ? "bg-card border border-border text-muted-foreground cursor-wait"
-                : isUnsupported
-                ? "bg-card border border-border text-muted-foreground/50 cursor-not-allowed"
-                : "bg-card border border-border/80 text-foreground hover:border-primary/50 hover:text-primary",
+              "grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary/50 hover:text-primary",
+              isConnected ? "border-primary text-primary bg-primary/10 shadow-[0_0_12px_rgba(0,229,153,0.2)]" : "",
             ].join(" ")}
           >
             <BleIcon
               className={[
-                "h-3.5 w-3.5 shrink-0",
+                "h-4 w-4 shrink-0",
                 isBusy ? "animate-pulse" : "",
               ].join(" ")}
             />
-            <span className="hidden sm:inline">{bleLabel}</span>
           </button>
           {errorMessage ? (
             <span className="font-mono-tech text-[10px] text-destructive pr-1">{errorMessage}</span>
@@ -137,17 +118,8 @@ function TopBar({
 
         <button
           type="button"
-          aria-label="Call clinic"
-          title="Call Clinic"
-          className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105 active:scale-95 shadow-sm"
-        >
-          <Phone className="h-4 w-4" />
-        </button>
-
-        <button
-          type="button"
           aria-label="Notifications"
-          title="Notifications"
+          title="Notifications & Alerts"
           onClick={onOpenNotifications}
           className="relative grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-transform hover:scale-105 active:scale-95"
         >
@@ -797,81 +769,12 @@ export default function LiveKinematics({ onSignOut }) {
   return (
     <div className="min-h-screen bg-[#060908] text-[#ededed] p-4 md:p-6 lg:p-8">
       <div className="mx-auto flex max-w-[1500px] gap-6">
-        <aside className="hidden w-16 shrink-0 flex-col items-center justify-between rounded-2xl bg-[#0c100e] border border-[rgba(255,255,255,0.08)] py-5 lg:flex">
-          <div className="flex flex-col items-center gap-6">
-            {/* Action Bar Tremor Logo */}
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#141a17] border border-[rgba(255,255,255,0.08)] p-1 overflow-hidden shadow-sm">
-              <img
-                src={tremorIconBase64 || tremorIcon || "/tremor-icon.png"}
-                alt="Tremor AI logo"
-                className="h-full w-full object-contain rounded-lg"
-              />
-            </div>
-
-            <nav className="flex flex-col items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveTab("kinematics")}
-                title="Live Kinematics"
-                aria-label="Live kinematics"
-                className={`grid h-10 w-10 place-items-center rounded-xl transition-colors ${
-                  activeTab === "kinematics"
-                    ? "bg-[#00e599] text-[#021a11]"
-                    : "text-[#8a9992] hover:text-[#ededed] hover:bg-[#141a17]"
-                }`}
-              >
-                <Activity className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("analytics")}
-                title="Medication Analytics"
-                aria-label="Medication Analytics"
-                className={`grid h-10 w-10 place-items-center rounded-xl transition-colors ${
-                  activeTab === "analytics"
-                    ? "bg-[#00e599] text-[#021a11]"
-                    : "text-[#8a9992] hover:text-[#ededed] hover:bg-[#141a17]"
-                }`}
-              >
-                <BarChart3 className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("log-medicine")}
-                title="Log Medication Dose"
-                aria-label="Log Medicine"
-                className={`grid h-10 w-10 place-items-center rounded-xl transition-colors ${
-                  activeTab === "log-medicine"
-                    ? "bg-[#00e599] text-[#021a11]"
-                    : "text-[#8a9992] hover:text-[#ededed] hover:bg-[#141a17]"
-                }`}
-              >
-                <Pill className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("suggested-regimen")}
-                title="Suggested Regimen"
-                aria-label="Suggested Regimen"
-                className={`grid h-10 w-10 place-items-center rounded-xl transition-colors ${
-                  activeTab === "suggested-regimen"
-                    ? "bg-[#00e599] text-[#021a11]"
-                    : "text-[#8a9992] hover:text-[#ededed] hover:bg-[#141a17]"
-                }`}
-              >
-                <ClipboardList className="h-4 w-4" />
-              </button>
-            </nav>
-          </div>
-
-          <button
-            type="button"
-            aria-label="Sign out"
-            className="grid h-10 w-10 place-items-center rounded-xl border border-[rgba(255,255,255,0.08)] text-[#8a9992] transition-colors hover:text-[#ededed] hover:border-[rgba(255,255,255,0.18)] hover:bg-[#141a17]"
-          >
-            <Power className="h-4 w-4" />
-          </button>
-        </aside>
+        {/* Universal Tremor AI Navigation Sidebar Component */}
+        <TremorSidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onSignOut={onSignOut || logout}
+        />
 
         <main className="min-w-0 flex-1 space-y-6">
           {activeTab === "analytics" ? (
@@ -890,19 +793,12 @@ export default function LiveKinematics({ onSignOut }) {
               liveData={liveData}
               bleData={bleData}
             />
-
-          ) : activeTab === "suggested-regimen" ? (
-            <SuggestedRegimen
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              initials={user.initials}
-              liveData={liveData}
-              bleData={bleData}
-            />
           ) : (
             <>
               <TopBar
                 initials={user.initials}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
                 bleState={bleState}
                 deviceName={deviceName}
                 errorMessage={bleError}

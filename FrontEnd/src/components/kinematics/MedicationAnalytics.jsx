@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { medicationAnalyticsData as initialMedicationData } from "@/data/mockMedicationAnalytics";
 import api from "@/services/api";
 import NotificationsModal from "@/components/kinematics/NotificationsModal";
+import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
 
 export default function MedicationAnalytics({
   activeTab = "analytics",
@@ -84,48 +85,30 @@ export default function MedicationAnalytics({
       />
 
       {/* Top Header */}
-      {/* Top Header */}
       <header className="flex flex-wrap items-center justify-between gap-4">
-        {/* Navigation Tabs Pill: Medication Analytics, Live Kinematics, etc */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="rounded-full bg-[#00e599] px-4 py-2 font-display text-xs font-bold text-[#021a11] shadow-[0_0_16px_rgba(0,229,153,0.2)]"
-          >
-            Medication Analytics
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("kinematics")}
-            className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-4 py-2 font-display text-xs font-medium text-[#8a9992] hover:text-[#ededed] hover:border-[rgba(255,255,255,0.18)] transition-colors"
-          >
-            Live Kinematics
-          </button>
-        </div>
+        {/* Universal Tremor AI Brand Header */}
+        <TremorHeaderBrand title="Medication Analytics" subtitle="Longitudinal" />
 
-        {/* Top Right Action Icons matching Image 5 (Bluetooth, Bell, Profile) */}
-        <div className="flex items-center gap-2.5">
+        {/* Action Buttons: Bluetooth, Notifications, and Profile avatar */}
+        <div className="flex shrink-0 items-center gap-2 md:gap-3">
           <button
             type="button"
-            onClick={() => setActiveTab("kinematics")}
-            title="Bluetooth Glove Telemetry"
-            className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#00e599] hover:border-[#00e599]/40 transition-colors"
+            title="Bluetooth Status"
+            className="grid h-10 w-10 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] hover:border-[rgba(255,255,255,0.18)] transition-colors"
           >
             <Radio className="h-4 w-4" />
           </button>
-
           <button
             type="button"
             onClick={() => setShowNotificationModal(true)}
             aria-label="Notifications"
             title="Notifications"
-            className="relative grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] transition-colors"
+            className="relative grid h-10 w-10 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#00e599] animate-pulse" />
+            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
           </button>
-
-          <span className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] font-mono-tech text-xs font-semibold text-[#ededed]">
+          <span className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono text-xs font-bold text-[#00e599] shadow-sm">
             {initials}
           </span>
         </div>
