@@ -27,6 +27,14 @@ export default function AuthModal({ isOpen, onClose, targetRole = "doctor" }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  React.useEffect(() => {
+    if (targetRole === "doctor") {
+      setEmail("dr.marcus.bell@neurology.clinic");
+    } else {
+      setEmail("eleanor.vance@patient.mail");
+    }
+  }, [targetRole, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {

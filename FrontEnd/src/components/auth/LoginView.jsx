@@ -16,8 +16,8 @@ import { useRole } from "@/context/RoleContext";
 export default function LoginView() {
   const { login, quickLoginAsDoctor, quickLoginAsPatient } = useRole();
 
-  const [activeRole, setActiveRole] = useState("doctor");
-  const [email, setEmail] = useState("dr.marcus.bell@neurology.clinic");
+  const [activeRole, setActiveRole] = useState("patient");
+  const [email, setEmail] = useState("eleanor.vance@patient.mail");
   const [password, setPassword] = useState("password123");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -75,18 +75,6 @@ export default function LoginView() {
           <div className="grid grid-cols-2 gap-2 rounded-2xl bg-shell p-1 border border-border/60 mb-6">
             <button
               type="button"
-              onClick={() => handleRoleSelect("doctor")}
-              className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition-all ${
-                activeRole === "doctor"
-                  ? "bg-card text-primary shadow-sm font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Activity className="h-3.5 w-3.5" />
-              Doctor Portal
-            </button>
-            <button
-              type="button"
               onClick={() => handleRoleSelect("patient")}
               className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition-all ${
                 activeRole === "patient"
@@ -96,6 +84,18 @@ export default function LoginView() {
             >
               <User className="h-3.5 w-3.5" />
               Patient Portal
+            </button>
+            <button
+              type="button"
+              onClick={() => handleRoleSelect("doctor")}
+              className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition-all ${
+                activeRole === "doctor"
+                  ? "bg-card text-primary shadow-sm font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Activity className="h-3.5 w-3.5" />
+              Doctor Portal
             </button>
           </div>
 
@@ -176,19 +176,19 @@ export default function LoginView() {
           <div className="space-y-2.5">
             <button
               type="button"
-              onClick={quickLoginAsDoctor}
+              onClick={() => quickLoginAsPatient("PD_01")}
               className="flex w-full items-center justify-between rounded-2xl border border-border/80 bg-shell/80 px-4 py-3 text-left transition-all hover:border-primary/50 hover:bg-card active:scale-[0.99] group shadow-sm"
             >
               <div className="flex items-center gap-3">
                 <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/10 text-primary font-mono-tech text-xs font-bold">
-                  MB
+                  EV
                 </span>
                 <div>
                   <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
-                    Dr. Marcus Bell, MD
+                    Eleanor Vance (Patient Portal)
                   </p>
                   <p className="text-[10px] text-muted-foreground font-mono-tech">
-                    Movement Disorders Specialist • Full Clinical Telemetry
+                    Subject: PD_01 • Ring: RING-7842 • Full Telemetry
                   </p>
                 </div>
               </div>
@@ -197,23 +197,23 @@ export default function LoginView() {
 
             <button
               type="button"
-              onClick={() => quickLoginAsPatient("PD_01")}
+              onClick={quickLoginAsDoctor}
               className="flex w-full items-center justify-between rounded-2xl border border-border/80 bg-shell/80 px-4 py-3 text-left transition-all hover:border-primary/50 hover:bg-card active:scale-[0.99] group shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono-tech text-xs font-bold">
-                  EV
+                <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#00e599]/15 text-[#00e599] font-mono-tech text-xs font-bold">
+                  MB
                 </span>
                 <div>
-                  <p className="text-xs font-semibold text-foreground group-hover:text-emerald-500 transition-colors">
-                    Eleanor Vance (PD_01)
+                  <p className="text-xs font-semibold text-foreground group-hover:text-[#00e599] transition-colors">
+                    Dr. Marcus Bell, MD (Doctor Portal)
                   </p>
                   <p className="text-[10px] text-muted-foreground font-mono-tech">
-                    Patient Profile • Paired Ring ID: RING-7842
+                    Movement Disorders Specialist • Clinical Fleet Workbench
                   </p>
                 </div>
               </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-emerald-500 transition-colors" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-[#00e599] transition-colors" />
             </button>
           </div>
         </div>

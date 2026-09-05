@@ -73,6 +73,9 @@ function TopBar({
             <span className="font-mono-tech text-[11px] font-bold text-primary tracking-wider">
               AI
             </span>
+            <span className="ml-1.5 rounded-full bg-primary/15 px-2 py-0.5 text-[9px] font-mono-tech font-bold uppercase tracking-wider text-primary border border-primary/25">
+              Patient Portal
+            </span>
           </div>
         </div>
 
@@ -154,14 +157,14 @@ function TopBar({
 
       {/* Role Switcher & Profile Actions */}
       <div className="flex shrink-0 items-center gap-2">
-        {/* Switch to Patient View (Requires Re-Auth) */}
+        {/* Switch to Doctor View (Requires Re-Auth) */}
         <button
           type="button"
-          onClick={() => onOpenAuthSwitch("patient")}
+          onClick={() => onOpenAuthSwitch("doctor")}
           className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 font-mono-tech text-xs font-semibold text-primary transition-all hover:bg-primary/20 shadow-sm"
         >
-          <User className="h-3.5 w-3.5" />
-          Switch to Patient View
+          <Activity className="h-3.5 w-3.5" />
+          Switch to Doctor Portal
         </button>
 
         <button
@@ -173,8 +176,8 @@ function TopBar({
           <LogOut className="h-4 w-4" />
         </button>
 
-        <span className="grid h-9 w-9 place-items-center rounded-full border border-primary/50 bg-card font-mono-tech text-xs font-bold text-primary shadow-sm">
-          {initials}
+        <span className="grid h-9 w-9 place-items-center rounded-full border border-primary/50 bg-card font-mono-tech text-xs font-bold text-primary shadow-sm" title="Logged in as Eleanor Vance">
+          {initials || "EV"}
         </span>
       </div>
     </header>
@@ -188,8 +191,8 @@ function OverviewCard({ activePatient, dominantHz, samplingRate = "100 Hz", rms 
     <section className="flex flex-col justify-between rounded-3xl border border-border bg-card p-6 md:p-8">
       <div>
         <div className="flex items-center justify-between">
-          <span className="rounded-full bg-primary/15 px-3 py-1 font-mono-tech text-[10px] font-bold text-primary uppercase tracking-widest">
-            PATIENT TWIN OVERVIEW
+          <span className="rounded-full bg-primary/15 px-3 py-1 font-mono-tech text-[10px] font-bold text-primary uppercase tracking-widest border border-primary/25">
+            MY SMART RING & HEALTH
           </span>
           <span className="font-mono-tech text-xs text-muted-foreground">
             Ring: {activePatient?.ring_id || "RING-7842"}
@@ -201,7 +204,7 @@ function OverviewCard({ activePatient, dominantHz, samplingRate = "100 Hz", rms 
         </h1>
         <p className="mt-1 flex items-center gap-2 font-mono-tech text-xs uppercase tracking-wider text-muted-foreground">
           <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-          Subject: {activePatient?.patient_id || "PD_01"} • Age: {activePatient?.age || 68}
+          Patient ID: {activePatient?.patient_id || "PD_01"} • Age: {activePatient?.age || 68}
         </p>
       </div>
 
@@ -404,11 +407,6 @@ export default function LiveKinematics() {
     }
   }, [bluetoothState?.latestSample, liveTelemetry]);
 
-  // If user switched to patient portal, render PatientPortal
-  if (role === "patient") {
-    return <PatientPortal />;
-  }
-
   const rawDomFreq = liveTelemetry?.features?.dominant_frequency ?? 0.0;
   const isHealthy = (liveTelemetry?.prediction?.predicted_label || "").toLowerCase().includes("healthy") || (liveTelemetry?.prediction?.predicted_label || "").toLowerCase().includes("physio");
   const dominantHz = rawDomFreq >= 0.5 && !isHealthy ? rawDomFreq.toFixed(1) : "0.0";
@@ -416,10 +414,10 @@ export default function LiveKinematics() {
 
   return (
     <div className="min-h-screen bg-[#060908] text-[#ededed] p-4 md:p-6 lg:p-8 selection:bg-primary selection:text-primary-foreground">
-      {/* Auth Modal for Role Switching */}
+      {/* Auth Modal for Role Switching to Doctor */}
       <AuthModal
         isOpen={Boolean(authModalRole)}
-        targetRole={authModalRole || "patient"}
+        targetRole={authModalRole || "doctor"}
         onClose={() => setAuthModalRole(null)}
       />
 

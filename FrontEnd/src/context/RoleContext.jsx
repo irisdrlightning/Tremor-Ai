@@ -4,8 +4,8 @@ import { useWebBluetooth } from "@/hooks/useWebBluetooth";
 
 const RoleContext = createContext({
   isAuthenticated: false,
-  role: "doctor",
-  user: { name: "Dr. Marcus Bell, MD", initials: "MB" },
+  role: "patient",
+  user: { name: "Eleanor Vance", initials: "EV" },
   setRole: () => {},
   activePatientId: "PD_01",
   setActivePatientId: () => {},
@@ -18,7 +18,7 @@ const RoleContext = createContext({
   quickLoginAsPatient: () => {},
 });
 
-export function RoleProvider({ children, initialRole = "doctor" }) {
+export function RoleProvider({ children, initialRole = "patient" }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState(initialRole);
   const [activePatientId, setActivePatientId] = useState("PD_01");

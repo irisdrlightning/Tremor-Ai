@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 // @ts-expect-error - plain-JS React components
 import LiveKinematics from "@/components/kinematics/LiveKinematics.jsx";
 // @ts-expect-error - plain-JS React components
-import PatientPortal from "@/components/patient/PatientPortal.jsx";
+import DoctorPortal from "@/components/doctor/DoctorPortal.jsx";
 // @ts-expect-error - plain-JS React components
 import LoginView from "@/components/auth/LoginView.jsx";
 // @ts-expect-error - plain-JS React components
@@ -36,16 +36,18 @@ function AppRouter() {
     return <LoginView />;
   }
 
-  if (role === "patient") {
-    return <PatientPortal />;
+  // Doctor Clinical Workbench
+  if (role === "doctor") {
+    return <DoctorPortal />;
   }
 
+  // Patient Health & Kinematics Portal
   return <LiveKinematics />;
 }
 
 function Index() {
   return (
-    <RoleProvider initialRole="doctor">
+    <RoleProvider initialRole="patient">
       <AppRouter />
     </RoleProvider>
   );
