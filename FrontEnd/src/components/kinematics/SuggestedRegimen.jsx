@@ -5,6 +5,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Phone,
   Radio,
   Search,
   SlidersHorizontal,
@@ -106,79 +107,48 @@ export default function SuggestedRegimen({
       )}
 
       {/* Top Header */}
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:grid-cols-[auto_minmax(0,1fr)_auto]">
-        <div className="flex min-w-0 items-center gap-3">
-          {/* Sub Navigation Switcher */}
-          <div className="flex min-w-0 items-center gap-1 rounded-full bg-[#0c100e] p-1 border border-[rgba(255,255,255,0.08)]">
-            <button
-              type="button"
-              onClick={() => setActiveTab("log-medicine")}
-              className={`truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeTab === "log-medicine"
-                  ? "bg-[#141a17] text-[#00e599] font-semibold"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              Log Medicine &amp; History
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("suggested-regimen")}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                activeTab === "suggested-regimen"
-                  ? "bg-[#141a17] text-[#00e599] border border-[rgba(255,255,255,0.12)]"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
-              Suggested Regimen
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("analytics")}
-              className={`truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeTab === "analytics"
-                  ? "bg-[#141a17] text-[#00e599] font-semibold"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              Analytics
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("kinematics")}
-              className={`truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeTab === "kinematics"
-                  ? "bg-[#141a17] text-[#00e599] font-semibold"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              Live Telemetry
-            </button>
-          </div>
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#00e599] animate-pulse" />
+          <h1 className="font-display text-xl font-bold tracking-tight text-[#ededed] flex items-baseline gap-1.5">
+            <span>Tremor</span>
+            <span className="font-mono-tech text-xs font-bold text-[#00e599] tracking-widest uppercase">
+              AI
+            </span>
+          </h1>
         </div>
 
         {/* Global Search Bar */}
-        <div className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] px-5 py-2 md:order-none md:col-span-1 max-w-xl mx-auto w-full">
+        <div className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] px-5 py-2.5 md:order-none md:col-span-1 max-w-xl mx-auto w-full focus-within:border-[#00e599]/50 transition-colors">
           <input
             type="search"
             placeholder="Search patient, biomarker, or dose history..."
-            className="w-full min-w-0 bg-transparent text-xs text-[#ededed] placeholder:text-[#52635b] focus:outline-none"
+            className="w-full min-w-0 bg-transparent text-sm text-[#ededed] placeholder:text-[#8a9992] focus:outline-none"
           />
-          <Search className="h-3.5 w-3.5 shrink-0 text-[#8a9992]" />
+          <Search className="h-4 w-4 shrink-0 text-[#8a9992]" />
         </div>
 
-        {/* Notifications & Profile */}
-        <div className="flex shrink-0 items-center gap-2.5">
+        {/* Action Buttons & Profile */}
+        <div className="flex shrink-0 items-center gap-2 md:gap-3">
+          <button
+            type="button"
+            aria-label="Call clinic"
+            title="Call Clinic"
+            className="grid h-10 w-10 place-items-center rounded-full bg-[#00e599] text-[#021a11] transition-transform hover:scale-105 active:scale-95 shadow-sm"
+          >
+            <Phone className="h-4 w-4" />
+          </button>
           <button
             type="button"
             onClick={() => setActiveTab("analytics")}
             aria-label="Notifications"
-            className="relative grid h-9 w-9 place-items-center rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-colors"
+            title="Notifications"
+            className="relative grid h-10 w-10 place-items-center rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
           >
-            <Bell className="h-3.5 w-3.5" />
+            <Bell className="h-4 w-4" />
+            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
           </button>
-          <span className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[#0c100e] font-mono text-[11px] font-semibold text-[#00e599]">
+          <span className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono-tech text-xs font-bold text-[#00e599] shadow-sm">
             {initials}
           </span>
         </div>
@@ -193,7 +163,8 @@ export default function SuggestedRegimen({
                 AI TITRATION ENGINE
               </span>
               <span className="font-mono text-xs text-[#8a9992]">
-                Case TR-90241-B • <strong className="text-[#ededed] font-semibold">George Peter</strong> (Stage 2 PD)
+                Case TR-90241-B •{" "}
+                <strong className="text-[#ededed] font-semibold">George Peter</strong> (Stage 2 PD)
               </span>
             </div>
 
@@ -202,9 +173,9 @@ export default function SuggestedRegimen({
             </h1>
 
             <p className="mt-2 text-xs leading-relaxed text-[#8a9992]">
-              Telemetry detects midday wearing-off at 3.5h. Shift midday dose {shiftMinutes} min earlier and
-              introduce bedtime controlled-release (CR) {nocturnalMg}/25 mg formulation to prevent nocturnal
-              rigidity.
+              Telemetry detects midday wearing-off at 3.5h. Shift midday dose {shiftMinutes} min
+              earlier and introduce bedtime controlled-release (CR) {nocturnalMg}/25 mg formulation
+              to prevent nocturnal rigidity.
             </p>
           </div>
 
@@ -384,7 +355,9 @@ export default function SuggestedRegimen({
               <span className="font-mono text-xs font-bold text-[#00e599] block">
                 Nighttime Coverage
               </span>
-              <span className="font-mono text-[10px] text-[#8a9992]">Eliminates Morning Rigidity</span>
+              <span className="font-mono text-[10px] text-[#8a9992]">
+                Eliminates Morning Rigidity
+              </span>
             </div>
           </div>
         </div>
@@ -392,7 +365,8 @@ export default function SuggestedRegimen({
         {/* Subfooter */}
         <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.08)] flex items-center justify-between font-mono text-[10px] text-[#8a9992]">
           <span>
-            Total Daily Levodopa: <strong className="text-[#ededed]">{300 + nocturnalMg} mg</strong> (was 300 mg)
+            Total Daily Levodopa: <strong className="text-[#ededed]">{300 + nocturnalMg} mg</strong>{" "}
+            (was 300 mg)
           </span>
           <span>
             Therapeutic Ratio: <strong className="text-[#ededed]">4:1 IR/CR</strong>

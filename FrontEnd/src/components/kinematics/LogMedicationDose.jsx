@@ -1,19 +1,7 @@
-import {
-  Bell,
-  Check,
-  CheckCircle2,
-  Info,
-  Phone,
-  Search,
-  User,
-  X,
-} from "lucide-react";
+import { Bell, Check, CheckCircle2, Info, Phone, Search, User, X } from "lucide-react";
 import { useState } from "react";
 
-export default function LogMedicationDose({
-  activeTab = "log-medicine",
-  setActiveTab = () => {},
-}) {
+export default function LogMedicationDose({ activeTab = "log-medicine", setActiveTab = () => {} }) {
   const [quickTime, setQuickTime] = useState("just-now");
   const [motorState, setMotorState] = useState("on-state");
   const [doseLogged, setDoseLogged] = useState(false);
@@ -65,78 +53,37 @@ export default function LogMedicationDose({
       )}
 
       {/* Top Bar Header */}
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:grid-cols-[auto_minmax(0,1fr)_auto]">
-        <div className="flex min-w-0 items-center gap-3">
-          {/* Sub Navigation Switcher */}
-          <div className="flex min-w-0 items-center gap-1 rounded-full bg-[#0c100e] p-1 border border-[rgba(255,255,255,0.08)]">
-            <button
-              type="button"
-              onClick={() => setActiveTab("kinematics")}
-              className={`truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeTab === "kinematics"
-                  ? "bg-[#141a17] text-[#00e599] font-semibold"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              Live Kinematics
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("log-medicine")}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                activeTab === "log-medicine"
-                  ? "bg-[#141a17] text-[#00e599] border border-[rgba(255,255,255,0.12)]"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
-              Log Medicine
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("suggested-regimen")}
-              className={`truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeTab === "suggested-regimen"
-                  ? "bg-[#141a17] text-[#00e599] font-semibold"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              Suggested Regimen
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("analytics")}
-              className={`truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeTab === "analytics"
-                  ? "bg-[#141a17] text-[#00e599] font-semibold"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              Analytics
-            </button>
-          </div>
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#00e599] animate-pulse" />
+          <h1 className="font-display text-xl font-bold tracking-tight text-[#ededed] flex items-baseline gap-1.5">
+            <span>Tremor</span>
+            <span className="font-mono-tech text-xs font-bold text-[#00e599] tracking-widest uppercase">
+              AI
+            </span>
+          </h1>
         </div>
 
         {/* Global Search Bar */}
-        <div className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] px-5 py-2 md:order-none md:col-span-1 max-w-xl mx-auto w-full">
+        <div className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] px-5 py-2.5 md:order-none md:col-span-1 max-w-xl mx-auto w-full focus-within:border-[#00e599]/50 transition-colors">
           <input
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search patient, biomarker, or dose history..."
-            className="w-full min-w-0 bg-transparent text-xs text-[#ededed] placeholder:text-[#52635b] focus:outline-none"
+            className="w-full min-w-0 bg-transparent text-sm text-[#ededed] placeholder:text-[#8a9992] focus:outline-none"
           />
-          <Search className="h-3.5 w-3.5 shrink-0 text-[#8a9992]" />
+          <Search className="h-4 w-4 shrink-0 text-[#8a9992]" />
         </div>
 
         {/* Action Buttons & Profile */}
-        <div className="flex shrink-0 items-center gap-2.5">
+        <div className="flex shrink-0 items-center gap-2 md:gap-3">
           <button
             type="button"
             onClick={() => setShowCallModal(true)}
             aria-label="Call Attending Physician"
             title="Call Clinician"
-            className="grid h-9 w-9 place-items-center rounded-full bg-[#00e599] text-[#021a11] transition-transform active:scale-95"
+            className="grid h-10 w-10 place-items-center rounded-full bg-[#00e599] text-[#021a11] transition-transform hover:scale-105 active:scale-95 shadow-sm"
           >
             <Phone className="h-4 w-4" />
           </button>
@@ -145,12 +92,13 @@ export default function LogMedicationDose({
             onClick={() => setActiveTab("suggested-regimen")}
             aria-label="Notifications"
             title="View Suggestions"
-            className="relative grid h-9 w-9 place-items-center rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-colors"
+            className="relative grid h-10 w-10 place-items-center rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
           >
-            <Bell className="h-3.5 w-3.5" />
+            <Bell className="h-4 w-4" />
+            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
           </button>
-          <span className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[#0c100e] text-[#00e599]">
-            <User className="h-4 w-4" />
+          <span className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono-tech text-xs font-bold text-[#00e599] shadow-sm">
+            {initials}
           </span>
         </div>
       </header>
@@ -165,9 +113,7 @@ export default function LogMedicationDose({
             Log Medication Dose
           </h1>
         </div>
-        <p className="font-mono text-xs text-[#8a9992]">
-          Schedule: LD-CD 100/25 mg • TID
-        </p>
+        <p className="font-mono text-xs text-[#8a9992]">Schedule: LD-CD 100/25 mg • TID</p>
       </div>
 
       {/* Main Grid Content Layout: 12-Column Grid */}
@@ -188,7 +134,8 @@ export default function LogMedicationDose({
               </div>
               <div className="text-right">
                 <p className="font-mono text-2xl font-black text-[#ededed]">
-                  {targetDose.levodopa} <span className="text-base text-[#8a9992]">/</span> {targetDose.carbidopa}{" "}
+                  {targetDose.levodopa} <span className="text-base text-[#8a9992]">/</span>{" "}
+                  {targetDose.carbidopa}{" "}
                   <span className="text-xs font-normal text-[#8a9992]">mg</span>
                 </p>
                 <span className="font-mono text-[9px] uppercase tracking-wider text-[#00e599] block mt-0.5">
@@ -202,9 +149,7 @@ export default function LogMedicationDose({
           <article className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-[#ededed]">Quick Time Adjuster</span>
-              <span className="font-mono text-[10px] text-[#8a9992]">
-                Next scheduled 13:00
-              </span>
+              <span className="font-mono text-[10px] text-[#8a9992]">Next scheduled 13:00</span>
             </div>
 
             {/* Time Pills */}
@@ -278,7 +223,8 @@ export default function LogMedicationDose({
               </div>
               <div className="text-right">
                 <p className="font-mono text-2xl font-black text-[#ededed]">
-                  {targetDose.levodopa} <span className="text-base text-[#8a9992]">/</span> {targetDose.carbidopa}{" "}
+                  {targetDose.levodopa} <span className="text-base text-[#8a9992]">/</span>{" "}
+                  {targetDose.carbidopa}{" "}
                   <span className="text-xs font-normal text-[#8a9992]">mg</span>
                 </p>
                 <span className="font-mono text-[9px] uppercase tracking-wider text-[#00e599] block mt-0.5">
@@ -350,10 +296,10 @@ export default function LogMedicationDose({
           <article className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4 flex items-start gap-3">
             <Info className="h-4 w-4 text-[#00e599] shrink-0 mt-0.5" />
             <p className="text-[11px] leading-relaxed text-[#8a9992]">
-              <strong className="text-[#ededed]">Safety Protocol:</strong> Take with a full
-              glass of water. If a dose is missed by over 2 hours, proceed directly with normal
-              titration without doubling up. Kinematics stream syncs automatically at next
-              calibration checkpoint.
+              <strong className="text-[#ededed]">Safety Protocol:</strong> Take with a full glass of
+              water. If a dose is missed by over 2 hours, proceed directly with normal titration
+              without doubling up. Kinematics stream syncs automatically at next calibration
+              checkpoint.
             </p>
           </article>
         </div>

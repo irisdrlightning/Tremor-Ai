@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Download,
   Filter,
+  Phone,
   Plus,
   Radio,
   Search,
@@ -71,11 +72,15 @@ export default function MedicationAnalytics({
             <div className="mt-4 space-y-3 text-xs">
               <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] p-3">
                 <p className="font-semibold text-[#ededed]">Midday Wear-Off Approaching</p>
-                <p className="text-[#8a9992] mt-0.5">Subject TR-90241 kinetic band variance increased 12% in last 30m.</p>
+                <p className="text-[#8a9992] mt-0.5">
+                  Subject TR-90241 kinetic band variance increased 12% in last 30m.
+                </p>
               </div>
               <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] p-3">
                 <p className="font-semibold text-[#ededed]">Hardware Calibration Validated</p>
-                <p className="text-[#8a9992] mt-0.5">MPU6050 zero-drift sync achieved with 0.02ms latency.</p>
+                <p className="text-[#8a9992] mt-0.5">
+                  MPU6050 zero-drift sync achieved with 0.02ms latency.
+                </p>
               </div>
             </div>
           </div>
@@ -83,99 +88,67 @@ export default function MedicationAnalytics({
       )}
 
       {/* Top Header */}
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:grid-cols-[auto_minmax(0,1fr)_auto]">
-        <div className="flex min-w-0 items-center gap-3">
-          {/* Sub Navigation Switcher */}
-          <div className="flex min-w-0 items-center gap-1 rounded-full bg-[#0c100e] p-1 border border-[rgba(255,255,255,0.08)]">
-            <button
-              type="button"
-              onClick={() => setActiveTab("kinematics")}
-              className={`truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeTab === "kinematics"
-                  ? "bg-[#141a17] text-[#00e599] font-semibold"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              Diagnose
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("analytics")}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                activeTab === "analytics"
-                  ? "bg-[#141a17] text-[#00e599] border border-[rgba(255,255,255,0.12)]"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
-              Medication Analytics
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("log-medicine")}
-              className={`truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeTab === "log-medicine"
-                  ? "bg-[#141a17] text-[#00e599] font-semibold"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              Log Medicine
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("suggested-regimen")}
-              className={`truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeTab === "suggested-regimen"
-                  ? "bg-[#141a17] text-[#00e599] font-semibold"
-                  : "text-[#8a9992] hover:text-[#ededed]"
-              }`}
-            >
-              Suggested Regimen
-            </button>
-          </div>
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#00e599] animate-pulse" />
+          <h1 className="font-display text-xl font-bold tracking-tight text-[#ededed] flex items-baseline gap-1.5">
+            <span>Tremor</span>
+            <span className="font-mono-tech text-xs font-bold text-[#00e599] tracking-widest uppercase">
+              AI
+            </span>
+          </h1>
         </div>
 
         {/* Global Search Bar */}
-        <div className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] px-5 py-2 md:order-none md:col-span-1 max-w-xl mx-auto w-full">
+        <div className="order-last col-span-2 flex min-w-0 items-center gap-3 rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] px-5 py-2.5 md:order-none md:col-span-1 max-w-xl mx-auto w-full focus-within:border-[#00e599]/50 transition-colors">
           <input
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search patient, biomarker, or dose history..."
-            className="w-full min-w-0 bg-transparent text-xs text-[#ededed] placeholder:text-[#52635b] focus:outline-none"
+            className="w-full min-w-0 bg-transparent text-sm text-[#ededed] placeholder:text-[#8a9992] focus:outline-none"
           />
-          <Search className="h-3.5 w-3.5 shrink-0 text-[#8a9992]" />
+          <Search className="h-4 w-4 shrink-0 text-[#8a9992]" />
         </div>
 
         {/* Action Buttons & Profile */}
-        <div className="flex shrink-0 items-center gap-2.5">
+        <div className="flex shrink-0 items-center gap-2 md:gap-3">
           <button
             type="button"
             onClick={handleLogDose}
-            className="flex items-center gap-1.5 rounded-full bg-[#00e599] px-4 py-2 text-xs font-bold text-[#021a11] transition-transform active:scale-95"
+            className="flex items-center gap-1.5 rounded-full bg-[#00e599] px-3.5 py-2 text-xs font-bold text-[#021a11] transition-transform active:scale-95 shadow-sm"
           >
-            {doseLogged ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5 stroke-[2.5]" />}
-            <span>{doseLogged ? "Dose Logged" : "Log Dose Taken"}</span>
+            {doseLogged ? (
+              <Check className="h-3.5 w-3.5" />
+            ) : (
+              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            )}
+            <span className="hidden sm:inline">{doseLogged ? "Dose Logged" : "Log Dose"}</span>
+          </button>
+
+          <button
+            type="button"
+            aria-label="Call clinician"
+            title="Call Clinician"
+            className="grid h-10 w-10 place-items-center rounded-full bg-[#00e599] text-[#021a11] transition-transform hover:scale-105 active:scale-95 shadow-sm"
+          >
+            <Phone className="h-4 w-4" />
           </button>
 
           <button
             type="button"
             onClick={() => setShowNotificationModal(true)}
             aria-label="Notifications"
-            className="relative grid h-9 w-9 place-items-center rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-colors"
+            title="Notifications"
+            className="relative grid h-10 w-10 place-items-center rounded-full bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
           >
-            <Bell className="h-3.5 w-3.5" />
-            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#ef4444]" />
+            <Bell className="h-4 w-4" />
+            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
           </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab("log-medicine")}
-            title="Switch User Profile"
-            className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[#0c100e] font-mono text-[11px] font-semibold text-[#00e599] hover:border-[#00e599] transition-colors"
-          >
+          <span className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono-tech text-xs font-bold text-[#00e599] shadow-sm">
             {initials}
-          </button>
+          </span>
         </div>
       </header>
 
@@ -493,7 +466,9 @@ export default function MedicationAnalytics({
               onClick={handleExportPDF}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#00e599] py-3 text-xs font-bold text-[#021a11] transition-transform active:scale-[0.99]"
             >
-              <span>{exporting ? "Generating PDF Stream..." : "Export Neurologist PDF Report"}</span>
+              <span>
+                {exporting ? "Generating PDF Stream..." : "Export Neurologist PDF Report"}
+              </span>
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
             </button>
 

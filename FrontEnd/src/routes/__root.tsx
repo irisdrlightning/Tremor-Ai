@@ -74,10 +74,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Tremor AI — Clinical Telemetry & Diagnostics" },
-      { name: "description", content: "Real-time tremor kinematics, telemetry, and clinical scoring dashboard." },
+      {
+        name: "description",
+        content: "Real-time tremor kinematics, telemetry, and clinical scoring dashboard.",
+      },
       { name: "author", content: "Tremor AI" },
       { property: "og:title", content: "Tremor AI — Clinical Telemetry & Diagnostics" },
-      { property: "og:description", content: "Real-time tremor kinematics, telemetry, and clinical scoring dashboard." },
+      {
+        property: "og:description",
+        content: "Real-time tremor kinematics, telemetry, and clinical scoring dashboard.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -94,7 +100,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/tremor-icon.png", type: "image/png" },
     ],
-
   }),
   shellComponent: RootShell,
   component: RootComponent,
