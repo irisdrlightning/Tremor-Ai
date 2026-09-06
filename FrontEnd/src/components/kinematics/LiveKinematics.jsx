@@ -45,6 +45,7 @@ import NotificationsModal from "@/components/kinematics/NotificationsModal";
 import UserProfileModal from "@/components/common/UserProfileModal";
 import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
 import TremorSidebar from "@/components/common/TremorSidebar";
+import TopActionCluster from "@/components/common/TopActionCluster";
 
 
 const icons = {
@@ -93,54 +94,12 @@ function TopBar({
         <TremorHeaderBrand title="Live Kinematics" subtitle="Real-Time Telemetry" />
       </div>
 
-      {/* Action Icons: Bluetooth, Notifications, and Profile avatar */}
-      <div className="flex shrink-0 items-center gap-2 md:gap-3">
-        {/* BLE Connect Button / Hardware Status */}
-        <div className="flex flex-col items-end gap-0.5">
-          <button
-            id="ble-connect-btn"
-            type="button"
-            aria-label={bleLabel}
-            title={bleLabel}
-            disabled={isBusy || isUnsupported}
-            onClick={isConnected ? onDisconnect : onConnect}
-            className={[
-              "grid h-10 w-10 place-items-center rounded-full border border-border bg-black text-foreground transition-all hover:border-[#10B981] hover:text-[#10B981]",
-              isConnected ? "border-[#10B981] text-[#10B981] bg-black" : "",
-            ].join(" ")}
-          >
-            <BleIcon
-              className={[
-                "h-4 w-4 shrink-0",
-                isBusy ? "animate-pulse" : "",
-              ].join(" ")}
-            />
-          </button>
-          {errorMessage ? (
-            <span className="font-mono-tech text-[10px] text-destructive pr-1">{errorMessage}</span>
-          ) : null}
-        </div>
-
-        <button
-          type="button"
-          aria-label="Notifications"
-          title="Notifications & Alerts"
-          onClick={onOpenNotifications}
-          className="relative grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-transform hover:scale-105 active:scale-95"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-destructive animate-pulse" />
-        </button>
-
-        <button
-          type="button"
-          onClick={onOpenProfile || onSignOut}
-          title="Edit Profile Details & Information"
-          className="grid h-10 w-10 place-items-center rounded-full border border-[#10B981] bg-black font-mono-tech text-xs font-bold text-[#10B981] hover:scale-105 active:scale-95 transition-all cursor-pointer"
-        >
-          {initials}
-        </button>
-      </div>
+      {/* Canonical 3-Circle Header Action Cluster */}
+      <TopActionCluster
+        onOpenBluetooth={onOpenWearables || onConnect}
+        onOpenNotifications={onOpenNotifications}
+        onOpenProfile={onOpenProfile}
+      />
     </header>
   );
 }

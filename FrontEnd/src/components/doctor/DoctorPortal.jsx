@@ -49,6 +49,7 @@ import { api } from "@/services/api";
 import UserProfileModal from "@/components/common/UserProfileModal";
 import NotificationsModal from "@/components/kinematics/NotificationsModal";
 import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
+import TopActionCluster from "@/components/common/TopActionCluster";
 
 import { tremorIconBase64 } from "@/assets/tremorIconBase64";
 import tremorIcon from "@/assets/tremor-icon.png";
@@ -543,25 +544,12 @@ export default function DoctorPortal({ onSignOut }) {
               )}
             </div>
 
-            {/* Notifications */}
-            <button
-              onClick={() => setIsNotificationsOpen(true)}
-              className="relative grid h-10 w-10 place-items-center rounded-xl border border-[#152326] bg-black text-slate-300 hover:border-[#10B981] cursor-pointer"
-              title="Clinical Alerts"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-            </button>
-
-            {/* Doctor Profile Button */}
-            <button
-              onClick={() => setIsProfileOpen(true)}
-              className="flex items-center gap-2 rounded-xl border border-[#10B981] bg-black px-3 py-1.5 text-xs font-bold text-[#10B981] hover:bg-[#10B981] hover:text-black transition-all cursor-pointer"
-              title="View & Edit Doctor Profile Details"
-            >
-              <span>{user?.initials || "ER"}</span>
-              <span className="hidden md:inline font-semibold">{user?.name?.split(" ")[0] || "Dr. Emily"}</span>
-            </button>
+            {/* Canonical 3-Circle Header Action Cluster */}
+            <TopActionCluster
+              onOpenBluetooth={() => setActiveTab("sync")}
+              onOpenNotifications={() => setIsNotificationsOpen(true)}
+              onOpenProfile={() => setIsProfileOpen(true)}
+            />
           </div>
         </header>
 

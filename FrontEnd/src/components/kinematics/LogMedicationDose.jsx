@@ -2,7 +2,10 @@ import { Bell, Check, CheckCircle2, Clock, Download, HardDrive, Info, Phone, Rad
 import { useState, useEffect } from "react";
 import api from "@/services/api";
 import UserProfileModal from "@/components/common/UserProfileModal";
+import NotificationsModal from "@/components/kinematics/NotificationsModal";
+import WearableConnectModal from "@/components/kinematics/WearableConnectModal";
 import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
+import TopActionCluster from "@/components/common/TopActionCluster";
 import { BLE_STATE } from "@/hooks/useBluetooth";
 
 export default function LogMedicationDose({
@@ -25,6 +28,8 @@ export default function LogMedicationDose({
   const [isExtracting, setIsExtracting] = useState(false);
   const [showCallModal, setShowCallModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showWearableModal, setShowWearableModal] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [targetDose, setTargetDose] = useState({ levodopa: 100, carbidopa: 25 });
   const [dosesTaken, setDosesTaken] = useState(1);
@@ -202,35 +207,25 @@ export default function LogMedicationDose({
         {/* Universal Tremor AI Brand Header */}
         <TremorHeaderBrand title="Log Medication Dose" subtitle="Clinical Rx" />
 
-        {/* Action Buttons: Bluetooth, Notifications, and Profile avatar */}
-        <div className="flex shrink-0 items-center gap-2 md:gap-3">
-          <button
-            type="button"
-            title="Bluetooth Status"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed] hover:border-[#10B981]/50 transition-colors"
-          >
-            <Clock className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => alert("No critical medication alerts at this time. Telemetry within normal limits.")}
-            aria-label="Notifications"
-            title="Notifications & Alerts"
-            className="relative grid h-10 w-10 place-items-center rounded-full border border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#10B981]" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowProfileModal(true)}
-            title="Edit Patient / User Profile Details"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#10B981] bg-black font-mono text-xs font-bold text-[#10B981] hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            {initials}
-          </button>
-        </div>
+        {/* Canonical 3-Circle Header Action Cluster */}
+        <TopActionCluster
+          onOpenBluetooth={() => setShowWearableModal(true)}
+          onOpenNotifications={() => setShowNotificationsModal(true)}
+          onOpenProfile={() => setShowProfileModal(true)}
+        />
       </header>
+
+      {/* Wearable Hardware BLE Modal */}
+      <WearableConnectModal
+        isOpen={showWearableModal}
+        onClose={() => setShowWearableModal(false)}
+      />
+
+      {/* Notifications Modal */}
+      <NotificationsModal
+        isOpen={showNotificationsModal}
+        onClose={() => setShowNotificationsModal(false)}
+      />
 
       {/* User Profile & Demographic Editing Modal */}
       <UserProfileModal

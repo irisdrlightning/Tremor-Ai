@@ -15,6 +15,8 @@ import {
 import { useState } from "react";
 import UserProfileModal from "@/components/common/UserProfileModal";
 import NotificationsModal from "@/components/kinematics/NotificationsModal";
+import WearableConnectModal from "@/components/kinematics/WearableConnectModal";
+import TopActionCluster from "@/components/common/TopActionCluster";
 
 export default function SuggestedRegimen({
   activeTab = "suggested-regimen",
@@ -29,6 +31,7 @@ export default function SuggestedRegimen({
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showWearableModal, setShowWearableModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [shiftMinutes, setShiftMinutes] = useState(30);
   const [nocturnalMg, setNocturnalMg] = useState(100);
@@ -147,6 +150,12 @@ export default function SuggestedRegimen({
         onClose={() => setShowNotificationsModal(false)}
       />
 
+      {/* Hardware BLE Wearable Modal */}
+      <WearableConnectModal
+        isOpen={showWearableModal}
+        onClose={() => setShowWearableModal(false)}
+      />
+
       {/* User Profile Modal */}
       <UserProfileModal
         isOpen={showProfileModal}
@@ -236,25 +245,12 @@ export default function SuggestedRegimen({
             <Search className="h-3.5 w-3.5 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
-          {/* Right: Notifications & User Avatar */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => setShowNotificationsModal(true)}
-              title="Notifications"
-              className="h-8 w-8 rounded-full bg-black border border-[#152326] flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
-            >
-              <Bell className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowProfileModal(true)}
-              title="User Profile (RS)"
-              className="h-8 w-8 rounded-full bg-black border border-[#10B981] text-[#10B981] font-mono text-xs font-bold flex items-center justify-center hover:border-[#10B981] transition-colors cursor-pointer"
-            >
-              {initials || "RS"}
-            </button>
-          </div>
+          {/* Canonical 3-Circle Header Action Cluster */}
+          <TopActionCluster
+            onOpenBluetooth={() => setShowWearableModal(true)}
+            onOpenNotifications={() => setShowNotificationsModal(true)}
+            onOpenProfile={() => setShowProfileModal(true)}
+          />
         </header>
 
         {/* Scrollable Page Body */}

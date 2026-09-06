@@ -22,8 +22,10 @@ import { useEffect, useState } from "react";
 import { medicationAnalyticsData as initialMedicationData } from "@/data/mockMedicationAnalytics";
 import api from "@/services/api";
 import NotificationsModal from "@/components/kinematics/NotificationsModal";
+import WearableConnectModal from "@/components/kinematics/WearableConnectModal";
 import UserProfileModal from "@/components/common/UserProfileModal";
 import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
+import TopActionCluster from "@/components/common/TopActionCluster";
 
 export default function MedicationAnalytics({
   activeTab = "analytics",
@@ -105,6 +107,7 @@ export default function MedicationAnalytics({
   const [exportSuccess, setExportSuccess] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showWearableModal, setShowWearableModal] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
 
   // UPDRS gauge geometry
@@ -152,47 +155,19 @@ export default function MedicationAnalytics({
         {/* Universal Tremor AI Brand Header */}
         <TremorHeaderBrand title="Medication Analytics" subtitle="Longitudinal" />
 
-        {/* Action Buttons: Sync, Bluetooth, Notifications, and Profile avatar */}
-        <div className="flex shrink-0 items-center gap-2 md:gap-3">
-          {/* Sync Device Button */}
-          <button
-            type="button"
-            onClick={handleManualSync}
-            disabled={isSyncing}
-            title={isSyncing ? "Syncing telemetry from device..." : "Sync Device Records"}
-            className="flex items-center gap-1.5 rounded-full border border-[#152326] bg-black px-3 py-2 font-mono text-[11px] font-bold text-[#10B981] hover:border-[#10B981] transition-all active:scale-95 disabled:opacity-75 cursor-pointer"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin text-[#10B981]" : "text-[#10B981]"}`} />
-            <span className="hidden sm:inline">{isSyncing ? "Syncing..." : "Sync Device"}</span>
-          </button>
-
-          <button
-            type="button"
-            title="Bluetooth Status"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed] hover:border-[#10B981] transition-colors"
-          >
-            <Radio className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowNotificationModal(true)}
-            aria-label="Notifications"
-            title="Notifications"
-            className="relative grid h-10 w-10 place-items-center rounded-full border border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowProfileModal(true)}
-            title="Edit Patient / User Profile Details"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#10B981] bg-black font-mono text-xs font-bold text-[#10B981] hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            {initials}
-          </button>
-        </div>
+        {/* Canonical 3-Circle Header Action Cluster */}
+        <TopActionCluster
+          onOpenBluetooth={() => setShowWearableModal(true)}
+          onOpenNotifications={() => setShowNotificationModal(true)}
+          onOpenProfile={() => setShowProfileModal(true)}
+        />
       </header>
+
+      {/* Hardware BLE Wearable Modal */}
+      <WearableConnectModal
+        isOpen={showWearableModal}
+        onClose={() => setShowWearableModal(false)}
+      />
 
       {/* User Profile & Demographic Editing Modal */}
       <UserProfileModal
