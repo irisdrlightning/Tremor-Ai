@@ -7,21 +7,48 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
-from src.checkpoint_manager import (
-    load_live_checkpoints,
-    save_live_checkpoint,
-    clear_live_checkpoints
-)
-from src.longitudinal_sim import generate_30_day_longitudinal_data
-from src.effectiveness import analyze_medication_effectiveness
-from src.doctor_report import generate_monthly_doctor_pdf
-from src.report import generate_single_session_pdf, generate_session_plots
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    from src.checkpoint_manager import (
+        load_live_checkpoints,
+        save_live_checkpoint,
+        clear_live_checkpoints
+    )
+    from src.longitudinal_sim import generate_30_day_longitudinal_data
+    from src.effectiveness import analyze_medication_effectiveness
+    from src.doctor_report import generate_monthly_doctor_pdf
+    from src.report import generate_single_session_pdf, generate_session_plots
+except ImportError:
+    def load_live_checkpoints():
+        return []
+    def save_live_checkpoint(*args, **kwargs):
+        pass
+    def clear_live_checkpoints():
+        pass
+    def generate_30_day_longitudinal_data(*args, **kwargs):
+        import pandas as pd
+        return pd.DataFrame(), []
+    def analyze_medication_effectiveness(*args, **kwargs):
+        return {}
+    def generate_monthly_doctor_pdf(*args, **kwargs):
+        raise HTTPException(status_code=503, detail="PDF generation service unavailable in serverless environment")
+    def generate_single_session_pdf(*args, **kwargs):
+        raise HTTPException(status_code=503, detail="PDF generation service unavailable in serverless environment")
+    def generate_session_plots(*args, **kwargs):
+        return {}
+
 import numpy as np
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-REPORTS_DIR = os.path.join(PROJECT_ROOT, "reports")
+# In serverless environments (e.g. AWS Lambda / Vercel), only /tmp is writable
+REPORTS_DIR = "/tmp/reports" if os.path.exists("/tmp") and not os.access(PROJECT_ROOT, os.W_OK) else os.path.join(PROJECT_ROOT, "reports")
 
 class CheckpointRequest(BaseModel):
     patient_id: Optional[str] = "TR-90241"

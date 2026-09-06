@@ -13,7 +13,8 @@ from pydantic import BaseModel
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+_candidate_data_dir = os.path.join(PROJECT_ROOT, "data")
+DATA_DIR = "/tmp/tremor_data" if os.path.exists("/tmp") and not os.access(PROJECT_ROOT, os.W_OK) else _candidate_data_dir
 PROFILE_STORE_FILE = os.path.join(DATA_DIR, "user_profile.json")
 ACCOUNTS_STORE_FILE = os.path.join(DATA_DIR, "accounts.json")
 

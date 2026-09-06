@@ -10,7 +10,7 @@ MANDATORY DISCLOSURE:
   Never present as a continuous 30-day physical clinical recording.
 """
 
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 import datetime
 import numpy as np
 import pandas as pd

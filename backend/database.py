@@ -24,7 +24,13 @@ except ImportError:
     pass
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+# In read-only serverless filesystems, fall back to /tmp/data for local cache
+_candidate_data_dir = os.path.join(PROJECT_ROOT, "data")
+if os.path.exists("/tmp") and not os.access(PROJECT_ROOT, os.W_OK):
+    DATA_DIR = "/tmp/tremor_data"
+else:
+    DATA_DIR = _candidate_data_dir
+
 ACCOUNTS_FILE = os.path.join(DATA_DIR, "accounts.json")
 PROFILE_FILE = os.path.join(DATA_DIR, "user_profile.json")
 CHECKPOINTS_FILE = os.path.join(DATA_DIR, "live_checkpoints.json")
