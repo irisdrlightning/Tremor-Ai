@@ -26,13 +26,15 @@ import {
   Filter,
   Layers,
   LogOut,
+  Pill,
+  Power,
   RefreshCw,
+  RotateCcw,
   Search,
   Settings,
   ShieldCheck,
   Sparkles,
   Trash2,
-  RotateCcw,
   TrendingDown,
   TrendingUp,
   User,
@@ -46,6 +48,7 @@ import { useBluetooth, BLE_STATE } from "@/hooks/useBluetooth";
 import { api } from "@/services/api";
 import UserProfileModal from "@/components/common/UserProfileModal";
 import NotificationsModal from "@/components/kinematics/NotificationsModal";
+import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
 
 import { tremorIconBase64 } from "@/assets/tremorIconBase64";
 import tremorIcon from "@/assets/tremor-icon.png";
@@ -351,6 +354,21 @@ export default function DoctorPortal({ onSignOut }) {
       p.stage.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  if (activeTab === "suggested-regimen") {
+    return (
+      <SuggestedRegimen
+        activeTab={activeTab}
+        setActiveTab={(tab) => {
+          if (tab === "log-medicine" || tab === "sync") setActiveTab("sync");
+          else if (tab === "kinematics" || tab === "analyser") setActiveTab("analyser");
+          else setActiveTab(tab);
+        }}
+        initials={user?.initials || "RS"}
+        onSignOut={onSignOut}
+      />
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-[#060908] text-foreground selection:bg-[#00e599]/30 selection:text-[#00e599]">
       {/* Doctor Navigation Rail */}
@@ -414,6 +432,22 @@ export default function DoctorPortal({ onSignOut }) {
             <FileDown className="h-5 w-5" />
             <span className="absolute left-full ml-3 hidden rounded-md bg-[#0a1414] border border-[#1a3333] px-2.5 py-1 text-xs font-semibold text-white group-hover:block whitespace-nowrap shadow-xl z-50">
               Period Reports &amp; Export
+            </span>
+          </button>
+
+          {/* Tab 4: Suggested Regimen (AI Titration Module) */}
+          <button
+            onClick={() => setActiveTab("suggested-regimen")}
+            className={`group relative grid h-12 w-12 place-items-center rounded-2xl transition-all cursor-pointer ${
+              activeTab === "suggested-regimen"
+                ? "bg-[#10B981] text-black shadow-[0_0_20px_rgba(16,185,129,0.35)]"
+                : "border border-[#1a3333] bg-[#0d1a1a] text-slate-400 hover:text-white hover:border-[#10B981]/50"
+            }`}
+            title="Suggested Regimen (AI Titration Module)"
+          >
+            <Pill className="h-5 w-5 stroke-[2.2]" />
+            <span className="absolute left-full ml-3 hidden rounded-md bg-[#0a1414] border border-[#1a3333] px-2.5 py-1 text-xs font-semibold text-white group-hover:block whitespace-nowrap shadow-xl z-50">
+              Suggested Regimen (AI Titration)
             </span>
           </button>
         </nav>
@@ -830,7 +864,15 @@ export default function DoctorPortal({ onSignOut }) {
                   </div>
                 </div>
 
-                <div className="pt-2 flex justify-end">
+                <div className="pt-2 flex flex-wrap items-center justify-end gap-3">
+                  <button
+                    onClick={() => setActiveTab("suggested-regimen")}
+                    className="flex items-center gap-2 rounded-xl bg-[#10B981] px-5 py-2.5 text-xs font-bold text-black hover:brightness-110 transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer"
+                  >
+                    <Pill className="h-4 w-4" />
+                    <span>Open Suggested Regimen &amp; Titration</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
                   <button
                     onClick={() => setActiveTab("reports")}
                     className="flex items-center gap-2 rounded-xl bg-[#00e599] px-5 py-2.5 text-xs font-bold text-[#060908] hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(0,229,153,0.3)] cursor-pointer"

@@ -38,6 +38,7 @@ import { useLiveTelemetry } from "@/services/websocket";
 import { useBluetooth, BLE_STATE } from "@/hooks/useBluetooth";
 import MedicationAnalytics from "@/components/kinematics/MedicationAnalytics";
 import LogMedicationDose from "@/components/kinematics/LogMedicationDose";
+import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
 import { LiveDspEngine } from "@/lib/dspEngine";
 import WearableConnectModal from "@/components/kinematics/WearableConnectModal";
 import KinematicsGraphsPanel from "@/components/kinematics/KinematicsGraphsPanel";
@@ -912,6 +913,15 @@ export default function LiveKinematics({ onSignOut }) {
               deviceName={deviceName}
               sendDoseToWearable={sendDoseToWearable}
               syncHistoryFromDevice={syncHistoryFromDevice}
+            />
+          ) : activeTab === "suggested-regimen" ? (
+            <SuggestedRegimen
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              initials={user.initials}
+              liveData={liveData}
+              bleData={bleData}
+              onSignOut={onSignOut || logout}
             />
           ) : (
             <>
