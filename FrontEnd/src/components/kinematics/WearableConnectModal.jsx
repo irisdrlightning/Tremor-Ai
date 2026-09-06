@@ -60,14 +60,14 @@ export default function WearableConnectModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
       <div
-        className="w-full max-w-[490px] rounded-3xl border border-[rgba(255,255,255,0.12)] bg-[#070d0a] p-6 shadow-2xl transition-all"
+        className="w-full max-w-[490px] rounded-3xl border border-[#152326] bg-black p-6 shadow-2xl transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${isConnected ? "bg-[#00e599] animate-pulse" : "bg-[#8a9992]"}`} />
+              <span className={`h-2 w-2 rounded-full ${isConnected ? "bg-[#10B981] animate-pulse" : "bg-[#8a9992]"}`} />
               <h3 className="font-display text-lg font-bold tracking-tight text-[#ededed]">
                 Connect Bluetooth Wearable
               </h3>
@@ -80,21 +80,21 @@ export default function WearableConnectModal({
             type="button"
             onClick={onClose}
             aria-label="Close modal"
-            className="rounded-full p-1.5 text-[#8a9992] transition-colors hover:bg-[rgba(255,255,255,0.08)] hover:text-[#ededed]"
+            className="rounded-full p-1.5 text-[#8a9992] transition-colors hover:bg-black hover:text-[#ededed]"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Scanning / Connection status banner */}
-        <div className="mt-5 flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#0c1410] px-4 py-2.5 font-mono-tech text-[10px]">
+        <div className="mt-5 flex items-center justify-between rounded-xl border border-[#152326] bg-black px-4 py-2.5 font-mono-tech text-[10px]">
           <span className="flex items-center gap-2 font-bold uppercase tracking-wider text-[#ededed]">
             <Radio
               className={`h-3.5 w-3.5 ${
                 isConnected
-                  ? "text-[#00e599]"
+                  ? "text-[#10B981]"
                   : scanning
-                  ? "text-[#00e599] animate-ping"
+                  ? "text-[#10B981] animate-ping"
                   : "text-[#8a9992]"
               }`}
             />
@@ -104,7 +104,7 @@ export default function WearableConnectModal({
               ? "Browser Device Scanner Active…"
               : "Original Physical Bluetooth Device"}
           </span>
-          <span className="text-[#00e599] font-medium">
+          <span className="text-[#10B981] font-medium">
             {isConnected ? "100 Hz Streaming" : "MPU6050 0x68"}
           </span>
         </div>
@@ -121,10 +121,10 @@ export default function WearableConnectModal({
         <div className="mt-4 space-y-3">
           {isConnected ? (
             /* Active Connected Physical Device Card */
-            <div className="rounded-2xl border border-[#00e599]/40 bg-[#0d1c15] p-4 shadow-[0_0_20px_rgba(0,229,153,0.12)]">
+            <div className="rounded-2xl border border-[#10B981] bg-black p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#00e599]/20 text-[#00e599] border border-[#00e599]/30">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-black text-[#10B981] border border-[#10B981]">
                     <Bluetooth className="h-6 w-6" />
                   </div>
                   <div>
@@ -132,7 +132,7 @@ export default function WearableConnectModal({
                       <h4 className="font-display text-sm font-bold text-[#ededed]">
                         {deviceName || "TremorAI-Glove"}
                       </h4>
-                      <span className="rounded bg-[#00e599]/20 border border-[#00e599]/40 px-2 py-0.5 font-mono-tech text-[9px] font-bold text-[#00e599]">
+                      <span className="rounded-full bg-black border border-[#10B981] px-2.5 py-0.5 font-mono text-[9px] font-bold text-[#10B981]">
                         CONNECTED
                       </span>
                     </div>
@@ -152,7 +152,7 @@ export default function WearableConnectModal({
                 </button>
               </div>
 
-              <div className="mt-3 flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] pt-2.5 font-mono-tech text-[10px] text-[#00e599]">
+              <div className="mt-3 flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] pt-2.5 font-mono-tech text-[10px] text-[#10B981]">
                 <Zap className="h-3 w-3 animate-pulse" />
                 <span>Transmitting live accelerometer and gyroscope vectors</span>
               </div>
@@ -160,9 +160,9 @@ export default function WearableConnectModal({
           ) : (
             /* Genuine Physical Hardware Discovery Options */
             <>
-              <div className="group flex items-center justify-between rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0d1612] p-4 transition-all hover:border-[#00e599]/50 hover:bg-[#111c17]">
+              <div className="group flex items-center justify-between rounded-2xl border border-[#152326] bg-black p-4 transition-all hover:border-[#10B981]">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#00e599]/15 text-[#00e599] border border-[#00e599]/25 group-hover:scale-105 transition-transform">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black text-[#10B981] border border-[#10B981] group-hover:scale-105 transition-transform">
                     <Bluetooth className="h-6 w-6" />
                   </div>
                   <div className="min-w-0">
@@ -170,7 +170,7 @@ export default function WearableConnectModal({
                       <h4 className="truncate font-display text-sm font-semibold text-[#ededed]">
                         Scan TremorAI ESP32 Glove
                       </h4>
-                      <span className="rounded bg-[#00e599]/10 border border-[#00e599]/20 px-1.5 py-0.2 font-mono-tech text-[8px] font-bold text-[#00e599]">
+                      <span className="rounded-full bg-black border border-[#10B981] px-2 py-0.5 font-mono text-[8px] font-bold text-[#10B981]">
                         WIRELESS BLE
                       </span>
                     </div>
@@ -184,7 +184,7 @@ export default function WearableConnectModal({
                   type="button"
                   onClick={handleScanBle}
                   disabled={scanning || !isBleSupported}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#00e599] px-4 py-2 font-display text-xs font-bold text-[#021a11] shadow-sm transition-transform active:scale-95 hover:opacity-90 disabled:opacity-50"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#10B981] px-4 py-2 font-display text-xs font-bold text-black transition-transform active:scale-95 hover:opacity-90 disabled:opacity-50"
                 >
                   <LinkIcon className="h-3.5 w-3.5" />
                   <span>{scanning ? "Scanning…" : "Pair BLE"}</span>
@@ -192,7 +192,7 @@ export default function WearableConnectModal({
               </div>
 
               {/* Hardware Instructions Note */}
-              <div className="rounded-2xl border border-dashed border-[rgba(255,255,255,0.12)] bg-[#09120e] p-3 text-center">
+              <div className="rounded-2xl border border-dashed border-[#152326] bg-black p-3 text-center">
                 <p className="font-mono-tech text-[11px] text-[#8a9992]">
                   Ensure physical ESP32 is powered on running tremor_ai_esp32.ino with MPU6050 (SDA: 21, SCL: 22).
                 </p>
@@ -207,16 +207,16 @@ export default function WearableConnectModal({
             type="button"
             onClick={handleScanBle}
             disabled={scanning}
-            className="flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.12)] bg-[#101b15] px-4 py-2 font-display text-xs font-semibold text-[#ededed] transition-colors hover:border-[#00e599]/40 hover:text-[#00e599] disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-full border border-[#152326] bg-black px-4 py-2 font-display text-xs font-semibold text-[#ededed] transition-colors hover:border-[#10B981] hover:text-[#10B981] disabled:opacity-50"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${scanning ? "animate-spin text-[#00e599]" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${scanning ? "animate-spin text-[#10B981]" : ""}`} />
             <span>Scan Bluetooth</span>
           </button>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-[rgba(255,255,255,0.12)] bg-[#101b15] px-4 py-2 font-display text-xs font-semibold text-[#8a9992] transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-[#ededed]"
+            className="rounded-full border border-[#152326] bg-black px-4 py-2 font-display text-xs font-semibold text-[#8a9992] transition-colors hover:text-[#ededed]"
           >
             Dismiss
           </button>

@@ -84,8 +84,8 @@ export default function SuggestedRegimen({
                       onClick={() => setShiftMinutes(mins)}
                       className={`rounded-xl py-2.5 border font-mono text-xs font-semibold transition-all ${
                         shiftMinutes === mins
-                          ? "border-[#10B981] bg-[#10B981]/15 text-[#10B981]"
-                          : "border-[#152326] bg-[#080d0e] text-slate-400 hover:text-white hover:border-[#1e3439]"
+                          ? "border-[#10B981] bg-black text-[#10B981]"
+                          : "border-[#152326] bg-black text-slate-400 hover:text-white hover:border-[#1e3439]"
                       }`}
                     >
                       -{mins}m
@@ -106,8 +106,8 @@ export default function SuggestedRegimen({
                       onClick={() => setNocturnalMg(mg)}
                       className={`rounded-xl py-2.5 border font-mono text-xs font-semibold transition-all ${
                         nocturnalMg === mg
-                          ? "border-[#10B981] bg-[#10B981]/15 text-[#10B981]"
-                          : "border-[#152326] bg-[#080d0e] text-slate-400 hover:text-white hover:border-[#1e3439]"
+                          ? "border-[#10B981] bg-black text-[#10B981]"
+                          : "border-[#152326] bg-black text-slate-400 hover:text-white hover:border-[#1e3439]"
                       }`}
                     >
                       {mg} mg
@@ -160,9 +160,9 @@ export default function SuggestedRegimen({
         <div className="flex flex-col items-center">
           <button
             type="button"
-            onClick={() => handleTabClick("kinematics")}
-            title="Tremor AI Portal"
-            className="h-9 w-9 rounded-xl bg-[#0c1214] border border-[#152326] flex items-center justify-center text-white font-bold text-xs tracking-tight hover:border-[#10B981]/40 transition-colors"
+            onClick={() => handleTabClick("log-medicine")}
+            title="TremorAI Emblem"
+            className="h-9 w-9 rounded-xl bg-black border border-[#10B981] flex items-center justify-center text-[#10B981] font-bold text-xs tracking-tight hover:brightness-125 transition-colors"
           >
             <span>T<sup className="text-[9px] font-bold">+</sup></span>
           </button>
@@ -208,7 +208,7 @@ export default function SuggestedRegimen({
         {/* Top Header Bar */}
         <header className="h-16 shrink-0 flex items-center justify-between px-6 border-b border-[#152326] bg-[#000000]">
           {/* Left: Tab Navigation Pills */}
-          <div className="inline-flex items-center gap-1.5 p-1 rounded-full bg-[#080d0e] border border-[#152326]">
+          <div className="inline-flex items-center gap-1.5 p-1 rounded-full bg-black border border-[#152326]">
             <button
               type="button"
               onClick={() => handleTabClick("log-medicine")}
@@ -218,7 +218,7 @@ export default function SuggestedRegimen({
             </button>
             <button
               type="button"
-              className="px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-[#0e1618] border border-[#1c2e32] shadow-sm cursor-default"
+              className="px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-black border border-[#10B981] shadow-sm cursor-default"
             >
               Suggested Regimen
             </button>
@@ -242,7 +242,7 @@ export default function SuggestedRegimen({
               type="button"
               onClick={() => setShowNotificationsModal(true)}
               title="Notifications"
-              className="h-8 w-8 rounded-full bg-[#080d0e] border border-[#152326] flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="h-8 w-8 rounded-full bg-black border border-[#152326] flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
               <Bell className="h-3.5 w-3.5" />
             </button>
@@ -250,7 +250,7 @@ export default function SuggestedRegimen({
               type="button"
               onClick={() => setShowProfileModal(true)}
               title="User Profile (RS)"
-              className="h-8 w-8 rounded-full bg-[#0d1e18] border border-[#152326] text-[#10B981] font-mono text-xs font-bold flex items-center justify-center hover:border-[#10B981]/50 transition-colors cursor-pointer"
+              className="h-8 w-8 rounded-full bg-black border border-[#10B981] text-[#10B981] font-mono text-xs font-bold flex items-center justify-center hover:border-[#10B981] transition-colors cursor-pointer"
             >
               {initials || "RS"}
             </button>
@@ -262,7 +262,7 @@ export default function SuggestedRegimen({
           <div className="max-w-[1240px] mx-auto space-y-6">
             {/* Confirmation Banner if confirmed */}
             {confirmed && (
-              <div className="rounded-xl border border-[#10B981]/40 bg-[#10B981]/10 px-4 py-3 flex items-center justify-between text-xs text-[#10B981]">
+              <div className="rounded-xl border border-[#10B981] bg-black px-4 py-3 flex items-center justify-between text-xs text-[#10B981]">
                 <div className="flex items-center gap-2">
                   <Check className="h-4 w-4 stroke-[2.5]" />
                   <span className="font-semibold">
@@ -283,7 +283,7 @@ export default function SuggestedRegimen({
             <section className="border border-[#152326] bg-[#0b1112] rounded-2xl p-6">
               {/* Top Sub-row: Tag Pill + Metadata */}
               <div className="flex items-center gap-2.5">
-                <span className="bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 font-mono text-[10px] uppercase font-bold px-2.5 py-0.5 rounded tracking-wider">
+                <span className="bg-black text-[#10B981] border border-[#10B981] font-mono text-[10px] uppercase font-bold px-3 py-1 rounded-full tracking-wider">
                   AI TITRATION ENGINE
                 </span>
                 <span className="font-mono text-xs text-slate-400">
@@ -360,7 +360,7 @@ export default function SuggestedRegimen({
                         <span className="font-mono text-xs font-semibold text-white">
                           08:00 AM • Morning Dose
                         </span>
-                        <span className="bg-[#131f22] border border-[#1c2e32] text-slate-400 text-[9px] font-mono px-2 py-0.5 rounded uppercase font-medium">
+                        <span className="bg-black border border-[#1c2e32] text-slate-400 text-[9px] font-mono px-2.5 py-0.5 rounded-full uppercase font-medium">
                           UNCHANGED
                         </span>
                       </div>
@@ -394,7 +394,7 @@ export default function SuggestedRegimen({
                         <span className="font-mono text-xs font-semibold text-white">
                           12:30 PM • Midday Dose
                         </span>
-                        <span className="bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 text-[9px] font-mono px-2 py-0.5 rounded uppercase font-bold">
+                        <span className="bg-black text-[#10B981] border border-[#10B981] text-[9px] font-mono px-2.5 py-0.5 rounded-full uppercase font-bold">
                           SHIFT -{shiftMinutes} MIN
                         </span>
                       </div>
@@ -428,7 +428,7 @@ export default function SuggestedRegimen({
                         <span className="font-mono text-xs font-semibold text-white">
                           18:30 PM • Evening Dose
                         </span>
-                        <span className="bg-[#131f22] border border-[#1c2e32] text-slate-400 text-[9px] font-mono px-2 py-0.5 rounded uppercase font-medium">
+                        <span className="bg-black border border-[#1c2e32] text-slate-400 text-[9px] font-mono px-2.5 py-0.5 rounded-full uppercase font-medium">
                           UNCHANGED
                         </span>
                       </div>
@@ -462,7 +462,7 @@ export default function SuggestedRegimen({
                         <span className="font-mono text-xs font-semibold text-white">
                           22:00 PM • Nocturnal Dose
                         </span>
-                        <span className="bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 text-[9px] font-mono px-2 py-0.5 rounded uppercase font-bold">
+                        <span className="bg-black text-[#10B981] border border-[#10B981] text-[9px] font-mono px-2.5 py-0.5 rounded-full uppercase font-bold">
                           NEW ADDITION
                         </span>
                       </div>

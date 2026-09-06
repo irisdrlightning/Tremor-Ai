@@ -75,9 +75,9 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
     if (pass.length < 4) return { score: 1, label: "Too Short", color: "bg-red-500" };
     if (pass.length <= 5 && /^\d+$/.test(pass)) return { score: 2, label: "PIN Code", color: "bg-amber-400" };
     if (pass.length >= 6 && /[A-Z]/.test(pass) && /[0-9]/.test(pass)) {
-      return { score: 4, label: "Strong SHA-256", color: "bg-[#00C693]" };
+      return { score: 4, label: "Strong SHA-256", color: "bg-[#10B981]" };
     }
-    return { score: 3, label: "Standard", color: "bg-teal-400" };
+    return { score: 3, label: "Standard", color: "bg-[#10B981]" };
   };
 
   const passStrength = calculatePasscodeStrength(passcode);
@@ -162,14 +162,14 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
   const iconSrc = tremorIconBase64 || tremorIcon || "/tremor-icon.png";
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-[#010a08] px-4 py-8 text-[#ededed]">
+    <div className="flex min-h-screen w-full items-center justify-center bg-black px-4 py-8 text-[#ededed]">
       {/* Forgot PIN / Reset Modal */}
       {showForgotModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[#0c1410] p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] pb-3">
+          <div className="w-full max-w-md rounded-2xl border border-[#152326] bg-black p-6">
+            <div className="flex items-center justify-between border-b border-[#152326] pb-3">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-[#00C693]" />
+                <ShieldCheck className="h-5 w-5 text-[#10B981]" />
                 <h4 className="text-sm font-bold text-[#ededed]">Secure PIN / Passcode Recovery</h4>
               </div>
               <button
@@ -200,14 +200,14 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                       value={resetId || identifier}
                       onChange={(e) => setResetId(e.target.value)}
                       placeholder="e.g. TR-90241 or DR-10822"
-                      className="w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#141e19] px-4 py-2.5 font-mono-tech text-sm text-[#ededed] focus:border-[#00C693] focus:outline-none"
+                      className="w-full rounded-xl border border-[#152326] bg-black px-4 py-2.5 font-mono-tech text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
                       required
                     />
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-xs text-[#00C693] leading-relaxed flex items-center gap-1.5">
+                  <p className="text-xs text-[#10B981] leading-relaxed flex items-center gap-1.5">
                     <CheckCircle2 className="h-4 w-4 shrink-0" />
                     <span>Enter the verification code and your new secure passcode.</span>
                   </p>
@@ -220,7 +220,7 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                       value={resetCode}
                       onChange={(e) => setResetCode(e.target.value)}
                       placeholder="Enter 5-digit code"
-                      className="w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#141e19] px-4 py-2.5 font-mono-tech text-sm text-[#ededed] focus:border-[#00C693] focus:outline-none"
+                      className="w-full rounded-xl border border-[#152326] bg-black px-4 py-2.5 font-mono-tech text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
                       required
                     />
                   </div>
@@ -233,7 +233,7 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                       value={newPass}
                       onChange={(e) => setNewPass(e.target.value)}
                       placeholder="Minimum 4 characters"
-                      className="w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#141e19] px-4 py-2.5 font-mono-tech text-sm text-[#ededed] focus:border-[#00C693] focus:outline-none"
+                      className="w-full rounded-xl border border-[#152326] bg-black px-4 py-2.5 font-mono-tech text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
                       required
                     />
                   </div>
@@ -241,7 +241,7 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
               )}
 
               {resetMessage && (
-                <p className="font-mono-tech text-xs text-[#00C693] bg-[#00C693]/10 border border-[#00C693]/20 p-2 rounded-lg">
+                <p className="font-mono-tech text-xs text-[#10B981] bg-black border border-[#10B981] p-2 rounded-lg">
                   {resetMessage}
                 </p>
               )}
@@ -257,7 +257,7 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                 <button
                   type="submit"
                   disabled={resetLoading}
-                  className="flex items-center gap-1.5 rounded-xl bg-[#00C693] px-5 py-2 text-xs font-bold text-[#01140e] hover:bg-[#00b082] transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-xl bg-[#10B981] px-5 py-2 text-xs font-bold text-black hover:bg-[#059669] transition-colors disabled:opacity-50"
                 >
                   {resetLoading && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
                   <span>{resetStep === 1 ? "Send Verification Code" : "Update Passcode"}</span>
@@ -269,13 +269,13 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
       )}
 
       {/* Outer rounded card frame */}
-      <div className="relative flex w-full max-w-[980px] flex-col overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.08)] bg-[#050d0a] shadow-[0_0_50px_rgba(0,198,147,0.06)] md:flex-row md:min-h-[590px]">
+      <div className="relative flex w-full max-w-[980px] flex-col overflow-hidden rounded-[28px] border border-[#152326] bg-black md:flex-row md:min-h-[590px]">
         {/* Left Branding Column */}
-        <div className="flex flex-col justify-between border-b border-[rgba(255,255,255,0.06)] p-8 md:w-[42%] md:border-b-0 md:border-r md:p-12">
+        <div className="flex flex-col justify-between border-b border-[#152326] p-8 md:w-[42%] md:border-b-0 md:border-r md:p-12">
           <div>
-            {/* Logo & Neon Emblem */}
+            {/* Logo & Emblem */}
             <div className="mb-6 flex items-center">
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-[#091510] border border-[#00C693]/30 p-2.5 shadow-[0_0_24px_rgba(0,198,147,0.15)]">
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-black border border-[#10B981] p-2.5">
                 <img
                   src={iconSrc}
                   alt="TremorAI emblem"
@@ -293,8 +293,8 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
             </p>
           </div>
 
-          <div className="mt-8 flex items-center gap-2 font-mono-tech text-xs text-[#00C693]/80">
-            <span className="h-2 w-2 rounded-full bg-[#00C693] animate-pulse" />
+          <div className="mt-8 flex items-center gap-2 font-mono-tech text-xs text-[#10B981]">
+            <span className="h-2 w-2 rounded-full bg-[#10B981] animate-pulse" />
             <span>Clinical Wearable Telemetry v3.0</span>
           </div>
         </div>
@@ -311,19 +311,19 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                 Select your authorized portal to authenticate securely.
               </p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00C693]/10 text-[#00C693] border border-[#00C693]/20 shadow-[0_0_12px_rgba(0,198,147,0.2)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-[#10B981] border border-[#10B981]">
               <Lock className="h-4 w-4" />
             </div>
           </div>
 
           {/* Portal Switch Pills: Patient vs Doctor */}
-          <div className="mt-6 flex h-11 w-full rounded-full border border-[rgba(255,255,255,0.1)] bg-[#091410] p-1">
+          <div className="mt-6 flex h-11 w-full rounded-full border border-[#152326] bg-black p-1">
             <button
               type="button"
               onClick={() => handlePortalSwitch("patient")}
               className={`flex flex-1 items-center justify-center gap-2 rounded-full font-display text-xs font-semibold transition-all ${
                 portal === "patient"
-                  ? "bg-[#00C693] text-[#01140e] shadow-[0_2px_10px_rgba(0,198,147,0.3)]"
+                  ? "bg-[#10B981] text-black"
                   : "text-[#8a9992] hover:text-white"
               }`}
             >
@@ -336,7 +336,7 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
               onClick={() => handlePortalSwitch("doctor")}
               className={`flex flex-1 items-center justify-center gap-2 rounded-full font-display text-xs font-semibold transition-all ${
                 portal === "doctor"
-                  ? "bg-[#00C693] text-[#01140e] shadow-[0_2px_10px_rgba(0,198,147,0.3)]"
+                  ? "bg-[#10B981] text-black"
                   : "text-[#8a9992] hover:text-white"
               }`}
             >
@@ -356,14 +356,14 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                 <button
                   type="button"
                   onClick={handleQuickAutofill}
-                  className="flex items-center gap-1 font-mono-tech text-[10px] text-[#00C693] hover:underline"
+                  className="flex items-center gap-1 font-mono-tech text-[10px] text-[#10B981] hover:underline"
                   title="Auto-fill recommended demo credentials"
                 >
                   <Sparkles className="h-3 w-3" />
                   <span>Auto-fill {portal === "doctor" ? "DR-10822" : "TR-90241"}</span>
                 </button>
               </div>
-              <div className="flex h-12 w-full items-center gap-3 rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#08120e] px-4 transition-colors focus-within:border-[#00C693]/80 focus-within:bg-[#0c1813]">
+              <div className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#152326] bg-black px-4 transition-colors focus-within:border-[#10B981]">
                 <Fingerprint className="h-4 w-4 text-[#8a9992] shrink-0" />
                 <input
                   type="text"
@@ -385,12 +385,12 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                 <button
                   type="button"
                   onClick={() => setShowForgotModal(true)}
-                  className="font-mono-tech text-[10px] text-[#00C693] hover:underline"
+                  className="font-mono-tech text-[10px] text-[#10B981] hover:underline"
                 >
                   Forgot PIN?
                 </button>
               </div>
-              <div className="flex h-12 w-full items-center gap-3 rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#08120e] px-4 transition-colors focus-within:border-[#00C693]/80 focus-within:bg-[#0c1813]">
+              <div className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#152326] bg-black px-4 transition-colors focus-within:border-[#10B981]">
                 <KeyRound className="h-4 w-4 text-[#8a9992] shrink-0" />
                 <input
                   type={showPasscode ? "text" : "password"}
@@ -403,7 +403,7 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                 <button
                   type="button"
                   onClick={() => setShowPasscode(!showPasscode)}
-                  className="text-[#8a9992] hover:text-[#00C693] transition-colors p-1"
+                  className="text-[#8a9992] hover:text-[#10B981] transition-colors p-1"
                   aria-label={showPasscode ? "Hide password" : "Show password"}
                   title={showPasscode ? "Hide password" : "Show password"}
                 >
@@ -420,14 +420,14 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                 <div className="mt-2 flex items-center justify-between font-mono-tech text-[10px]">
                   <div className="flex items-center gap-1.5">
                     <span className="text-[#8a9992]">Security:</span>
-                    <span className="font-semibold text-[#00C693]">{passStrength.label}</span>
+                    <span className="font-semibold text-[#10B981]">{passStrength.label}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4].map((bar) => (
                       <span
                         key={bar}
                         className={`h-1 w-5 rounded-full transition-colors ${
-                          passStrength.score >= bar ? passStrength.color : "bg-[#141f1a]"
+                          passStrength.score >= bar ? passStrength.color : "bg-[#152326]"
                         }`}
                       />
                     ))}
@@ -443,12 +443,12 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border border-[rgba(255,255,255,0.2)] bg-[#08120e] text-[#00C693] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#00C693]"
+                  className="h-3.5 w-3.5 rounded border border-[#152326] bg-black text-[#10B981] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#10B981]"
                 />
                 <span className="font-mono-tech text-[11px] text-[#8a9992]">Remember workstation</span>
               </label>
               <span className="font-mono-tech text-[10px] text-[#8a9992] flex items-center gap-1">
-                <ShieldCheck className="h-3 w-3 text-[#00C693]" /> AES-256 Cloud
+                <ShieldCheck className="h-3 w-3 text-[#10B981]" /> AES-256 Cloud
               </span>
             </div>
 
@@ -464,11 +464,11 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#00C693] font-display text-sm font-bold text-[#01140e] transition-all hover:bg-[#00b082] active:scale-[0.99] disabled:opacity-50 shadow-[0_4px_20px_rgba(0,198,147,0.3)] cursor-pointer"
+              className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#10B981] font-display text-sm font-bold text-black transition-all hover:bg-[#059669] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <>
-                  <RefreshCw className="h-4 w-4 animate-spin text-[#01140e]" />
+                  <RefreshCw className="h-4 w-4 animate-spin text-black" />
                   <span>Verifying Credentials…</span>
                 </>
               ) : (
@@ -487,10 +487,10 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
           {/* Social / SSO Section */}
           <div className="relative mt-7 text-center">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[rgba(255,255,255,0.08)]" />
+              <div className="w-full border-t border-[#152326]" />
             </div>
             <div className="relative flex justify-center text-center">
-              <span className="bg-[#050d0a] px-3 font-mono-tech text-[10px] uppercase tracking-widest text-[#8a9992]">
+              <span className="bg-black px-3 font-mono-tech text-[10px] uppercase tracking-widest text-[#8a9992]">
                 OR CLINICAL SSO AUTHENTICATION
               </span>
             </div>
@@ -501,10 +501,10 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
               type="button"
               disabled={Boolean(ssoLoading)}
               onClick={() => handleSsoLogin("Google Workspace")}
-              className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#08120e] text-xs font-medium text-[#ededed] transition-colors hover:border-[#00C693]/40 hover:bg-[#0c1813] disabled:opacity-50 cursor-pointer"
+              className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#152326] bg-black text-xs font-medium text-[#ededed] transition-colors hover:border-[#10B981]/50 hover:bg-black disabled:opacity-50 cursor-pointer"
             >
               {ssoLoading === "Google Workspace" ? (
-                <RefreshCw className="h-3.5 w-3.5 animate-spin text-[#00C693]" />
+                <RefreshCw className="h-3.5 w-3.5 animate-spin text-[#10B981]" />
               ) : (
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24">
                   <path
@@ -532,10 +532,10 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
               type="button"
               disabled={Boolean(ssoLoading)}
               onClick={() => handleSsoLogin("Apple Health ID")}
-              className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#08120e] text-xs font-medium text-[#ededed] transition-colors hover:border-[#00C693]/40 hover:bg-[#0c1813] disabled:opacity-50 cursor-pointer"
+              className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#152326] bg-black text-xs font-medium text-[#ededed] transition-colors hover:border-[#10B981]/50 hover:bg-black disabled:opacity-50 cursor-pointer"
             >
               {ssoLoading === "Apple Health ID" ? (
-                <RefreshCw className="h-3.5 w-3.5 animate-spin text-[#00C693]" />
+                <RefreshCw className="h-3.5 w-3.5 animate-spin text-[#10B981]" />
               ) : (
                 <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
                   <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.38c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.98.6-2.62 1.35-.57.65-1.07 1.72-.94 2.74 1 .08 2.02-.49 2.63-1.24z" />

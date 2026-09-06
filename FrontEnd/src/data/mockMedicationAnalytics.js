@@ -56,8 +56,9 @@ export const medicationAnalyticsData = {
     rangeLabel: "No data yet",
     subtitle: "Daily peak tremor amplitude suppression",
     legend: [
-      { label: "Controlled", color: "#16362e" },
-      { label: "Flare Window", color: "#00e599" },
+      { label: "Normal Range", color: "#64748b" },
+      { label: "Flare Window", color: "#10B981" },
+      { label: "Critical Tremor", color: "#ef4444" },
     ],
     // 30 days — all zero until backend populates real session history
     days: [

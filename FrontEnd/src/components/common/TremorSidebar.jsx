@@ -93,20 +93,20 @@ export default function TremorSidebar({
 
   return (
     <aside
-      className={`hidden w-[64px] shrink-0 flex-col items-center justify-between rounded-[36px] bg-[#030605] border border-[rgba(255,255,255,0.06)] py-6 shadow-2xl lg:flex min-h-[calc(100vh-4rem)] select-none ${className}`}
+      className={`hidden w-[64px] shrink-0 flex-col items-center justify-between rounded-[36px] bg-[#000000] border border-[#152326] py-6 shadow-2xl lg:flex min-h-[calc(100vh-4rem)] select-none ${className}`}
     >
-      {/* Top: Glowing Tremor AI Emblem in Rounded Squircle Frame */}
+      {/* Top: Tremor AI Emblem in Solid Black Circle Frame with Crisp Emerald Border */}
       <div className="flex flex-col items-center pt-1">
         <button
           type="button"
           onClick={() => setActiveTab("kinematics")}
           title="Tremor AI Overview"
-          className="group relative flex h-11 w-11 items-center justify-center rounded-[18px] bg-[#070f0b] border border-[#00d592]/25 p-2 shadow-[0_0_16px_rgba(0,213,146,0.12)] transition-all hover:border-[#00d592]/60 hover:scale-105 active:scale-95"
+          className="group relative flex h-11 w-11 items-center justify-center rounded-full bg-black border border-[#10B981] p-2 transition-all hover:scale-105 active:scale-95"
         >
           <img
             src={iconSrc}
             alt="Tremor AI emblem"
-            className="h-full w-full object-contain filter drop-shadow-[0_0_6px_rgba(0,213,146,0.4)]"
+            className="h-full w-full object-contain"
           />
         </button>
       </div>
@@ -126,8 +126,8 @@ export default function TremorSidebar({
               aria-label={item.label}
               className={`relative flex items-center justify-center rounded-full transition-all duration-300 ${
                 isActive
-                  ? "h-11 w-11 bg-[#00d592] text-[#02140d] shadow-[0_0_24px_rgba(0,213,146,0.45)] scale-105"
-                  : "h-9 w-9 text-[#586860] hover:text-[#ededed] hover:bg-[#0a1410] active:scale-95"
+                  ? "h-11 w-11 bg-[#10B981] text-black scale-105"
+                  : "h-9 w-9 text-slate-400 hover:text-white hover:bg-black active:scale-95"
               }`}
             >
               <Icon className={isActive ? "h-5 w-5 stroke-[2.4]" : "h-4 w-4"} />
@@ -143,7 +143,7 @@ export default function TremorSidebar({
           onClick={onSignOut}
           title="Sign Out / Power"
           aria-label="Sign out"
-          className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#070e0a] text-[#586860] transition-all hover:border-[#00d592]/40 hover:text-[#00d592] hover:bg-[#0c1611] active:scale-95"
+          className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-[#152326] bg-black text-slate-400 transition-all hover:border-[#10B981] hover:text-[#10B981] active:scale-95"
         >
           <Power className="h-3.5 w-3.5 stroke-[2.2] transition-transform group-hover:scale-110" />
         </button>

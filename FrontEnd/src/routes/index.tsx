@@ -35,7 +35,7 @@ function DashboardContent() {
   const { role, isAuthenticated, setIsAuthenticated } = useRole();
 
   if (!mounted) {
-    return <div className="min-h-screen bg-[#060908]" />;
+    return <div className="min-h-screen bg-[#000000]" />;
   }
 
   if (!isAuthenticated) {

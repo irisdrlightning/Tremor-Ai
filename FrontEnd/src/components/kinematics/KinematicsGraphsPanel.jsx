@@ -208,12 +208,12 @@ export default function KinematicsGraphsPanel({
   return (
     <div className="space-y-4">
       {/* Upper Graph Card */}
-      <section className="rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-5 md:p-6 shadow-sm">
+      <section className="rounded-3xl border border-[#152326] bg-black p-5 md:p-6 shadow-sm">
         {/* Header with Title and Next/Prev Switcher */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(255,255,255,0.06)] pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#152326] pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${isStreaming ? "bg-[#00e599] animate-pulse shadow-[0_0_8px_#00e599]" : "bg-[#8a9992]"}`} />
+              <span className={`h-2 w-2 rounded-full ${isStreaming ? "bg-[#10B981] animate-pulse" : "bg-[#8a9992]"}`} />
               <h3 className="font-display text-sm font-bold text-[#ededed]">
                 {activeGraph === "fft"
                   ? "Live FFT Power Spectrum (0 – 25 Hz)"
@@ -234,7 +234,7 @@ export default function KinematicsGraphsPanel({
             <button
               type="button"
               onClick={() => setActiveGraph(activeGraph === "fft" ? "oscilloscope" : "fft")}
-              className="flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-1.5 font-mono-tech text-[10px] font-semibold text-[#ededed] transition-all hover:border-[#00e599]/60 hover:text-[#00e599] hover:bg-[#18221e] active:scale-95 cursor-pointer"
+              className="flex items-center gap-1.5 rounded-full border border-[#152326] bg-black px-3.5 py-1.5 font-mono text-[10px] font-semibold text-[#ededed] transition-all hover:border-[#10B981] hover:text-[#10B981] active:scale-95 cursor-pointer"
             >
               {activeGraph === "fft" ? (
                 <>
@@ -251,12 +251,12 @@ export default function KinematicsGraphsPanel({
 
             {/* Signal Indicator */}
             {activeGraph === "fft" ? (
-              <span className="font-mono-tech text-[10px] text-[#00e599] font-bold flex items-center gap-1.5">
-                <span className={`h-1.5 w-1.5 rounded-full ${isStreaming ? "bg-[#00e599] animate-ping" : "bg-[#8a9992]"}`} />
+              <span className="font-mono text-[10px] text-[#10B981] font-bold flex items-center gap-1.5">
+                <span className={`h-1.5 w-1.5 rounded-full ${isStreaming ? "bg-[#10B981] animate-ping" : "bg-[#8a9992]"}`} />
                 <span>{isStreaming ? "Live PSD" : "Standby Floor"}</span>
               </span>
             ) : (
-              <div className="flex items-center gap-2 font-mono-tech text-[10px]">
+              <div className="flex items-center gap-2 font-mono text-[10px]">
                 <span className="flex items-center gap-1 text-[#f87171]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#f87171]" /> Ax
                 </span>
@@ -272,7 +272,7 @@ export default function KinematicsGraphsPanel({
         </div>
 
         {/* Graph Display Area */}
-        <div className="relative mt-4 h-52 w-full overflow-hidden rounded-2xl bg-[#070b09] border border-[rgba(255,255,255,0.08)] p-2 shadow-inner">
+        <div className="relative mt-4 h-52 w-full overflow-hidden rounded-2xl bg-black border border-[#152326] p-2 shadow-inner">
           {activeGraph === "fft" ? (
             /* ── FFT Power Spectrum Graph with highlighted PD Tremor Band (3.5 - 6.5 Hz) ── */
             <div className="relative h-full w-full">
@@ -319,8 +319,8 @@ export default function KinematicsGraphsPanel({
                     top: `${(fftData.maxPoint.y / 160) * 100}%`,
                   }}
                 >
-                  <div className="mb-1.5 flex items-center gap-1 rounded-md border border-[#00e599]/60 bg-[#0c1410]/95 px-2 py-0.5 font-mono-tech text-[9px] font-bold text-[#00e599] shadow-lg backdrop-blur">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#00e599] animate-ping" />
+                  <div className="mb-1.5 flex items-center gap-1 rounded-md border border-[#10B981] bg-black px-2 py-0.5 font-mono text-[9px] font-bold text-[#10B981] shadow-lg">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-ping" />
                     <span>Peak: {fftData.maxPoint.hz.toFixed(2)} Hz</span>
                   </div>
                 </div>
@@ -330,10 +330,10 @@ export default function KinematicsGraphsPanel({
               <svg viewBox="0 0 500 160" preserveAspectRatio="none" className="h-full w-full pb-5">
                 <defs>
                   <linearGradient id="fftGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#00e599" stopOpacity="0.45" />
-                    <stop offset="40%" stopColor="#00e599" stopOpacity="0.20" />
-                    <stop offset="85%" stopColor="#00e599" stopOpacity="0.05" />
-                    <stop offset="100%" stopColor="#00e599" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="#10B981" stopOpacity="0.45" />
+                    <stop offset="40%" stopColor="#10B981" stopOpacity="0.20" />
+                    <stop offset="85%" stopColor="#10B981" stopOpacity="0.05" />
+                    <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
                   </linearGradient>
                   <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="3" result="blur" />
@@ -353,7 +353,7 @@ export default function KinematicsGraphsPanel({
                 <path
                   d={fftData.line}
                   fill="none"
-                  stroke={isStreaming ? "#00e599" : "#2a3d35"}
+                  stroke={isStreaming ? "#10B981" : "#1e3831"}
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -365,8 +365,8 @@ export default function KinematicsGraphsPanel({
                     cx={fftData.maxPoint.x}
                     cy={fftData.maxPoint.y}
                     r="4"
-                    fill="#00e599"
-                    stroke="#070b09"
+                    fill="#10B981"
+                    stroke="#000000"
                     strokeWidth="2"
                     className="animate-pulse"
                   />
@@ -450,16 +450,16 @@ export default function KinematicsGraphsPanel({
 
         {/* Metric Pills Under Graph */}
         {activeGraph === "fft" ? (
-          <div className="mt-4 grid grid-cols-4 gap-2 text-center md:grid-cols-7 font-mono-tech">
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+          <div className="mt-4 grid grid-cols-4 gap-2 text-center md:grid-cols-7 font-mono">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 DOMINANT
               </span>
-              <span className="text-xs font-bold text-[#00e599]">
+              <span className="text-xs font-bold text-[#10B981]">
                 {isStreaming ? `${currentHz.toFixed(2)} Hz` : "0.00 Hz"}
               </span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 PEAK PSD
               </span>
@@ -467,15 +467,15 @@ export default function KinematicsGraphsPanel({
                 {isStreaming && rmsVal > 0 ? (0.0028 * (rmsVal / 0.14)).toFixed(4) : "0.0000"}
               </span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 BAND
               </span>
-              <span className="text-xs font-semibold text-[#00e599]">
+              <span className="text-xs font-semibold text-[#10B981]">
                 {isStreaming ? `${spectralCond.value}%` : "0%"}
               </span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 HARMONIC
               </span>
@@ -483,70 +483,70 @@ export default function KinematicsGraphsPanel({
                 {isStreaming && currentHz > 0 ? `${(currentHz * 2.0).toFixed(1)} Hz` : "0.0 Hz"}
               </span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 RESOLUTION
               </span>
               <span className="text-xs font-semibold text-[#ededed]">0.195 Hz</span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 WINDOW
               </span>
               <span className="text-xs font-semibold text-[#ededed]">Hann U512</span>
             </div>
-            <div className="rounded-xl border border-[#00e599]/30 bg-[#00e599]/10 p-2">
-              <span className="block text-[9px] uppercase tracking-wider text-[#00e599]">
+            <div className="rounded-xl border border-[#10B981] bg-black p-2">
+              <span className="block text-[9px] uppercase tracking-wider text-[#10B981]">
                 BAND POWER
               </span>
-              <span className="text-xs font-bold text-[#00e599]">
+              <span className="text-xs font-bold text-[#10B981]">
                 {isStreaming ? `${(rmsVal ** 2).toFixed(2)} g²` : "0.00 g²"}
               </span>
             </div>
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-4 gap-2 text-center md:grid-cols-7 font-mono-tech">
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+          <div className="mt-4 grid grid-cols-4 gap-2 text-center md:grid-cols-7 font-mono">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 AX (G)
               </span>
               <span className="text-xs font-bold text-[#f87171]">{axDisplay}</span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 AY (G)
               </span>
               <span className="text-xs font-semibold text-[#2dd4bf]">{ayDisplay}</span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 AZ (G)
               </span>
               <span className="text-xs font-semibold text-[#38bdf8]">{azDisplay}</span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 GX (°/S)
               </span>
               <span className="text-xs font-semibold text-[#ededed]">{gxDisplay}</span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 GY (°/S)
               </span>
               <span className="text-xs font-semibold text-[#ededed]">{gyDisplay}</span>
             </div>
-            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-2">
+            <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 GZ (°/S)
               </span>
               <span className="text-xs font-semibold text-[#ededed]">{gzDisplay}</span>
             </div>
-            <div className="rounded-xl border border-[#00e599]/30 bg-[#00e599]/10 p-2">
-              <span className="block text-[9px] uppercase tracking-wider text-[#00e599]">
+            <div className="rounded-xl border border-[#10B981] bg-black p-2">
+              <span className="block text-[9px] uppercase tracking-wider text-[#10B981]">
                 |A| MAG
               </span>
-              <span className="text-xs font-bold text-[#00e599]">{magDisplay}g</span>
+              <span className="text-xs font-bold text-[#10B981]">{magDisplay}g</span>
             </div>
           </div>
         )}
@@ -554,28 +554,28 @@ export default function KinematicsGraphsPanel({
 
       {/* Row of 3 Lower Condition Cards */}
       <div className="grid gap-3 sm:grid-cols-3">
-        {/* Card 1: AI Detection - Constant Signature Mint Emerald Aesthetic */}
-        <article className="flex flex-col justify-between rounded-3xl border border-[#00e599] bg-[#00e599] p-5 text-[#01140e] shadow-[0_0_24px_rgba(0,229,153,0.18)]">
+        {/* Card 1: AI Detection - Solid Black Aesthetic */}
+        <article className="flex flex-col justify-between rounded-3xl border border-[#10B981] bg-black p-5 text-white shadow-sm">
           <div className="flex items-start justify-between">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#01140e]/15 text-[#01140e]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black border border-[#10B981] text-[#10B981]">
               <Activity className="h-4 w-4" />
             </div>
-            <span className="rounded-full bg-[#01140e]/15 px-2.5 py-0.5 font-mono-tech text-[10px] font-bold tracking-wider text-[#01140e]">
+            <span className="rounded-full bg-black border border-[#10B981] px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-[#10B981]">
               {aiCond.footer}
             </span>
           </div>
 
           <div className="my-2">
-            <p className="font-mono-tech text-[11px] font-semibold text-[#01140e]/80">
+            <p className="font-mono text-[11px] font-semibold text-slate-400">
               {aiCond.label}
             </p>
-            <h4 className="font-display text-2xl font-bold tracking-tight text-[#01140e]">
+            <h4 className="font-display text-2xl font-bold tracking-tight text-white">
               {aiCond.value}
             </h4>
           </div>
 
-          <div className="flex items-center justify-between font-mono-tech text-[10px] font-bold text-[#01140e]">
-            <svg viewBox="0 0 70 16" className="h-4 w-16">
+          <div className="flex items-center justify-between font-mono text-[10px] font-bold text-[#10B981]">
+            <svg viewBox="0 0 70 16" className="h-4 w-16 text-[#10B981]">
               <path
                 d="M 0 8 Q 8 0 16 8 T 32 8 T 48 8 T 64 8"
                 fill="none"
@@ -588,22 +588,22 @@ export default function KinematicsGraphsPanel({
         </article>
 
         {/* Card 2: Tremor Band Power */}
-        <article className="flex flex-col justify-between rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-5 text-[#ededed] shadow-sm">
+        <article className="flex flex-col justify-between rounded-3xl border border-[#152326] bg-black p-5 text-[#ededed] shadow-sm">
           <div className="flex items-start justify-between">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#141a17] text-[#00e599] border border-[rgba(255,255,255,0.08)]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-[#10B981] border border-[#10B981]">
               <TrendingUp className="h-4 w-4" />
             </div>
-            <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-2.5 py-0.5 font-mono-tech text-[10px] text-[#00e599] font-bold">
+            <span className="rounded-full border border-[#10B981] bg-black px-2.5 py-0.5 font-mono text-[10px] text-[#10B981] font-bold">
               {spectralCond.tag}
             </span>
           </div>
 
           <div className="my-2">
-            <p className="font-mono-tech text-[11px] text-[#8a9992]">
+            <p className="font-mono text-[11px] text-slate-400">
               {spectralCond.label}
             </p>
             <p className="font-display text-2xl font-bold tracking-tight text-[#ededed]">
-              {spectralCond.value} <span className="text-sm font-normal text-[#00e599]">%</span>
+              {spectralCond.value} <span className="text-sm font-normal text-[#10B981]">%</span>
             </p>
           </div>
 
@@ -613,51 +613,51 @@ export default function KinematicsGraphsPanel({
                 <span
                   key={i}
                   style={{ height: isStreaming && currentHz >= 3.5 ? `${h}%` : "15%" }}
-                  className="w-1.5 rounded-sm bg-[#00e599] transition-all duration-300"
+                  className="w-1.5 rounded-sm bg-[#10B981] transition-all duration-300"
                 />
               ))}
             </div>
-            <span className="font-mono-tech text-[9px] uppercase tracking-wider text-[#8a9992]">
+            <span className="font-mono text-[9px] uppercase tracking-wider text-slate-400">
               {spectralCond.footer}
             </span>
           </div>
         </article>
 
         {/* Card 3: MDS-UPDRS Score Card */}
-        <article className="flex flex-col justify-between rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-5 text-[#ededed] shadow-sm">
+        <article className="flex flex-col justify-between rounded-3xl border border-[#152326] bg-black p-5 text-[#ededed] shadow-sm">
           <div className="flex items-start justify-between">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#141a17] text-[#00e599] border border-[rgba(255,255,255,0.08)]">
-              <span className="font-mono-tech text-xs font-bold text-[#00e599]">|||</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-[#10B981] border border-[#10B981]">
+              <span className="font-mono text-xs font-bold text-[#10B981]">|||</span>
             </div>
-            <span className="rounded-full border border-[#f59e0b]/30 bg-[#f59e0b]/10 px-2.5 py-0.5 font-mono-tech text-[10px] font-semibold text-[#f59e0b]">
+            <span className="rounded-full border border-[#f59e0b]/50 bg-black px-2.5 py-0.5 font-mono text-[10px] font-semibold text-[#f59e0b]">
               {updrsCond.tag}
             </span>
           </div>
 
           <div className="my-2">
-            <p className="font-mono-tech text-[11px] text-[#8a9992]">
+            <p className="font-mono text-[11px] text-slate-400">
               {updrsCond.label}
             </p>
             <p className="font-display text-2xl font-bold tracking-tight text-[#ededed]">
-              {updrsCond.value} <span className="text-sm font-normal text-[#8a9992]">/100</span>
+              {updrsCond.value} <span className="text-sm font-normal text-slate-400">/100</span>
             </p>
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className={`h-1.5 flex-1 rounded-full ${isStreaming ? "bg-[#00e599]" : "bg-[#141a17]"}`} />
+            <span className={`h-1.5 flex-1 rounded-full ${isStreaming ? "bg-[#10B981]" : "bg-[#152326]"}`} />
             <span
               className={`h-1.5 flex-1 rounded-full ${
-                isStreaming && parseInt(updrsCond.value || "0") >= 25 ? "bg-[#f59e0b]" : "bg-[#141a17]"
+                isStreaming && parseInt(updrsCond.value || "0") >= 25 ? "bg-[#f59e0b]" : "bg-[#152326]"
               }`}
             />
             <span
               className={`h-1.5 flex-1 rounded-full ${
-                isStreaming && parseInt(updrsCond.value || "0") >= 50 ? "bg-[#f59e0b]" : "bg-[#141a17]"
+                isStreaming && parseInt(updrsCond.value || "0") >= 50 ? "bg-[#f59e0b]" : "bg-[#152326]"
               }`}
             />
             <span
               className={`h-1.5 flex-1 rounded-full ${
-                isStreaming && parseInt(updrsCond.value || "0") >= 75 ? "bg-[#ef4444]" : "bg-[#141a17]"
+                isStreaming && parseInt(updrsCond.value || "0") >= 75 ? "bg-[#ef4444]" : "bg-[#152326]"
               }`}
             />
           </div>

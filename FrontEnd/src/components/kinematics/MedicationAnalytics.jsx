@@ -160,16 +160,16 @@ export default function MedicationAnalytics({
             onClick={handleManualSync}
             disabled={isSyncing}
             title={isSyncing ? "Syncing telemetry from device..." : "Sync Device Records"}
-            className="flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] px-3 py-2 font-mono text-[11px] font-bold text-[#00e599] hover:bg-[#141a17] hover:border-[#00e599]/40 transition-all active:scale-95 disabled:opacity-75"
+            className="flex items-center gap-1.5 rounded-full border border-[#152326] bg-black px-3 py-2 font-mono text-[11px] font-bold text-[#10B981] hover:border-[#10B981] transition-all active:scale-95 disabled:opacity-75 cursor-pointer"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin text-[#00e599]" : "text-[#00e599]"}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin text-[#10B981]" : "text-[#10B981]"}`} />
             <span className="hidden sm:inline">{isSyncing ? "Syncing..." : "Sync Device"}</span>
           </button>
 
           <button
             type="button"
             title="Bluetooth Status"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] hover:border-[rgba(255,255,255,0.18)] transition-colors"
+            className="grid h-10 w-10 place-items-center rounded-full border border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed] hover:border-[#10B981] transition-colors"
           >
             <Radio className="h-4 w-4" />
           </button>
@@ -178,7 +178,7 @@ export default function MedicationAnalytics({
             onClick={() => setShowNotificationModal(true)}
             aria-label="Notifications"
             title="Notifications"
-            className="relative grid h-10 w-10 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
+            className="relative grid h-10 w-10 place-items-center rounded-full border border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
           >
             <Bell className="h-4 w-4" />
             <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
@@ -187,7 +187,7 @@ export default function MedicationAnalytics({
             type="button"
             onClick={() => setShowProfileModal(true)}
             title="Edit Patient / User Profile Details"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono text-xs font-bold text-[#00e599] shadow-sm hover:border-[#00e599] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            className="grid h-10 w-10 place-items-center rounded-full border border-[#10B981] bg-black font-mono text-xs font-bold text-[#10B981] hover:scale-105 active:scale-95 transition-all cursor-pointer"
           >
             {initials}
           </button>
@@ -203,13 +203,13 @@ export default function MedicationAnalytics({
       {/* Main Grid Content Layout: 12-Column Grid */}
       <div className="grid gap-6 lg:grid-cols-12 items-stretch">
         {/* LEFT COLUMN: Kinematic Response (Cols 1-4) */}
-        <section className="lg:col-span-4 flex flex-col justify-between rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
+        <section className="lg:col-span-4 flex flex-col justify-between rounded-2xl border border-[#152326] bg-black p-6">
           <div>
             <div className="flex items-center justify-between gap-2">
               <span className="font-mono text-[10px] tracking-wider uppercase text-[#8a9992]">
                 KINEMATIC RESPONSE
               </span>
-              <span className="rounded-md border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-2 py-0.5 font-mono text-[9px] font-bold text-[#00e599] tracking-wider">
+              <span className="rounded-full border border-[#10B981] bg-black px-2.5 py-0.5 font-mono text-[9px] font-bold text-[#10B981] tracking-wider">
                 {data.subject.status}
               </span>
             </div>
@@ -227,14 +227,14 @@ export default function MedicationAnalytics({
                 <path
                   d="M 25 105 A 85 85 0 0 1 195 105"
                   fill="none"
-                  stroke="#141a17"
+                  stroke="#152326"
                   strokeWidth="12"
                   strokeLinecap="round"
                 />
                 <path
                   d="M 25 105 A 85 85 0 0 1 195 105"
                   fill="none"
-                  stroke="#00e599"
+                  stroke="#10B981"
                   strokeWidth="12"
                   strokeLinecap="round"
                   strokeDasharray="267"
@@ -260,8 +260,8 @@ export default function MedicationAnalytics({
               onClick={() => setFilterActive(!filterActive)}
               className={`mx-auto mt-3 block rounded-full border px-4 py-2 text-center transition-colors ${
                 filterActive
-                  ? "border-[#00e599] bg-[#141a17] text-[#00e599]"
-                  : "border-[rgba(255,255,255,0.08)] bg-[#141a17] text-[#00e599]"
+                  ? "border-[#10B981] bg-black text-[#10B981]"
+                  : "border-[#152326] bg-black text-[#10B981]"
               }`}
             >
               <span className="font-mono text-[10px] font-bold tracking-wide">
@@ -271,7 +271,7 @@ export default function MedicationAnalytics({
           </div>
 
           {/* Bottom Biomarker Summary */}
-          <div className="mt-8 border-t border-[rgba(255,255,255,0.08)] pt-4">
+          <div className="mt-8 border-t border-[#152326] pt-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-wider text-[#8a9992]">
@@ -279,7 +279,7 @@ export default function MedicationAnalytics({
                 </p>
                 <p className="mt-1 font-bold text-sm text-[#ededed]">
                   {data.subject.meanRestTremor}{" "}
-                  <span className="text-xs font-medium text-[#00e599]">
+                  <span className="text-xs font-medium text-[#10B981]">
                     {data.subject.meanRestDelta}
                   </span>
                 </p>
@@ -288,7 +288,7 @@ export default function MedicationAnalytics({
                 <p className="font-mono text-[10px] uppercase tracking-wider text-[#8a9992]">
                   On-State Stability
                 </p>
-                <p className="mt-1 font-bold text-sm text-[#00e599]">
+                <p className="mt-1 font-bold text-sm text-[#10B981]">
                   {data.subject.onStateStability}{" "}
                   <span className="text-xs font-normal text-[#8a9992]">
                     {data.subject.onStateLabel}
@@ -303,7 +303,7 @@ export default function MedicationAnalytics({
         <section className="lg:col-span-4 flex flex-col gap-3">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
               <h3 className="text-sm font-semibold text-[#ededed]">Titration Metrics</h3>
             </div>
             <span className="font-mono text-[10px] text-[#8a9992]">
@@ -313,22 +313,22 @@ export default function MedicationAnalytics({
 
           <div className="grid grid-cols-2 gap-3 flex-1">
             {/* Card 1: Spectral Power */}
-            <article className="flex flex-col justify-between rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4">
+            <article className="flex flex-col justify-between rounded-2xl border border-[#152326] bg-black p-4">
               <div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[9px] uppercase tracking-wider text-[#8a9992]">
                     SPECTRAL POWER
                   </span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
                 </div>
                 <p className="mt-3 font-mono text-[10px] text-[#8a9992]">Tremor Reduction</p>
                 <p className="mt-1 font-bold text-2xl text-[#ededed]">
-                  -42.8<span className="text-sm font-normal text-[#00e599]">%</span>
+                  -42.8<span className="text-sm font-normal text-[#10B981]">%</span>
                 </p>
               </div>
 
               <div className="mt-4">
-                <svg viewBox="0 0 100 24" className="w-full h-6 text-[#00e599]">
+                <svg viewBox="0 0 100 24" className="w-full h-6 text-[#10B981]">
                   <polyline
                     fill="none"
                     stroke="currentColor"
@@ -347,14 +347,14 @@ export default function MedicationAnalytics({
             {/* Card 2: Dosage Status */}
             <article
               onClick={() => setActiveTab("log-medicine")}
-              className="flex flex-col justify-between rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4 cursor-pointer hover:border-[rgba(255,255,255,0.18)] transition-colors"
+              className="flex flex-col justify-between rounded-2xl border border-[#152326] bg-black p-4 cursor-pointer hover:border-[#10B981] transition-colors"
             >
               <div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[9px] uppercase tracking-wider text-[#8a9992]">
                     DOSAGE STATUS
                   </span>
-                  <span className="rounded border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-1.5 py-0.2 font-mono text-[8px] font-bold text-[#00e599]">
+                  <span className="rounded-full border border-[#10B981] bg-black px-2 py-0.5 font-mono text-[8px] font-bold text-[#10B981]">
                     {data.titration.dosageStatus.tag}
                   </span>
                 </div>
@@ -370,13 +370,13 @@ export default function MedicationAnalytics({
               </div>
 
               <div className="mt-4 font-mono text-[9px] space-y-1">
-                <p className="text-[#00e599]">{data.titration.dosageStatus.nextDose}</p>
+                <p className="text-[#10B981]">{data.titration.dosageStatus.nextDose}</p>
                 <p className="text-[#8a9992]">{data.titration.dosageStatus.window}</p>
               </div>
             </article>
 
             {/* Card 3: Kinetic Band */}
-            <article className="flex flex-col justify-between rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4">
+            <article className="flex flex-col justify-between rounded-2xl border border-[#152326] bg-black p-4">
               <div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[9px] uppercase tracking-wider text-[#8a9992]">
@@ -406,7 +406,7 @@ export default function MedicationAnalytics({
                     onClick={() => setActiveChannel(idx)}
                     title={`Channel ${idx + 1}`}
                     className={`flex-1 rounded-xs transition-colors ${
-                      activeChannel === idx ? "bg-[#00e599]" : "bg-[#141a17] hover:bg-[#1f2824]"
+                      activeChannel === idx ? "bg-[#10B981]" : "bg-[#152326] hover:bg-[#1e3439]"
                     }`}
                     style={{ height: `${ch.level}%` }}
                   />
@@ -415,13 +415,13 @@ export default function MedicationAnalytics({
             </article>
 
             {/* Card 4: Compliance */}
-            <article className="flex flex-col justify-between rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4">
+            <article className="flex flex-col justify-between rounded-2xl border border-[#152326] bg-black p-4">
               <div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[9px] uppercase tracking-wider text-[#8a9992]">
                     COMPLIANCE
                   </span>
-                  <span className="font-mono text-[9px] font-bold text-[#00e599]">
+                  <span className="font-mono text-[9px] font-bold text-[#10B981]">
                     {data.titration.compliance.rate}
                   </span>
                 </div>
@@ -437,8 +437,8 @@ export default function MedicationAnalytics({
               </div>
 
               <div className="mt-4">
-                <div className="h-1.5 w-full rounded-full bg-[#141a17] overflow-hidden">
-                  <div className="h-full w-full rounded-full bg-[#00e599]" />
+                <div className="h-1.5 w-full rounded-full bg-[#152326] overflow-hidden">
+                  <div className="h-full w-full rounded-full bg-[#10B981]" />
                 </div>
                 <p className="mt-2 font-mono text-[9px] text-[#8a9992]">
                   {data.titration.compliance.skippedText}
@@ -449,25 +449,25 @@ export default function MedicationAnalytics({
         </section>
 
         {/* RIGHT COLUMN: 30-Day Response Timeline (Cols 9-12) */}
-        <section className="lg:col-span-4 flex flex-col justify-between rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
+        <section className="lg:col-span-4 flex flex-col justify-between rounded-2xl border border-[#152326] bg-black p-6">
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
                 <h3 className="text-base font-bold text-[#ededed]">30-Day Response Timeline</h3>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setAutoSync(!autoSync)}
-                  className={`flex items-center gap-1.5 rounded-md px-2 py-0.5 font-mono text-[9px] font-bold border transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-md px-2 py-0.5 font-mono text-[9px] font-bold border transition-colors cursor-pointer ${
                     autoSync
-                      ? "border-[#00e599]/30 bg-[#00e599]/15 text-[#00e599]"
-                      : "border-[rgba(255,255,255,0.08)] bg-[#141a17] text-[#8a9992]"
+                      ? "border-[#10B981] bg-black text-[#10B981]"
+                      : "border-[#152326] bg-black text-slate-400"
                   }`}
                   title={autoSync ? "Auto-sync enabled (updating real-time)" : "Auto-sync disabled (click to enable)"}
                 >
-                  <span className={`h-1.5 w-1.5 rounded-full ${autoSync ? "bg-[#00e599] animate-pulse" : "bg-[#8a9992]"}`} />
+                  <span className={`h-1.5 w-1.5 rounded-full ${autoSync ? "bg-[#10B981] animate-pulse" : "bg-[#8a9992]"}`} />
                   <span>{autoSync ? "AUTO SYNC" : "MANUAL"}</span>
                 </button>
                 <span className="font-mono text-[10px] font-semibold text-[#8a9992]">
@@ -485,19 +485,19 @@ export default function MedicationAnalytics({
                     key={idx}
                     type="button"
                     onClick={() => setSelectedDay(item)}
-                    className="flex-1 flex flex-col items-center justify-end h-full group relative focus:outline-none"
+                    className="flex-1 flex flex-col items-center justify-end h-full group relative focus:outline-none cursor-pointer"
                   >
                     <div
                       style={{ height: `${item.val}%` }}
                       className={`w-full rounded-xs transition-colors ${
                         item.isFlare
-                          ? "bg-[#00e599]"
+                          ? "bg-[#10B981]"
                           : selectedDay?.day === item.day
                             ? "bg-[#ededed]"
-                            : "bg-[#141a17] group-hover:bg-[#202924]"
+                            : "bg-[#152326] group-hover:bg-[#1e3439]"
                       }`}
                     />
-                    <div className="absolute -top-6 hidden group-hover:flex px-1.5 py-0.5 rounded bg-[#141a17] border border-[rgba(255,255,255,0.08)] text-[9px] font-mono text-[#00e599] whitespace-nowrap z-10 pointer-events-none">
+                    <div className="absolute -top-6 hidden group-hover:flex px-1.5 py-0.5 rounded bg-black border border-[#152326] text-[9px] font-mono text-[#10B981] whitespace-nowrap z-10 pointer-events-none">
                       Day {item.day}: {item.val}% {item.isFlare ? "(Flare)" : ""}
                     </div>
                   </button>
@@ -505,16 +505,16 @@ export default function MedicationAnalytics({
               </div>
 
               {/* Timeline Axis Labels and Legend */}
-              <div className="mt-3 flex items-center justify-between font-mono text-[10px] text-[#8a9992] border-t border-[rgba(255,255,255,0.08)] pt-2">
+              <div className="mt-3 flex items-center justify-between font-mono text-[10px] text-[#8a9992] border-t border-[#152326] pt-2">
                 <span>Oct 01</span>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-xs bg-[#141a17]" />
+                    <span className="h-2 w-2 rounded-xs bg-[#152326]" />
                     <span>Controlled</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-xs bg-[#00e599]" />
-                    <span className="text-[#00e599]">Flare Window</span>
+                    <span className="h-2 w-2 rounded-xs bg-[#10B981]" />
+                    <span className="text-[#10B981]">Flare Window</span>
                   </div>
                 </div>
                 <span>Oct 30</span>
@@ -524,43 +524,43 @@ export default function MedicationAnalytics({
 
             {/* Selected Day Telemetry Inspector */}
             {selectedDay ? (
-              <div className="mt-4 rounded-xl border border-[#00e599]/30 bg-[#141a17] p-3 text-xs space-y-2">
-                <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] pb-1.5">
+              <div className="mt-4 rounded-xl border border-[#152326] bg-black p-3 text-xs space-y-2">
+                <div className="flex items-center justify-between border-b border-[#152326] pb-1.5">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-[#00e599]" />
+                    <span className="h-2 w-2 rounded-full bg-[#10B981]" />
                     <span className="font-bold text-[#ededed]">Day {selectedDay.day} Telemetry</span>
                     <span className="text-[10px] text-[#8a9992]">({selectedDay.dateStr || `Day ${selectedDay.day}`})</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setSelectedDay(null)}
-                    className="text-[#8a9992] hover:text-[#ededed]"
+                    className="text-[#8a9992] hover:text-[#ededed] cursor-pointer"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
                 <div className="grid grid-cols-3 gap-2 font-mono text-[10px]">
-                  <div className="rounded-lg bg-[#0c100e] p-1.5 border border-[rgba(255,255,255,0.05)]">
+                  <div className="rounded-lg bg-black p-1.5 border border-[#152326]">
                     <span className="text-[#8a9992] block text-[8px]">SEVERITY</span>
                     <span className="font-bold text-[#ededed]">{selectedDay.severityScore || selectedDay.val}/100</span>
                   </div>
-                  <div className="rounded-lg bg-[#0c100e] p-1.5 border border-[rgba(255,255,255,0.05)]">
+                  <div className="rounded-lg bg-black p-1.5 border border-[#152326]">
                     <span className="text-[#8a9992] block text-[8px]">PEAK FREQ</span>
-                    <span className="font-bold text-[#00e599]">{selectedDay.peakHz || 4.88} Hz</span>
+                    <span className="font-bold text-[#10B981]">{selectedDay.peakHz || 4.88} Hz</span>
                   </div>
-                  <div className="rounded-lg bg-[#0c100e] p-1.5 border border-[rgba(255,255,255,0.05)]">
+                  <div className="rounded-lg bg-black p-1.5 border border-[#152326]">
                     <span className="text-[#8a9992] block text-[8px]">RMS AMP</span>
                     <span className="font-bold text-[#ededed]">{selectedDay.rms || "0.142"}g</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-[10px] pt-1">
-                  <span className={`px-1.5 py-0.5 rounded font-mono text-[9px] font-bold ${selectedDay.isFlare ? "bg-red-500/20 text-red-400 border border-red-500/30" : "bg-[#00e599]/15 text-[#00e599]"}`}>
+                  <span className={`px-2.5 py-0.5 rounded-full font-mono text-[9px] font-bold ${selectedDay.isFlare ? "bg-red-500/20 text-red-400 border border-red-500/30" : "bg-black border border-[#10B981] text-[#10B981]"}`}>
                     {selectedDay.status || "Controlled"}
                   </span>
                   <button
                     type="button"
                     onClick={handleExportDaySessionPDF}
-                    className="flex items-center gap-1 text-[#00e599] hover:underline font-mono text-[9px]"
+                    className="flex items-center gap-1 text-[#10B981] hover:underline font-mono text-[9px] cursor-pointer"
                   >
                     <Download className="h-3 w-3" /> Day PDF Report
                   </button>
@@ -574,7 +574,7 @@ export default function MedicationAnalytics({
                 type="button"
                 disabled={exporting}
                 onClick={handleExportPDF}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#00e599] py-3 text-xs font-bold text-[#021a11] transition-transform active:scale-[0.99] disabled:opacity-75 shadow-[0_0_15px_rgba(0,229,153,0.2)] hover:bg-[#00c985]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#10B981] py-3 text-xs font-bold text-black transition-transform active:scale-[0.99] disabled:opacity-75 hover:brightness-110 cursor-pointer"
               >
                 <span>
                   {exporting
@@ -590,19 +590,21 @@ export default function MedicationAnalytics({
                 )}
               </button>
 
-              <div className="flex items-center justify-between font-mono text-[9px] text-[#8a9992]">
-                <span>{data.timeline.footer.format}</span>
-                <span className="text-[#00e599]">{data.timeline.footer.hash}</span>
+              <div className="flex items-center justify-between">
+                <p className="font-mono text-[10px] text-[#8a9992]">
+                  SHA-256 Checksum:{" "}
+                  <span className="text-[#10B981]">{data.timeline.footer.hash}</span>
+                </p>
               </div>
             </div>
         </section>
       </div>
 
       {/* BOTTOM SECTION: Sensor Channels & Validation Nodes */}
-      <section className="space-y-3 border-t border-[rgba(255,255,255,0.08)] pt-6">
+      <section className="space-y-3 border-t border-[#152326] pt-6">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
             <h3 className="text-xs font-semibold text-[#ededed]">
               Sensor Channels &amp; Validation Nodes
             </h3>
@@ -611,14 +613,14 @@ export default function MedicationAnalytics({
             <button
               type="button"
               onClick={() => setTimeIndex(Math.max(0, timeIndex - 1))}
-              className="grid h-7 w-7 place-items-center rounded-lg bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-colors"
+              className="grid h-7 w-7 place-items-center rounded-lg bg-black border border-[#152326] text-[#8a9992] hover:text-[#ededed] transition-colors cursor-pointer"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
               onClick={() => setTimeIndex(timeIndex + 1)}
-              className="grid h-7 w-7 place-items-center rounded-lg bg-[#0c100e] border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] transition-colors"
+              className="grid h-7 w-7 place-items-center rounded-lg bg-black border border-[#152326] text-[#8a9992] hover:text-[#ededed] transition-colors cursor-pointer"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </button>
@@ -628,9 +630,9 @@ export default function MedicationAnalytics({
         {/* 3 Bottom Cards */}
         <div className="grid gap-4 md:grid-cols-3">
           {/* Card 1: Diurnal Curve */}
-          <article className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4">
+          <article className="flex items-center justify-between rounded-xl border border-[#152326] bg-black p-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#141a17] text-[#00e599]">
+              <div className="grid h-9 w-9 place-items-center rounded-lg bg-black border border-[#10B981] text-[#10B981]">
                 <TrendingDown className="h-4 w-4" />
               </div>
               <div>
@@ -653,14 +655,14 @@ export default function MedicationAnalytics({
           </article>
 
           {/* Card 2: Hardware Sync */}
-          <article className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4">
+          <article className="flex items-center justify-between rounded-xl border border-[#152326] bg-black p-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#141a17] text-[#00e599]">
+              <div className="grid h-9 w-9 place-items-center rounded-lg bg-black border border-[#10B981] text-[#10B981]">
                 <Radio className="h-4 w-4" />
               </div>
               <div>
                 <p className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wider text-[#8a9992]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
                   MPU6050 100 HZ
                 </p>
                 <p className="text-xs font-bold text-[#ededed]">Hardware Sync</p>
@@ -673,7 +675,7 @@ export default function MedicationAnalytics({
             </div>
 
             <div className="text-right">
-              <span className="font-mono text-[9px] font-bold text-[#00e599] tracking-wider block">
+              <span className="font-mono text-[9px] font-bold text-[#10B981] tracking-wider block">
                 {liveImu ? "LIVE" : "ACTIVE"}
               </span>
               <span className="font-mono text-[10px] text-[#8a9992]">0.02ms lag</span>
@@ -681,9 +683,9 @@ export default function MedicationAnalytics({
           </article>
 
           {/* Card 3: FFT Spectrum */}
-          <article className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4">
+          <article className="flex items-center justify-between rounded-xl border border-[#152326] bg-black p-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#141a17] text-[#00e599]">
+              <div className="grid h-9 w-9 place-items-center rounded-lg bg-black border border-[#10B981] text-[#10B981]">
                 <BarChart2 className="h-4 w-4" />
               </div>
               <div>

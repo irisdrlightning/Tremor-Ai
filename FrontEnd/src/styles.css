@@ -8,8 +8,8 @@
  * - Monochromatic dark slate base (oklch)
  * - Zero purple/indigo gradients, zero soft drop shadows (hard 1px borders only)
  * - 8px body rhythm with 24px vertical section increments
- * - Crisp borders: 1px solid rgba(255, 255, 255, 0.08)
- * - Restrained, high-impact CTA neon mint accent (#00e599)
+ * - Crisp borders: 1px solid #152326
+ * - Restrained, high-impact CTA emerald accent (#10B981)
  */
 
 @theme inline {
@@ -47,28 +47,28 @@
 
 :root {
   --radius: 0.75rem;
-  /* Deep dark neutral slate */
-  --background: #060908;
+  /* Pure solid black & emerald palette */
+  --background: #000000;
   --foreground: #ededed;
-  --card: #0c100e;
+  --card: #080d0e;
   --card-foreground: #ededed;
-  --popover: #0c100e;
+  --popover: #000000;
   --popover-foreground: #ededed;
-  --primary: #00e599;
-  --primary-foreground: #021a11;
-  --secondary: #141a17;
+  --primary: #10B981;
+  --primary-foreground: #000000;
+  --secondary: #080d0e;
   --secondary-foreground: #ededed;
-  --muted: #141a17;
+  --muted: #080d0e;
   --muted-foreground: #8a9992;
-  --accent: #19241f;
+  --accent: #080d0e;
   --accent-foreground: #ededed;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --warning: #f59e0b;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: #00e599;
-  --shell: #040605;
+  --border: #152326;
+  --input: #152326;
+  --ring: #10B981;
+  --shell: #000000;
 
   /* Typography: Strict sans-serif Space Grotesk + JetBrains Mono */
   --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -76,11 +76,11 @@
 }
 
 .dark {
-  --background: #060908;
+  --background: #000000;
   --foreground: #ededed;
-  --card: #0c100e;
+  --card: #080d0e;
   --card-foreground: #ededed;
-  --border: rgba(255, 255, 255, 0.08);
+  --border: #152326;
 }
 
 @layer base {
