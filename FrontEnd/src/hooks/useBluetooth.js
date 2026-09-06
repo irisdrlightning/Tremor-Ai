@@ -243,27 +243,11 @@ export function useBluetooth() {
         DEV_INFO_SERVICE_UUID,
       ];
 
-      // Request physical BLE device from browser picker (targeted filter with fallback)
-      let device = null;
-      try {
-        device = await navigator.bluetooth.requestDevice({
-          filters: [
-            { name: "TremorAI-Glove" },
-            { namePrefix: "Tremor" },
-            { namePrefix: "ESP" },
-            { services: [TREMOR_SERVICE_UUID] },
-          ],
-          optionalServices,
-        });
-      } catch (filterErr) {
-        if (filterErr.name === "NotFoundError" || filterErr.name === "AbortError") {
-          throw filterErr;
-        }
-        device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices,
-        });
-      }
+      // Request physical BLE device from browser picker (unrestricted so user can find their ESP32/Ring)
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices,
+      });
 
       if (!device) {
         setBleState(BLE_STATE.DISCONNECTED);

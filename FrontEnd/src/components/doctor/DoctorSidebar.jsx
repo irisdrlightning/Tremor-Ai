@@ -44,7 +44,7 @@ export default function DoctorSidebar({
 
   return (
     <aside
-      className={`border border-[#152326] bg-[#000000] rounded-[2.5rem] py-6 px-3 flex flex-col items-center justify-between w-20 min-h-[96vh] my-3 ml-3 shrink-0 select-none shadow-2xl z-20 ${className}`}
+      className={`border border-[#152326] bg-[#000000] rounded-full py-6 px-3 flex flex-col items-center justify-between w-16 md:w-20 h-[calc(100vh-2rem)] sticky top-4 self-start shrink-0 select-none shadow-2xl z-20 ${className}`}
     >
       {/* Top Logo Block: Inset solid black squircle with solid emerald T mark */}
       <div className="flex flex-col items-center pt-1">
