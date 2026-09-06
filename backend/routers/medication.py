@@ -31,7 +31,10 @@ class DoseEntryRequest(BaseModel):
     tremorHz: Optional[float] = None
     note: Optional[str] = None
 
-from backend.database import load_dose_logs_data, save_dose_logs_data
+try:
+    from backend.database import load_dose_logs_data, save_dose_logs_data
+except ModuleNotFoundError:
+    from database import load_dose_logs_data, save_dose_logs_data
 
 def load_stored_dose_logs() -> List[Dict[str, Any]]:
     return load_dose_logs_data()

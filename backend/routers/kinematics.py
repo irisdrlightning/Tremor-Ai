@@ -4,7 +4,10 @@ from typing import List, Optional, Dict, Any
 import numpy as np
 from pydantic import BaseModel
 from fastapi import APIRouter
-from backend.models.schemas import SubjectOverview, ConditionItem, ScheduleData, SensorNode, DoseLogRequest
+try:
+    from backend.models.schemas import SubjectOverview, ConditionItem, ScheduleData, SensorNode, DoseLogRequest
+except ModuleNotFoundError:
+    from models.schemas import SubjectOverview, ConditionItem, ScheduleData, SensorNode, DoseLogRequest
 
 router = APIRouter(prefix="/api", tags=["kinematics"])
 

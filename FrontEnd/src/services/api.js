@@ -12,7 +12,7 @@ import {
 import { medicationAnalyticsData as mockMedicationData } from "@/data/mockMedicationAnalytics";
 
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+  import.meta.env.VITE_API_BASE_URL || "https://tremor-ai-one.vercel.app";
 
 async function fetchWithFallback(endpoint, fallbackData, options = {}) {
   try {

@@ -1,7 +1,20 @@
+import sys
+import os
+
+# Ensure project root is on sys.path so 'backend' and 'src' can be imported in any runtime (e.g. Vercel)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
+for path in [current_dir, parent_dir]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.routers import auth, kinematics, medication, telemetry_ws, reports
+try:
+    from backend.routers import auth, kinematics, medication, telemetry_ws, reports
+except ModuleNotFoundError:
+    from routers import auth, kinematics, medication, telemetry_ws, reports
 
 app = FastAPI(
     title="Tremor AI API",

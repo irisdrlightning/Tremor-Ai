@@ -24,7 +24,7 @@ import {
 
 import { useRole } from "@/context/RoleContext";
 import { useBluetooth, BLE_STATE } from "@/hooks/useBluetooth";
-import { api } from "@/services/api";
+import { api, API_BASE_URL } from "@/services/api";
 import DoctorLayout from "./DoctorLayout";
 import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
 
@@ -297,7 +297,7 @@ export default function DoctorPortal({ onSignOut, initialTab = "analyser" }) {
     setIsGeneratingPdf(true);
     setPdfSuccessMessage("");
     try {
-      const url = `http://localhost:8000/api/reports/doctor-pdf?patient_id=${selectedPatient.id}&from_date=${reportFromDate}&to_date=${reportToDate}`;
+      const url = `${API_BASE_URL}/api/reports/doctor-pdf?patient_id=${selectedPatient.id}&from_date=${reportFromDate}&to_date=${reportToDate}`;
       const res = await fetch(url);
       if (res.ok) {
         const blob = await res.blob();

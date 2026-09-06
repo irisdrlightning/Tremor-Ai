@@ -4,7 +4,10 @@ import os
 import time
 from typing import Optional
 from fastapi import APIRouter, Header, HTTPException
-from backend.models.schemas import AuthMeResponse, UserProfile, LoginRequest, LoginResponse
+try:
+    from backend.models.schemas import AuthMeResponse, UserProfile, LoginRequest, LoginResponse
+except ModuleNotFoundError:
+    from models.schemas import AuthMeResponse, UserProfile, LoginRequest, LoginResponse
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -56,12 +59,20 @@ DEFAULT_ACCOUNTS = {
     }
 }
 
-from backend.database import (
-    load_accounts_data,
-    save_accounts_data,
-    load_profile_data,
-    save_profile_data
-)
+try:
+    from backend.database import (
+        load_accounts_data,
+        save_accounts_data,
+        load_profile_data,
+        save_profile_data
+    )
+except ModuleNotFoundError:
+    from database import (
+        load_accounts_data,
+        save_accounts_data,
+        load_profile_data,
+        save_profile_data
+    )
 
 def load_accounts():
     accounts = load_accounts_data()

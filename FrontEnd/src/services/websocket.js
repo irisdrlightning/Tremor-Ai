@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 export const WS_URL =
-  import.meta.env.VITE_WS_URL || "ws://localhost:8000/ws/live-telemetry";
+  import.meta.env.VITE_WS_URL || "wss://tremor-ai-one.vercel.app/ws/live-telemetry";
 
 /**
  * Hook for live telemetry streaming from backend WebSocket.

@@ -4,7 +4,10 @@ import math
 import time
 from typing import List
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from backend.models.schemas import LiveGloveTelemetry, FrequencyNode
+try:
+    from backend.models.schemas import LiveGloveTelemetry, FrequencyNode
+except ModuleNotFoundError:
+    from models.schemas import LiveGloveTelemetry, FrequencyNode
 
 router = APIRouter(tags=["telemetry"])
 
@@ -130,7 +133,10 @@ def generate_telemetry_frame(t: float) -> LiveGloveTelemetry:
     updrs_score = int(round(42 + 2 * math.sin(0.1 * t)))
     vol_noise = round(0.8 + 0.1 * math.sin(0.2 * t), 1)
 
-    from backend.models.schemas import ConditionItem
+    try:
+        from backend.models.schemas import ConditionItem
+    except ModuleNotFoundError:
+        from models.schemas import ConditionItem
     live_conditions = [
         ConditionItem(
             id="ai",
