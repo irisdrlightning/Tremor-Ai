@@ -7,7 +7,7 @@ import api from "@/services/api";
 const RoleContext = createContext({
   role: "doctor",
   user: { name: "Dr. Rita Sharma", initials: "RS" },
-  isAuthenticated: true,
+  isAuthenticated: false,
   setRole: () => {},
   setUser: () => {},
   login: async () => {},
@@ -87,11 +87,11 @@ export function RoleProvider({ children, initialRole = "doctor" }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window !== "undefined") {
-      const storedAuth = localStorage.getItem("tremor_auth_authenticated");
-      const storedToken = localStorage.getItem("tremor_auth_token");
+      const storedAuth = sessionStorage.getItem("tremor_auth_authenticated");
+      const storedToken = sessionStorage.getItem("tremor_auth_token");
       return storedAuth === "true" && Boolean(storedToken);
     }
-    return true; // Default offline authenticated
+    return false; // Default unauthenticated so login page always loads first
   });
 
   const [user, setUser] = useState(() => {
@@ -151,6 +151,10 @@ export function RoleProvider({ children, initialRole = "doctor" }) {
       setUser(res.user);
       setIsAuthenticated(true);
       if (typeof window !== "undefined") {
+        sessionStorage.setItem("tremor_auth_authenticated", "true");
+        sessionStorage.setItem("tremor_auth_role", res.role);
+        sessionStorage.setItem("tremor_auth_token", res.token || `token-${Date.now()}`);
+        sessionStorage.setItem("tremor_auth_user", JSON.stringify(res.user));
         localStorage.setItem("tremor_auth_authenticated", "true");
         localStorage.setItem("tremor_auth_role", res.role);
         localStorage.setItem("tremor_auth_token", res.token || `token-${Date.now()}`);
@@ -169,6 +173,10 @@ export function RoleProvider({ children, initialRole = "doctor" }) {
     }
     setIsAuthenticated(false);
     if (typeof window !== "undefined") {
+      sessionStorage.removeItem("tremor_auth_authenticated");
+      sessionStorage.removeItem("tremor_auth_token");
+      sessionStorage.removeItem("tremor_auth_role");
+      sessionStorage.removeItem("tremor_auth_user");
       localStorage.removeItem("tremor_auth_authenticated");
       localStorage.removeItem("tremor_auth_token");
       localStorage.removeItem("tremor_auth_role");
