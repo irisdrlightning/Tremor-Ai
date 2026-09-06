@@ -16,9 +16,14 @@ export const API_BASE_URL =
 
 async function fetchWithFallback(endpoint, fallbackData, options = {}) {
   try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("tremor_auth_token") : null;
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: { "Content-Type": "application/json" },
       ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers || {}),
+      },
     });
     if (!res.ok) {
       throw new Error(`HTTP error ${res.status}`);
@@ -35,8 +40,26 @@ export const api = {
   async getMe(role = "doctor") {
     const fallback =
       role === "doctor"
-        ? { role: "doctor", user: { name: "Dr. Rita Sharma", initials: "RS" } }
-        : { role: "patient", user: { name: "George Peter", initials: "GP" } };
+        ? {
+            role: "doctor",
+            user: {
+              name: "Dr. Rita Sharma",
+              initials: "RS",
+              id: "DR-10822",
+              role: "Movement Disorder Specialist",
+            },
+            isAuthenticated: true,
+          }
+        : {
+            role: "patient",
+            user: {
+              name: "George Peter",
+              initials: "GP",
+              id: "TR-90241",
+              role: "Parkinson's Stage II Participant",
+            },
+            isAuthenticated: true,
+          };
     return fetchWithFallback(`/api/auth/me?role=${role}`, fallback);
   },
 
@@ -47,9 +70,20 @@ export const api = {
       role,
       user:
         role === "doctor"
-          ? { name: "Dr. Rita Sharma", initials: "RS" }
-          : { name: "George Peter", initials: "GP" },
-      token: "stub-jwt-token-tremor-ai",
+          ? {
+              name: "Dr. Rita Sharma",
+              initials: "RS",
+              id: identifier || "DR-10822",
+              role: "Movement Disorder Specialist",
+            }
+          : {
+              name: "George Peter",
+              initials: "GP",
+              id: identifier || "TR-90241",
+              role: "Parkinson's Stage II Participant",
+            },
+      token: `tremor-jwt-${role}-${identifier || "guest"}`,
+      message: "Authentication successful",
     };
     return fetchWithFallback(
       "/api/auth/login",
@@ -59,6 +93,10 @@ export const api = {
         body: JSON.stringify({ portal, identifier, passcode }),
       }
     );
+  },
+
+  async logout() {
+    return fetchWithFallback("/api/auth/logout", { status: "success" }, { method: "POST" });
   },
 
   // Patient Overview / Kinematics

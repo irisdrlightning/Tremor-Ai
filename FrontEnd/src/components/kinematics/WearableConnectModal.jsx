@@ -1,148 +1,222 @@
-import { X, RefreshCw, Hand, Disc, Link as LinkIcon, Radio } from "lucide-react";
-import { useState } from "react";
+import {
+  X,
+  RefreshCw,
+  Link as LinkIcon,
+  Radio,
+  Bluetooth,
+  CheckCircle2,
+  Unlink,
+  AlertCircle,
+  Zap,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { BLE_STATE } from "@/hooks/useBluetooth";
 
 export default function WearableConnectModal({
   isOpen,
   onClose,
+  onConnectBle,
   onConnectGlove,
+  onDisconnectGlove,
   bleState,
   deviceName,
+  errorMessage,
+  isBleSupported = true,
 }) {
-  const [refreshing, setRefreshing] = useState(false);
-  const [connectingId, setConnectingId] = useState(null);
+  const [scanning, setScanning] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setScanning(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const devices = [
-    {
-      id: "esp32-glove",
-      name: "TremorAi Glove Prototype (ESP32)",
-      signal: "-48 dBm",
-      battery: "88%",
-      icon: Hand,
-      type: "glove",
-    },
-    {
-      id: "smart-ring",
-      name: "TremorAi Smart Ring (Alpha)",
-      signal: "-72 dBm",
-      battery: "64%",
-      icon: Disc,
-      type: "ring",
-    },
-  ];
+  const isConnected = bleState === BLE_STATE.CONNECTED;
 
-  const handleRescan = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1200);
-  };
-
-  const handleDeviceConnect = async (device) => {
-    setConnectingId(device.id);
+  const handleScanBle = async () => {
+    setScanning(true);
     try {
-      if (onConnectGlove) {
+      if (onConnectBle) {
+        await onConnectBle();
+      } else if (onConnectGlove) {
         await onConnectGlove();
       }
     } finally {
-      setTimeout(() => {
-        setConnectingId(null);
+      setScanning(false);
+      if (bleState === BLE_STATE.CONNECTED) {
         onClose();
-      }, 800);
+      }
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (onDisconnectGlove) {
+      onDisconnectGlove();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
       <div
-        className="w-full max-w-[460px] rounded-3xl border border-[rgba(255,255,255,0.12)] bg-[#0c100e] p-6 shadow-2xl transition-all"
+        className="w-full max-w-[490px] rounded-3xl border border-[rgba(255,255,255,0.12)] bg-[#070d0a] p-6 shadow-2xl transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="font-display text-lg font-bold tracking-tight text-[#ededed]">
-              Connect Hardware Wearable
-            </h3>
-            <p className="mt-0.5 text-xs text-[#8a9992]">
-              Pair your sensor glove or ring via Web Bluetooth
+            <div className="flex items-center gap-2">
+              <span className={`h-2 w-2 rounded-full ${isConnected ? "bg-[#00e599] animate-pulse" : "bg-[#8a9992]"}`} />
+              <h3 className="font-display text-lg font-bold tracking-tight text-[#ededed]">
+                Connect Bluetooth Wearable
+              </h3>
+            </div>
+            <p className="mt-1 text-xs text-[#8a9992]">
+              Pair your original physical ESP32 MPU6050 glove via Web Bluetooth
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close modal"
-            className="rounded-full p-1 text-[#8a9992] transition-colors hover:bg-[rgba(255,255,255,0.08)] hover:text-[#ededed]"
+            className="rounded-full p-1.5 text-[#8a9992] transition-colors hover:bg-[rgba(255,255,255,0.08)] hover:text-[#ededed]"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Subheader counts */}
-        <div className="mt-5 flex items-center justify-between font-mono-tech text-[10px] text-[#8a9992]">
-          <span className="font-bold tracking-wider uppercase text-[#ededed]/90">
-            DISCOVERED DEVICES ({devices.length})
+        {/* Scanning / Connection status banner */}
+        <div className="mt-5 flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#0c1410] px-4 py-2.5 font-mono-tech text-[10px]">
+          <span className="flex items-center gap-2 font-bold uppercase tracking-wider text-[#ededed]">
+            <Radio
+              className={`h-3.5 w-3.5 ${
+                isConnected
+                  ? "text-[#00e599]"
+                  : scanning
+                  ? "text-[#00e599] animate-ping"
+                  : "text-[#8a9992]"
+              }`}
+            />
+            {isConnected
+              ? "Hardware Connected & Active"
+              : scanning
+              ? "Browser Device Scanner Active…"
+              : "Original Physical Bluetooth Device"}
           </span>
-          <span className="flex items-center gap-1 text-[#8a9992]">
-            <Radio className="h-3 w-3 text-[#00e599] animate-pulse" />
-            Auto-refreshing (2s)
+          <span className="text-[#00e599] font-medium">
+            {isConnected ? "100 Hz Streaming" : "MPU6050 0x68"}
           </span>
         </div>
 
-        {/* Device List */}
-        <div className="mt-3 space-y-2.5">
-          {devices.map((device) => {
-            const Icon = device.icon;
-            const isConnecting = connectingId === device.id;
-            return (
-              <div
-                key={device.id}
-                className="flex items-center justify-between rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#141a17]/80 p-3.5 transition-colors hover:border-[#00e599]/40 hover:bg-[#141a17]"
-              >
+        {/* Error message if any */}
+        {errorMessage && (
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span className="font-mono-tech text-[11px]">{errorMessage}</span>
+          </div>
+        )}
+
+        {/* Dynamic Hardware Device Section */}
+        <div className="mt-4 space-y-3">
+          {isConnected ? (
+            /* Active Connected Physical Device Card */
+            <div className="rounded-2xl border border-[#00e599]/40 bg-[#0d1c15] p-4 shadow-[0_0_20px_rgba(0,229,153,0.12)]">
+              <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#00e599]/15 text-[#00e599] border border-[#00e599]/25">
-                    <Icon className="h-5 w-5" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#00e599]/20 text-[#00e599] border border-[#00e599]/30">
+                    <Bluetooth className="h-6 w-6" />
                   </div>
                   <div>
-                    <h4 className="font-display text-xs font-semibold text-[#ededed]">
-                      {device.name}
-                    </h4>
-                    <p className="mt-0.5 font-mono-tech text-[10px] text-[#8a9992]">
-                      Signal: {device.signal} • Battery: {device.battery}
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-display text-sm font-bold text-[#ededed]">
+                        {deviceName || "TremorAI-Glove"}
+                      </h4>
+                      <span className="rounded bg-[#00e599]/20 border border-[#00e599]/40 px-2 py-0.5 font-mono-tech text-[9px] font-bold text-[#00e599]">
+                        CONNECTED
+                      </span>
+                    </div>
+                    <p className="mt-1 font-mono-tech text-[10px] text-[#8a9992]">
+                      Stream: 100 Hz MPU6050 (6-DOF) • Web Bluetooth GATT
                     </p>
                   </div>
                 </div>
 
                 <button
                   type="button"
-                  onClick={() => handleDeviceConnect(device)}
-                  disabled={isConnecting}
-                  className="flex items-center gap-1.5 rounded-full bg-[#00e599] px-3.5 py-1.5 font-display text-xs font-bold text-[#021a11] transition-transform hover:opacity-90 active:scale-95 disabled:opacity-50"
+                  onClick={handleDisconnect}
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 font-display text-xs font-semibold text-destructive transition-colors hover:bg-destructive hover:text-white"
                 >
-                  <LinkIcon className="h-3.5 w-3.5" />
-                  <span>{isConnecting ? "Connecting…" : "Connect"}</span>
+                  <Unlink className="h-3.5 w-3.5" />
+                  <span>Disconnect</span>
                 </button>
               </div>
-            );
-          })}
+
+              <div className="mt-3 flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] pt-2.5 font-mono-tech text-[10px] text-[#00e599]">
+                <Zap className="h-3 w-3 animate-pulse" />
+                <span>Transmitting live accelerometer and gyroscope vectors</span>
+              </div>
+            </div>
+          ) : (
+            /* Genuine Physical Hardware Discovery Options */
+            <>
+              <div className="group flex items-center justify-between rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0d1612] p-4 transition-all hover:border-[#00e599]/50 hover:bg-[#111c17]">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#00e599]/15 text-[#00e599] border border-[#00e599]/25 group-hover:scale-105 transition-transform">
+                    <Bluetooth className="h-6 w-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="truncate font-display text-sm font-semibold text-[#ededed]">
+                        Scan TremorAI ESP32 Glove
+                      </h4>
+                      <span className="rounded bg-[#00e599]/10 border border-[#00e599]/20 px-1.5 py-0.2 font-mono-tech text-[8px] font-bold text-[#00e599]">
+                        WIRELESS BLE
+                      </span>
+                    </div>
+                    <p className="mt-0.5 truncate font-mono-tech text-[11px] text-[#8a9992]">
+                      Pair physical ESP32 via browser Bluetooth device list
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleScanBle}
+                  disabled={scanning || !isBleSupported}
+                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#00e599] px-4 py-2 font-display text-xs font-bold text-[#021a11] shadow-sm transition-transform active:scale-95 hover:opacity-90 disabled:opacity-50"
+                >
+                  <LinkIcon className="h-3.5 w-3.5" />
+                  <span>{scanning ? "Scanning…" : "Pair BLE"}</span>
+                </button>
+              </div>
+
+              {/* Hardware Instructions Note */}
+              <div className="rounded-2xl border border-dashed border-[rgba(255,255,255,0.12)] bg-[#09120e] p-3 text-center">
+                <p className="font-mono-tech text-[11px] text-[#8a9992]">
+                  Ensure physical ESP32 is powered on running tremor_ai_esp32.ino with MPU6050 (SDA: 21, SCL: 22).
+                </p>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Actions Footer */}
-        <div className="mt-6 flex items-center gap-2">
+        <div className="mt-5 flex items-center justify-between gap-2 border-t border-[rgba(255,255,255,0.06)] pt-4">
           <button
             type="button"
-            onClick={handleRescan}
-            className="flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-4 py-2 font-display text-xs font-semibold text-[#ededed] transition-colors hover:border-[#00e599]/40 hover:text-[#00e599]"
+            onClick={handleScanBle}
+            disabled={scanning}
+            className="flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.12)] bg-[#101b15] px-4 py-2 font-display text-xs font-semibold text-[#ededed] transition-colors hover:border-[#00e599]/40 hover:text-[#00e599] disabled:opacity-50"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-[#00e599]" : ""}`} />
-            <span>Rescan</span>
+            <RefreshCw className={`h-3.5 w-3.5 ${scanning ? "animate-spin text-[#00e599]" : ""}`} />
+            <span>Scan Bluetooth</span>
           </button>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-4 py-2 font-display text-xs font-semibold text-[#8a9992] transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-[#ededed]"
+            className="rounded-full border border-[rgba(255,255,255,0.12)] bg-[#101b15] px-4 py-2 font-display text-xs font-semibold text-[#8a9992] transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-[#ededed]"
           >
             Dismiss
           </button>
@@ -151,3 +225,6 @@ export default function WearableConnectModal({
     </div>
   );
 }
+
+
+

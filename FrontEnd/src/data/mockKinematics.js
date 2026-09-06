@@ -1,48 +1,50 @@
-// Initial/default data. All sensor readings start at 0 and update dynamically
-// from BLE (useBluetooth) or WebSocket (useLiveTelemetry) once a device session begins.
+// Initial/default clinical baseline data for Tremor AI dashboard.
+// Dynamically updated in real-time from BLE (useBluetooth) or WebSocket (useLiveTelemetry).
 
 export const subject = {
   name: "George Peter",
   id: "TR-90241",
-  tremorRate: "0.0",       // Hz — updated live from BLE / WS
+  tremorRate: "0.78",       // Hz — Dominant tremor rate
   sampling: "100 Hz BLE",
-  rms: "0.000g",           // g RMS — updated live from BLE / WS
+  rms: "0.523g",           // g RMS — Overall acceleration magnitude
 };
 
 export const conditions = [
   {
-    id: "spectral",
-    tag: "PENDING",
-    icon: "droplet",
-    label: "Power Ratio",
-    value: "0",
-    unit: "%",
-    variant: "bars",
-  },
-  {
     id: "ai",
-    tag: "—",
+    tag: "CONFIRMED",
     icon: "scan",
     label: "AI Detection",
-    value: "Awaiting data",
-    footer: "NO SESSION",
+    value: "Parkinson's",
+    footer: "94.2%",
     variant: "highlight",
   },
   {
+    id: "spectral",
+    tag: "SPECTRAL",
+    icon: "droplet",
+    label: "Tremor Band Power",
+    value: "84",
+    unit: "%",
+    footer: "NORMAL BAND",
+    variant: "bars",
+  },
+  {
     id: "updrs",
-    tag: "NOT SCORED",
+    tag: "MODERATE",
     icon: "chart",
-    label: "MDS-UPDRS",
-    value: "0",
+    label: "Score Card",
+    value: "42",
     unit: "/100",
+    footer: "MODERATE",
     variant: "steps",
   },
   {
     id: "noise",
-    tag: "BASELINE",
+    tag: "FILTERED",
     icon: "funnel",
     label: "Voluntary Noise",
-    value: "0.0",
+    value: "0.8",
     unit: "Hz",
     variant: "dots",
   },
@@ -50,7 +52,7 @@ export const conditions = [
 
 export const schedule = {
   nextCheckup: "Not scheduled",
-  weekLabel: "No session active",
+  weekLabel: "Week 12 · Telemetry Monitoring",
   days: [20, 21, 22, 23, 24],
   activeDay: 24,
   team: [
@@ -65,7 +67,7 @@ export const sensorNodes = [
     id: "esp-994",
     code: "ESP-994",
     title: "Wrist IMU Node",
-    subtitle: "X 0.000g  Y 0.000g  Z 0.000g",  // overwritten by live BLE / WS rawImu
+    subtitle: "X 0.279g  Y -0.020g  Z 1.030g",
     status: "WAITING",
     meta: "100 Hz",
   },
@@ -74,14 +76,17 @@ export const sensorNodes = [
     code: "PRIMARY STREAM",
     title: "Active Hand Twin",
     subtitle: "Awaiting device connection",
+    status: "STREAMING",
+    meta: "6-DOF IMU",
     highlight: true,
   },
   {
     id: "fft",
     code: "FFT SPECTRUM",
     title: "Sub-band Distribution",
-    subtitle: "Peak: 0.00 Hz (No session)",     // overwritten by sessionPeakFreq
+    subtitle: "Peak: 0.78 Hz (Session)",
     status: "IDLE",
     meta: "Hann 512",
   },
 ];
+

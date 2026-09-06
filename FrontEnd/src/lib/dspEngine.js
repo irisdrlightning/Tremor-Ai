@@ -157,12 +157,13 @@ export class LiveDspEngine {
       psd[i] = power * scale;
     }
 
-    // 4. Band Powers & Dominant Peak
-    let tremorPower = 0;    // 3.85 - 6.2 Hz
-    let voluntaryPower = 0; // 0.5 - 3.85 Hz
-    let totalBroadPower = 0;// 0.5 - 15.0 Hz
+    // 4. Band Powers & Dominant Peak within physiological band (0.5 - 12.0 Hz)
+    let tremorPower = 0;    // 3.5 - 6.5 Hz (Parkinsonian Rest Tremor Band)
+    let voluntaryPower = 0; // 0.5 - 3.5 Hz (Voluntary & Postural Band)
+    let actionPower = 0;    // 6.5 - 10.0 Hz (Essential Action Tremor Band)
+    let totalBroadPower = 0;// 0.5 - 12.0 Hz
     let maxPsd = 0;
-    let dominantFreq = 0;
+    let dominantFreq = 0.0;
     let maxVoluntaryPsd = 0;
     let voluntaryFreq = 0.8;
 
@@ -170,68 +171,76 @@ export class LiveDspEngine {
       const f = i * df;
       const p = psd[i] * df;
 
-      if (f >= 0.5 && f <= 15.0) {
+      if (f >= 0.5 && f <= 12.0) {
         totalBroadPower += p;
-        if (psd[i] > maxPsd) {
+        if (psd[i] > maxPsd && p > 0.00005) {
           maxPsd = psd[i];
-          dominantFreq = f;
+          dominantFreq = parseFloat(f.toFixed(1));
         }
       }
 
-      if (f >= 3.85 && f <= 6.2) {
+      if (f >= 3.5 && f <= 6.5) {
         tremorPower += p;
-      } else if (f >= 0.5 && f < 3.85) {
+      } else if (f >= 0.5 && f < 3.5) {
         voluntaryPower += p;
         if (psd[i] > maxVoluntaryPsd) {
           maxVoluntaryPsd = psd[i];
-          voluntaryFreq = f;
+          voluntaryFreq = parseFloat(f.toFixed(1));
         }
+      } else if (f > 6.5 && f <= 10.0) {
+        actionPower += p;
       }
     }
 
-    const powerRatio = totalBroadPower > 1e-6
+    const isStationary = totalBroadPower < 0.0004 || (rmsAmp < 0.035 && tremorPower < 0.0003);
+
+    const powerRatio = (!isStationary && totalBroadPower > 1e-6)
       ? Math.min(1.0, tremorPower / totalBroadPower)
       : 0.0;
-    const powerRatioPct = Math.round(powerRatio * 100);
+    const powerRatioPct = isStationary ? 0 : Math.round(powerRatio * 100);
+
+    if (isStationary) {
+      dominantFreq = 0.0;
+      voluntaryFreq = 0.0;
+      maxPsd = 0.0;
+    }
 
     // 5. ML Classifier Simulation matching trained model
     let predictedLabel = "healthy";
     let pdProbability = 0.0;
     let confidence = 0.95;
     let aiTag = "HEALTHY";
-    let aiValue = "Normal / Healthy";
+    let aiValue = "Normal / Resting";
     let aiFooter = "PHYSIOLOGICAL BASELINE";
-
-    const isStationary = totalBroadPower < 0.00035 || (rmsAmp < 0.025 && tremorPower < 0.0004);
 
     if (isStationary) {
       predictedLabel = "healthy";
       pdProbability = 0.02;
       confidence = 0.98;
       aiTag = "HEALTHY";
-      aiValue = "Normal / Healthy";
+      aiValue = "Normal / Resting";
       aiFooter = "PHYSIOLOGICAL BASELINE";
-    } else if (dominantFreq >= 3.85 && dominantFreq <= 6.2 && (powerRatio >= 0.25 || tremorPower >= 0.0008)) {
+    } else if (dominantFreq >= 3.5 && dominantFreq <= 6.5 && (powerRatio >= 0.25 || tremorPower >= 0.0005)) {
       predictedLabel = "pd";
-      pdProbability = Math.min(0.99, 0.65 + powerRatio * 0.32);
+      pdProbability = Math.min(0.99, 0.70 + powerRatio * 0.28);
       confidence = Math.round(pdProbability * 100);
       aiTag = "PARKINSON'S";
       aiValue = "Parkinson's (PD)";
-      aiFooter = `CONFIDENCE ${confidence}%`;
-    } else if (dominantFreq >= 6.8) {
+      aiFooter = `CONFIRMED ${confidence}%`;
+    } else if (dominantFreq > 6.5 && dominantFreq <= 10.0 && actionPower >= 0.0006) {
       predictedLabel = "other";
       pdProbability = 0.03;
       confidence = 94;
-      aiTag = "OTHER DISORDER";
-      aiValue = "Other (Essential Tremor)";
+      aiTag = "ESSENTIAL TREMOR";
+      aiValue = "Essential Tremor";
       aiFooter = `ACTION TREMOR (${dominantFreq.toFixed(1)} HZ)`;
     } else {
       predictedLabel = "healthy";
       pdProbability = 0.04;
       confidence = 96;
       aiTag = "HEALTHY";
-      aiValue = "Normal / Healthy";
-      aiFooter = "VOLUNTARY MOVEMENT";
+      aiValue = "Voluntary Motion";
+      aiFooter = "PHYSIOLOGICAL MOVEMENT";
     }
 
     // 6. Transparent MDS-UPDRS Severity Score (0-100)
@@ -244,7 +253,7 @@ export class LiveDspEngine {
     const rawSeverity = 100.0 * (0.40 * pdProbability + 0.35 * normPower + 0.25 * normAmp);
     let finalSeverity = 0.0;
 
-    if (tremorPower < 0.0008 || (rmsAmp < 0.04 && pdProbability < 0.25) || predictedLabel === "healthy") {
+    if (isStationary || tremorPower < 0.0008 || (rmsAmp < 0.04 && pdProbability < 0.25) || predictedLabel === "healthy") {
       finalSeverity = 0.0;
     } else if (pdProbability < 0.25) {
       finalSeverity = rawSeverity * (pdProbability / 0.25);
@@ -274,7 +283,8 @@ export class LiveDspEngine {
 
     // Power Ratio Tag
     let powerTag = "LOW";
-    if (powerRatioPct >= 65) powerTag = "HIGH";
+    if (isStationary) powerTag = "PENDING";
+    else if (powerRatioPct >= 65) powerTag = "HIGH";
     else if (powerRatioPct >= 35) powerTag = "MODERATE";
     else if (powerRatioPct > 0) powerTag = "LOW";
     else powerTag = "PENDING";
@@ -289,7 +299,7 @@ export class LiveDspEngine {
 
     return {
       dominantFreq: dominantFreq > 0 ? dominantFreq.toFixed(2) : "0.00",
-      peakPsd: maxPsd > 0 ? maxPsd.toFixed(4) : "0.0036",
+      peakPsd: (!isStationary && maxPsd > 0) ? maxPsd.toFixed(4) : "0.0000",
       rms: rmsAmp.toFixed(3) + "g",
       tremorPower,
       powerRatio: powerRatioPct,
@@ -330,10 +340,10 @@ export class LiveDspEngine {
         },
         {
           id: "noise",
-          tag: voluntaryPower > 0.001 ? "FILTERED" : "BASELINE",
+          tag: !isStationary && voluntaryPower > 0.001 ? "FILTERED" : "BASELINE",
           icon: "funnel",
           label: "Voluntary Noise",
-          value: voluntaryFreq.toFixed(1),
+          value: isStationary ? "0.0" : voluntaryFreq.toFixed(1),
           unit: "Hz",
           variant: "dots",
         },

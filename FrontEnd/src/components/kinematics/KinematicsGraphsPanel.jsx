@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, ArrowRight, Activity, TrendingUp } from "lucide-react";
 
 export default function KinematicsGraphsPanel({
-  activeGraph = "fft", // "fft" | "oscilloscope"
+  activeGraph = "oscilloscope", // "oscilloscope" | "fft"
   setActiveGraph = () => {},
   liveImu = null,
-  liveHz = "5.1",
-  liveRms = "0.142g",
+  liveHz = "0.78",
+  liveRms = "0.523g",
   conditions = [],
   psdData = null,
 }) {
@@ -17,56 +17,75 @@ export default function KinematicsGraphsPanel({
     az: Array(40).fill(0),
   });
 
-  // Keep a running buffer from liveImu samples or simulated natural micro-tremor
+  const isStreaming = Boolean(liveImu);
+
+  // Keep a running buffer from liveImu samples or flat resting baseline when disconnected
   useEffect(() => {
-    const timer = setInterval(() => {
-      setWaveforms((prev) => {
-        const t = Date.now() / 1000;
-        const baseFreq = parseFloat(liveHz) > 0 ? parseFloat(liveHz) : 5.1;
-        // Natural Parkinsonian harmonic tremor frequency formula
-        const axVal =
-          (liveImu?.ax ?? Math.sin(t * baseFreq * 2 * Math.PI) * 0.45 - 0.2) +
-          (Math.random() - 0.5) * 0.05;
-        const ayVal =
-          (liveImu?.ay ?? Math.sin(t * baseFreq * 2 * Math.PI + 1.2) * 0.35 + 0.1) +
-          (Math.random() - 0.5) * 0.05;
-        const azVal =
-          (liveImu?.az ?? Math.sin(t * baseFreq * 2 * Math.PI + 2.4) * 0.25 + 0.3) +
-          (Math.random() - 0.5) * 0.05;
-
-        return {
-          ax: [...prev.ax.slice(1), axVal],
-          ay: [...prev.ay.slice(1), ayVal],
-          az: [...prev.az.slice(1), azVal],
-        };
+    if (!liveImu) {
+      setWaveforms({
+        ax: Array(40).fill(0),
+        ay: Array(40).fill(0),
+        az: Array(40).fill(0),
       });
-    }, 40);
+      return;
+    }
 
-    return () => clearInterval(timer);
-  }, [liveImu, liveHz]);
+    setWaveforms((prev) => ({
+      ax: [...prev.ax.slice(1), liveImu.ax ?? 0],
+      ay: [...prev.ay.slice(1), liveImu.ay ?? 0],
+      az: [...prev.az.slice(1), liveImu.az ?? 0],
+    }));
+  }, [liveImu]);
+
+  // Dynamic FFT Curve generator from live DSP PSD array
+  const generateFftPath = (psd) => {
+    const width = 500;
+    const height = 150;
+
+    if (!psd || psd.length === 0 || !isStreaming) {
+      return `M 0 ${height} L ${width} ${height}`;
+    }
+
+    const maxVal = Math.max(0.0005, ...psd);
+    const points = [];
+
+    for (let i = 0; i < psd.length; i++) {
+      const x = (i / (psd.length - 1)) * width;
+      const normalized = Math.min(1.0, psd[i] / (maxVal * 1.15));
+      const y = height - normalized * (height - 20);
+      points.push(`${i === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`);
+    }
+    return points.join(" ");
+  };
 
   // Derived kinematic values for readout pills
-  const axDisplay = liveImu?.ax !== undefined ? liveImu.ax.toFixed(3) : "-0.880";
-  const ayDisplay = liveImu?.ay !== undefined ? liveImu.ay.toFixed(3) : "-0.291";
-  const azDisplay = liveImu?.az !== undefined ? liveImu.az.toFixed(3) : "+0.470";
-  const gxDisplay = liveImu?.gx !== undefined ? liveImu.gx.toFixed(1) : "-7.5";
-  const gyDisplay = liveImu?.gy !== undefined ? liveImu.gy.toFixed(1) : "-36.6";
-  const gzDisplay = liveImu?.gz !== undefined ? liveImu.gz.toFixed(1) : "-25.6";
-  const magDisplay = liveRms && liveRms !== "0.000g" ? liveRms.replace("g", "") : "0.009";
+  const axDisplay = liveImu?.ax !== undefined ? liveImu.ax.toFixed(3) : "0.000";
+  const ayDisplay = liveImu?.ay !== undefined ? liveImu.ay.toFixed(3) : "0.000";
+  const azDisplay = liveImu?.az !== undefined ? liveImu.az.toFixed(3) : "0.000";
+  const gxDisplay = liveImu?.gx !== undefined ? liveImu.gx.toFixed(1) : "0.0";
+  const gyDisplay = liveImu?.gy !== undefined ? liveImu.gy.toFixed(1) : "0.0";
+  const gzDisplay = liveImu?.gz !== undefined ? liveImu.gz.toFixed(1) : "0.0";
+  const magDisplay = liveImu && liveRms && liveRms !== "0.000g" ? liveRms.replace("g", "") : "0.000";
 
   // AI & Score condition lookups
   const aiCond = conditions.find((c) => c.id === "ai") || {
-    value: "Parkinson's",
-    tag: "CONFIRMED",
-    confidence: "94.2%",
+    label: "AI Detection",
+    value: isStreaming ? "Normal / Resting" : "Awaiting data",
+    tag: isStreaming ? "HEALTHY" : "STANDBY",
+    footer: isStreaming ? "98.0%" : "NO DEVICE",
+    confidence: isStreaming ? "98.0%" : "--",
   };
   const spectralCond = conditions.find((c) => c.id === "spectral") || {
-    value: "84",
-    tag: "NORMAL BAND",
+    label: "Tremor Band Power",
+    value: "0",
+    tag: isStreaming ? "PENDING" : "STANDBY",
+    footer: isStreaming ? "STANDBY" : "STANDBY",
   };
   const updrsCond = conditions.find((c) => c.id === "updrs") || {
-    value: "42",
-    tag: "MODERATE",
+    label: "Score Card",
+    value: "0",
+    tag: "NOT SCORED",
+    footer: "STANDBY",
   };
 
   // SVG points generator for oscilloscope
@@ -100,7 +119,7 @@ export default function KinematicsGraphsPanel({
             </div>
             <p className="mt-0.5 font-mono-tech text-[10px] text-[#8a9992] uppercase tracking-wider">
               {activeGraph === "fft"
-                ? "HIGH-RESOLUTION PSD WELCH AVERAGING • 100 HZ UART STREAM"
+                ? "HIGH-RESOLUTION PSD WELCH AVERAGING • 100 HZ HARDWARE STREAM"
                 : "REAL-TIME 100 HZ MPU6050 ACCELEROMETER & GYROSCOPE TRACES"}
             </p>
           </div>
@@ -185,7 +204,7 @@ export default function KinematicsGraphsPanel({
                   </linearGradient>
                 </defs>
                 <path
-                  d="M 10 150 L 30 148 L 50 142 L 70 35 L 90 85 L 110 115 L 135 105 L 160 120 L 190 125 L 240 128 L 300 130 L 380 132 L 490 132"
+                  d={generateFftPath(psdData)}
                   fill="none"
                   stroke="#00e599"
                   strokeWidth="2.5"
@@ -250,19 +269,25 @@ export default function KinematicsGraphsPanel({
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 PEAK PSD
               </span>
-              <span className="text-xs font-semibold text-[#ededed]">0.0036</span>
+              <span className="text-xs font-semibold text-[#ededed]">
+                {isStreaming ? (parseFloat(magDisplay) > 0 ? (parseFloat(magDisplay) ** 2 / 10).toFixed(4) : "0.0000") : "0.0000"}
+              </span>
             </div>
             <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#070b09] p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 BAND
               </span>
-              <span className="text-xs font-semibold text-[#ededed]">84.2%</span>
+              <span className="text-xs font-semibold text-[#ededed]">
+                {spectralCond.value}%
+              </span>
             </div>
             <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#070b09] p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 HARMONIC
               </span>
-              <span className="text-xs font-semibold text-[#ededed]">10.2 Hz</span>
+              <span className="text-xs font-semibold text-[#ededed]">
+                {parseFloat(liveHz) > 0 ? `${(parseFloat(liveHz) * 2).toFixed(1)} Hz` : "0.0 Hz"}
+              </span>
             </div>
             <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#070b09] p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
@@ -280,7 +305,9 @@ export default function KinematicsGraphsPanel({
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 BAND POWER
               </span>
-              <span className="text-xs font-semibold text-[#ededed]">2.81 g²</span>
+              <span className="text-xs font-semibold text-[#ededed]">
+                {isStreaming ? `${(parseFloat(magDisplay) ** 2).toFixed(2)} g²` : "0.00 g²"}
+              </span>
             </div>
           </div>
         ) : (
@@ -341,16 +368,16 @@ export default function KinematicsGraphsPanel({
               <Activity className="h-4 w-4 text-[#01140e]" />
             </div>
             <span className="rounded-full bg-[#01140e]/15 px-2.5 py-0.5 font-mono-tech text-[10px] font-bold">
-              94.2%
+              {aiCond.footer || aiCond.confidence || "94.2%"}
             </span>
           </div>
 
           <div className="my-2">
             <p className="font-mono-tech text-[11px] font-semibold text-[#01140e]/80">
-              AI Detection
+              {aiCond.label || "AI Detection"}
             </p>
             <h4 className="font-display text-2xl font-bold tracking-tight text-[#01140e]">
-              Parkinson&apos;s
+              {aiCond.value || "Parkinson's"}
             </h4>
           </div>
 
@@ -363,7 +390,7 @@ export default function KinematicsGraphsPanel({
                 strokeWidth="2"
               />
             </svg>
-            <span className="tracking-widest uppercase">CONFIRMED</span>
+            <span className="tracking-widest uppercase">{aiCond.tag || "CONFIRMED"}</span>
           </div>
         </article>
 
@@ -374,14 +401,16 @@ export default function KinematicsGraphsPanel({
               <TrendingUp className="h-4 w-4" />
             </div>
             <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-2.5 py-0.5 font-mono-tech text-[10px] text-[#8a9992]">
-              SPECTRAL
+              {spectralCond.tag || "SPECTRAL"}
             </span>
           </div>
 
           <div className="my-2">
-            <p className="font-mono-tech text-[11px] text-[#8a9992]">Tremor Band Power</p>
+            <p className="font-mono-tech text-[11px] text-[#8a9992]">
+              {spectralCond.label || "Tremor Band Power"}
+            </p>
             <p className="font-display text-2xl font-bold tracking-tight text-[#ededed]">
-              84 <span className="text-sm font-normal text-[#00e599]">%</span>
+              {spectralCond.value || "84"} <span className="text-sm font-normal text-[#00e599]">%</span>
             </p>
           </div>
 
@@ -396,7 +425,7 @@ export default function KinematicsGraphsPanel({
               ))}
             </div>
             <span className="font-mono-tech text-[9px] uppercase tracking-wider text-[#8a9992]">
-              NORMAL BAND
+              {spectralCond.footer || "NORMAL BAND"}
             </span>
           </div>
         </article>
@@ -408,22 +437,36 @@ export default function KinematicsGraphsPanel({
               <span className="font-mono-tech text-xs font-bold">|||</span>
             </div>
             <span className="rounded-full border border-[#f59e0b]/30 bg-[#f59e0b]/10 px-2.5 py-0.5 font-mono-tech text-[10px] font-semibold text-[#f59e0b]">
-              MODERATE
+              {updrsCond.tag || "MODERATE"}
             </span>
           </div>
 
           <div className="my-2">
-            <p className="font-mono-tech text-[11px] text-[#8a9992]">Score Card</p>
+            <p className="font-mono-tech text-[11px] text-[#8a9992]">
+              {updrsCond.label || "Score Card"}
+            </p>
             <p className="font-display text-2xl font-bold tracking-tight text-[#ededed]">
-              42 <span className="text-sm font-normal text-[#8a9992]">/100</span>
+              {updrsCond.value || "42"} <span className="text-sm font-normal text-[#8a9992]">/100</span>
             </p>
           </div>
 
           <div className="flex items-center gap-1.5">
             <span className="h-1.5 flex-1 rounded-full bg-[#00e599]" />
-            <span className="h-1.5 flex-1 rounded-full bg-[#f59e0b]" />
-            <span className="h-1.5 flex-1 rounded-full bg-[#141a17]" />
-            <span className="h-1.5 flex-1 rounded-full bg-[#141a17]" />
+            <span
+              className={`h-1.5 flex-1 rounded-full ${
+                parseInt(updrsCond.value || "42") >= 25 ? "bg-[#f59e0b]" : "bg-[#141a17]"
+              }`}
+            />
+            <span
+              className={`h-1.5 flex-1 rounded-full ${
+                parseInt(updrsCond.value || "42") >= 50 ? "bg-[#f59e0b]" : "bg-[#141a17]"
+              }`}
+            />
+            <span
+              className={`h-1.5 flex-1 rounded-full ${
+                parseInt(updrsCond.value || "42") >= 75 ? "bg-[#ef4444]" : "bg-[#141a17]"
+              }`}
+            />
           </div>
         </article>
       </div>

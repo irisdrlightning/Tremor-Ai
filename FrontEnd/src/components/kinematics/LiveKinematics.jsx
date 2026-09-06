@@ -98,7 +98,7 @@ function TopBar({
             aria-label={bleLabel}
             title={bleLabel}
             disabled={isBusy || isUnsupported}
-            onClick={isConnected ? onDisconnect : (onOpenWearables || onConnect)}
+            onClick={isConnected ? onDisconnect : onConnect}
             className={[
               "grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary/50 hover:text-primary",
               isConnected ? "border-primary text-primary bg-primary/10 shadow-[0_0_12px_rgba(0,229,153,0.2)]" : "",
@@ -576,18 +576,45 @@ function ScheduleCard({ schedule = initialSchedule }) {
 
 function SensorCard({ node, liveImu, peakFreq }) {
   const Icon = node.id === "primary" ? Hand : node.id === "fft" ? BarChart3 : Activity;
-  const status = node.status || (node.highlight ? "STREAMING" : "SYNCED");
-  const meta = node.meta || (node.highlight ? "6-DOF IMU" : "Active");
 
-  // Dynamic subtitle overrides from live hardware
+  const isLive = Boolean(liveImu);
+  let status = node.status || (node.highlight ? "STREAMING" : "SYNCED");
+  let meta = node.meta || (node.highlight ? "6-DOF IMU" : "Active");
   let subtitle = node.subtitle;
-  if (node.id === "esp-994" && liveImu) {
-    const ax = typeof liveImu.ax === "number" ? liveImu.ax.toFixed(3) : liveImu.accelX?.toFixed(3) ?? "0.000";
-    const ay = typeof liveImu.ay === "number" ? liveImu.ay.toFixed(3) : liveImu.accelY?.toFixed(3) ?? "0.000";
-    const az = typeof liveImu.az === "number" ? liveImu.az.toFixed(3) : liveImu.accelZ?.toFixed(3) ?? "0.000";
-    subtitle = `X ${ax}g  Y ${ay}g  Z ${az}g`;
-  } else if (node.id === "fft" && peakFreq) {
-    subtitle = `Peak: ${peakFreq} Hz (Session)`;
+
+  if (node.id === "esp-994") {
+    if (isLive) {
+      const ax = typeof liveImu.ax === "number" ? liveImu.ax.toFixed(3) : liveImu.accelX?.toFixed(3) ?? "0.000";
+      const ay = typeof liveImu.ay === "number" ? liveImu.ay.toFixed(3) : liveImu.accelY?.toFixed(3) ?? "0.000";
+      const az = typeof liveImu.az === "number" ? liveImu.az.toFixed(3) : liveImu.accelZ?.toFixed(3) ?? "0.000";
+      subtitle = `X ${ax}g  Y ${ay}g  Z ${az}g`;
+      status = "STREAMING";
+      meta = "100 Hz BLE";
+    } else {
+      status = "STANDBY";
+      meta = "Awaiting BLE";
+      subtitle = "No device paired";
+    }
+  } else if (node.id === "primary") {
+    if (isLive) {
+      subtitle = "Live biomechanical hand twin tracking";
+      status = "ACTIVE";
+      meta = "6-DOF Kinematics";
+    } else {
+      subtitle = "Awaiting device connection";
+      status = "STANDBY";
+      meta = "Offline";
+    }
+  } else if (node.id === "fft") {
+    if (isLive) {
+      subtitle = peakFreq ? `Peak: ${peakFreq} Hz (Session)` : "Continuous PSD Welch Analysis";
+      status = "PROCESSING";
+      meta = "0 - 25 Hz FFT";
+    } else {
+      subtitle = "Awaiting stream";
+      status = "STANDBY";
+      meta = "IDLE";
+    }
   }
 
   return (
@@ -638,14 +665,19 @@ export default function LiveKinematics({ onSignOut }) {
   // Live WebSocket streaming hook
   const { liveData } = useLiveTelemetry();
 
-  // BLE glove hook
+  // BLE and Serial hardware telemetry hook
   const {
     bleState,
     deviceName,
+    transportType,
     bleData,
     errorMessage: bleError,
     isSupported: bleSupported,
-    connect:    bleConnect,
+    isBleSupported,
+    isSerialSupported,
+    connect: bleConnect,
+    connectBle,
+    connectSerial,
     disconnect: bleDisconnect,
   } = useBluetooth();
 
@@ -668,35 +700,102 @@ export default function LiveKinematics({ onSignOut }) {
     };
   }, []);
 
+  // Device connection state flag
+  const isDeviceConnected = bleState === BLE_STATE.CONNECTED;
+
   const [liveTremorRate, setLiveTremorRate] = useState("0.0");
   const [liveRms, setLiveRms] = useState("0.000g");
 
-  // Merge BLE data → WebSocket data → REST data (priority: Live DSP/BLE > WS > REST)
+  // Standby conditions when disconnected
+  const STANDBY_CONDITIONS = [
+    {
+      id: "ai",
+      tag: "STANDBY",
+      icon: "scan",
+      label: "AI Detection",
+      value: "Awaiting data",
+      footer: "NO DEVICE",
+      variant: "highlight",
+    },
+    {
+      id: "spectral",
+      tag: "PENDING",
+      icon: "droplet",
+      label: "Tremor Band Power",
+      value: "0",
+      unit: "%",
+      footer: "STANDBY",
+      variant: "bars",
+    },
+    {
+      id: "updrs",
+      tag: "NOT SCORED",
+      icon: "chart",
+      label: "Score Card",
+      value: "0",
+      unit: "/100",
+      footer: "STANDBY",
+      variant: "steps",
+    },
+    {
+      id: "noise",
+      tag: "BASELINE",
+      icon: "funnel",
+      label: "Voluntary Noise",
+      value: "0.0",
+      unit: "Hz",
+      variant: "dots",
+    },
+  ];
+
+  const STANDBY_NODES = [
+    { id: "node-d1", name: "Thumb (D1)", freq: "0.0 Hz", amp: "±0.0 mm", state: "baseline", top: "54%", left: "24%" },
+    { id: "node-d2", name: "Index Tip (D2)", freq: "0.0 Hz", amp: "±0.0 mm", state: "baseline", top: "16%", left: "34%" },
+    { id: "node-d3", name: "Middle Tip (D3)", freq: "0.0 Hz", amp: "±0.0 mm", state: "baseline", top: "12%", left: "49%" },
+    { id: "node-d4", name: "Ring Tip (D4)", freq: "0.0 Hz", amp: "±0.0 mm", state: "baseline", top: "18%", left: "64%" },
+    { id: "node-d5", name: "Pinky Tip (D5)", freq: "0.0 Hz", amp: "±0.0 mm", state: "baseline", top: "32%", left: "78%" },
+    { id: "node-mcp", name: "Metacarpal (MCP)", freq: "0.0 Hz", amp: "±0.0 mm", state: "baseline", top: "48%", left: "48%" },
+    { id: "node-wrist", name: "Carpal / Wrist", freq: "0.0 Hz", amp: "±0.0 mm", state: "baseline", top: "84%", left: "50%" },
+  ];
+
+  // Merge BLE data → WebSocket data → REST data when connected
   const currentSubject = {
     ...subjectData,
-    tremorRate:
-      (parseFloat(liveTremorRate) > 0 ? liveTremorRate : null) ??
-      liveData?.tremorRate ??
-      subjectData.tremorRate,
-    rms:
-      (liveRms && liveRms !== "0.000g" ? liveRms : null) ??
-      liveData?.rms ??
-      subjectData.rms,
+    tremorRate: isDeviceConnected
+      ? (liveTremorRate ?? "0.0")
+      : "0.00",
+    rms: isDeviceConnected
+      ? (liveRms ?? "0.000g")
+      : "0.000g",
+    sampling: isDeviceConnected
+      ? (deviceName ? `100 Hz BLE (${deviceName})` : "100 Hz BLE (Active)")
+      : "Awaiting Device Connection",
   };
 
-  const currentNodes = liveData?.nodes || null;
+  const currentNodes = isDeviceConnected
+    ? (liveData?.nodes || [
+        { id: "node-d1", name: "Thumb (D1)", freq: `${(parseFloat(currentSubject.tremorRate) * 0.98).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 1.8).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "54%", left: "24%" },
+        { id: "node-d2", name: "Index Tip (D2)", freq: `${(parseFloat(currentSubject.tremorRate) * 1.02).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 2.1).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "16%", left: "34%" },
+        { id: "node-d3", name: "Middle Tip (D3)", freq: `${(parseFloat(currentSubject.tremorRate) * 1.00).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 2.3).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "12%", left: "49%" },
+        { id: "node-d4", name: "Ring Tip (D4)", freq: `${(parseFloat(currentSubject.tremorRate) * 0.96).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 1.9).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "18%", left: "64%" },
+        { id: "node-d5", name: "Pinky Tip (D5)", freq: `${(parseFloat(currentSubject.tremorRate) * 0.92).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 1.6).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "32%", left: "78%" },
+        { id: "node-mcp", name: "Metacarpal (MCP)", freq: `${(parseFloat(currentSubject.tremorRate) * 0.95).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 1.2).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "48%", left: "48%" },
+        { id: "node-wrist", name: "Carpal / Wrist", freq: `${(parseFloat(currentSubject.tremorRate) * 1.05).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 2.5).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "84%", left: "50%" },
+      ])
+    : STANDBY_NODES;
 
-  // Live IMU for SensorCard (prefer BLE raw, fall back to WS rawImu)
-  const liveImu = bleData?.raw ?? liveData?.rawImu ?? null;
+  // Live IMU for SensorCard (only active when device is connected)
+  const liveImu = isDeviceConnected ? (bleData?.raw ?? liveData?.rawImu ?? null) : null;
 
   // Track session peak tremor frequency (highest seen this session)
   const [sessionPeakFreq, setSessionPeakFreq] = useState(null);
   useEffect(() => {
+    if (!isDeviceConnected) return;
     const incoming = parseFloat(liveTremorRate ?? liveData?.tremorRate);
     if (!isNaN(incoming) && incoming > 0) {
       setSessionPeakFreq((prev) => (prev === null || incoming > prev ? incoming : prev));
     }
-  }, [liveTremorRate, liveData]);
+  }, [liveTremorRate, liveData, isDeviceConnected]);
 
   // Real-time DSP & AI detection processing for BLE and Live Telemetry
   const dspEngineRef = useRef(null);
@@ -707,45 +806,57 @@ export default function LiveKinematics({ onSignOut }) {
   // Sliding sample buffer for trained Random Forest model inference
   const sampleBufferRef = useRef([]);
   const lastInferenceTimeRef = useRef(0);
+  const lastUiUpdateTimeRef = useRef(0);
 
   useEffect(() => {
-    // 1. If BLE raw sample or WebSocket raw IMU arrived, push to client DSP engine
-    const rawSample = bleData?.raw || liveData?.rawImu;
-    if (rawSample) {
-      dspEngineRef.current.pushSample(rawSample);
-      const dspResult = dspEngineRef.current.process();
-      if (dspResult) {
-        if (dspResult.conditions) {
-          setConditionsData(dspResult.conditions);
-        }
-        if (dspResult.dominantFreq && parseFloat(dspResult.dominantFreq) > 0) {
-          setLiveTremorRate(dspResult.dominantFreq);
-        }
-        if (dspResult.rms) {
-          setLiveRms(dspResult.rms);
-        }
-        if (dspResult.psdCurve) {
-          setPsdData(dspResult.psdCurve);
+    if (!isDeviceConnected) return;
+
+    // 1. If BLE batch/raw sample or WebSocket raw IMU arrived, push all samples to client DSP engine
+    const incomingSamples = bleData?.batch || (bleData?.raw ? [bleData.raw] : (liveData?.rawImu ? [liveData.rawImu] : []));
+    if (incomingSamples.length > 0) {
+      for (const s of incomingSamples) {
+        dspEngineRef.current.pushSample(s);
+        sampleBufferRef.current.push(s);
+        if (sampleBufferRef.current.length > 256) {
+          sampleBufferRef.current.shift();
         }
       }
 
-      // Add to sliding window for exact backend trained ML model inference
-      sampleBufferRef.current.push(rawSample);
-      if (sampleBufferRef.current.length > 256) {
-        sampleBufferRef.current.shift();
-      }
-
-      // Query exact trained Random Forest model every 600ms
       const now = Date.now();
-      if (sampleBufferRef.current.length >= 50 && now - lastInferenceTimeRef.current > 600) {
+
+      // Smooth 4 Hz UI updates to eliminate CSS animation jitter & screen flicker
+      if (now - lastUiUpdateTimeRef.current >= 250) {
+        lastUiUpdateTimeRef.current = now;
+        const dspResult = dspEngineRef.current.process();
+        if (dspResult) {
+          if (dspResult.conditions) {
+            setConditionsData(dspResult.conditions);
+          }
+          if (dspResult.dominantFreq !== undefined) {
+            setLiveTremorRate(String(dspResult.dominantFreq));
+          }
+          if (dspResult.rms) {
+            setLiveRms(dspResult.rms);
+          }
+          if (dspResult.psdCurve) {
+            setPsdData(dspResult.psdCurve);
+          }
+        }
+      }
+
+      // Query exact trained Random Forest model every 750ms
+      if (sampleBufferRef.current.length >= 64 && now - lastInferenceTimeRef.current > 750) {
         lastInferenceTimeRef.current = now;
         api
           .predictWindow(sampleBufferRef.current, 100.0)
           .then((res) => {
             if (res && res.status === "success") {
               if (res.conditions) setConditionsData(res.conditions);
-              if (res.dominant_frequency > 0) {
+              if (res.dominant_frequency !== undefined) {
                 setLiveTremorRate(res.dominant_frequency.toFixed(1));
+              }
+              if (res.rms) {
+                setLiveRms(res.rms);
               }
             }
           })
@@ -764,7 +875,9 @@ export default function LiveKinematics({ onSignOut }) {
     if (liveData?.conditions && Array.isArray(liveData.conditions)) {
       setConditionsData(liveData.conditions);
     }
-  }, [bleData, liveData]);
+  }, [bleData, liveData, isDeviceConnected]);
+
+  const displayedConditions = isDeviceConnected ? conditionsData : STANDBY_CONDITIONS;
 
   return (
     <div className="min-h-screen bg-[#060908] text-[#ededed] p-4 md:p-6 lg:p-8">
@@ -821,7 +934,7 @@ export default function LiveKinematics({ onSignOut }) {
                   liveImu={liveImu}
                   liveHz={currentSubject.tremorRate}
                   liveRms={currentSubject.rms}
-                  conditions={conditionsData}
+                  conditions={displayedConditions}
                   psdData={psdData}
                 />
               </div>
@@ -830,9 +943,16 @@ export default function LiveKinematics({ onSignOut }) {
               <WearableConnectModal
                 isOpen={showWearableModal}
                 onClose={() => setShowWearableModal(false)}
+                onConnectBle={connectBle}
+                onConnectSerial={connectSerial}
                 onConnectGlove={bleConnect}
+                onDisconnectGlove={bleDisconnect}
                 bleState={bleState}
                 deviceName={deviceName}
+                transportType={transportType}
+                errorMessage={bleError}
+                isBleSupported={isBleSupported}
+                isSerialSupported={isSerialSupported}
               />
 
               {/* Notifications & System Alerts Modal (Image 6) */}

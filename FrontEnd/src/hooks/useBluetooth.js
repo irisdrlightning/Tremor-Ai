@@ -1,16 +1,16 @@
 /**
- * useBluetooth — Web Bluetooth API hook for Tremor AI ESP32 glove
+ * useBluetooth — Hardware Telemetry Hook for Tremor AI ESP32 Glove & IMU
  *
- * Web Bluetooth requires:
- *   • HTTPS or localhost
- *   • Desktop Chrome or Edge (Chromium-based browsers)
- *   • A user gesture (button click) to trigger navigator.bluetooth.requestDevice()
+ * Exclusively connects to original physical hardware:
+ *   1. Web Bluetooth API (navigator.bluetooth.requestDevice) for BLE ESP32 / Wearables
+ *   2. Web Serial API (navigator.serial.requestPort) at 115200 baud for USB ESP32 boards
+ *
+ * Real-time MPU6050 6-DOF telemetry streaming (ax, ay, az, gx, gy, gz) with 0 mock devices.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // ─── BLE UUIDs ────────────────────────────────────────────────────────────────
-// Tremor AI Custom GATT Service (matches tremor_ai_esp32.ino)
 const TREMOR_SERVICE_UUID = "6f3c1200-1a2b-4c3d-9e8f-000000000001";
 const TREMOR_TX_CHAR_UUID = "6f3c1200-1a2b-4c3d-9e8f-000000000002"; // Data (Notify)
 const TREMOR_CMD_CHAR_UUID = "6f3c1200-1a2b-4c3d-9e8f-000000000003"; // Write (0x01/0x00)
@@ -18,100 +18,13 @@ const TREMOR_BATT_CHAR_UUID = "6f3c1200-1a2b-4c3d-9e8f-000000000004"; // Battery
 
 // Standard Nordic UART Service (NUS)
 const NUS_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const NUS_TX_CHAR_UUID  = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // Notify from device
-const NUS_RX_CHAR_UUID  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // Write to device
+const NUS_TX_CHAR_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // Notify from device
+const NUS_RX_CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // Write to device
 
 // Standard Bluetooth SIG UUIDs for discovery
 const BATTERY_SERVICE_UUID = "0000180f-0000-1000-8000-00805f9b34fb";
-const GENERIC_ACCESS_UUID  = "00001800-0000-1000-8000-00805f9b34fb";
+const GENERIC_ACCESS_UUID = "00001800-0000-1000-8000-00805f9b34fb";
 const DEV_INFO_SERVICE_UUID = "0000180a-0000-1000-8000-00805f9b34fb";
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-/**
- * Parse incoming BLE notification payload from ESP32.
- * Supports:
- *   1. 112-byte batch (4 samples × 28 bytes little-endian binary)
- *   2. 28-byte single sample (1 sample × 28 bytes binary)
- *   3. Text CSV line (e.g. "timestamp_ms,ax,ay,az,gx,gy,gz")
- *   4. JSON string (e.g. {"ax": 0.1, "ay": 0.2, ...})
- */
-function parsePayload(dataView) {
-  if (!dataView || dataView.byteLength === 0) return null;
-
-  try {
-    const byteLen = dataView.byteLength;
-
-    // ── 1. Batch Binary Payload (112 bytes = 4 × 28 bytes) ──
-    if (byteLen >= 112) {
-      const SAMPLE_BYTES = 28;
-      const count = Math.floor(byteLen / SAMPLE_BYTES);
-      let lastSample = null;
-
-      for (let i = 0; i < count; i++) {
-        const offset = i * SAMPLE_BYTES;
-        const ts = dataView.getUint32(offset, true);
-        const ax = dataView.getFloat32(offset + 4, true);
-        const ay = dataView.getFloat32(offset + 8, true);
-        const az = dataView.getFloat32(offset + 12, true);
-        const gx = dataView.getFloat32(offset + 16, true);
-        const gy = dataView.getFloat32(offset + 20, true);
-        const gz = dataView.getFloat32(offset + 24, true);
-        lastSample = { ts, ax, ay, az, gx, gy, gz };
-      }
-
-      if (lastSample) {
-        return buildTelemetryObject(lastSample);
-      }
-    }
-
-    // ── 2. Single Sample Binary (28 bytes) ──
-    if (byteLen >= 28 && byteLen < 112) {
-      const ts = dataView.getUint32(0, true);
-      const ax = dataView.getFloat32(4, true);
-      const ay = dataView.getFloat32(8, true);
-      const az = dataView.getFloat32(12, true);
-      const gx = dataView.getFloat32(16, true);
-      const gy = dataView.getFloat32(20, true);
-      const gz = dataView.getFloat32(24, true);
-      return buildTelemetryObject({ ts, ax, ay, az, gx, gy, gz });
-    }
-
-    // ── 3. Text / CSV / JSON string payload ──
-    const decoder = new TextDecoder("utf-8");
-    const rawText = decoder.decode(dataView).trim();
-    if (!rawText) return null;
-
-    if (rawText.startsWith("{") && rawText.endsWith("}")) {
-      const parsed = JSON.parse(rawText);
-      const sample = {
-        ts: Number(parsed.ts || parsed.timestamp_ms || Date.now()),
-        ax: Number(parsed.ax || parsed.accelX || 0),
-        ay: Number(parsed.ay || parsed.accelY || 0),
-        az: Number(parsed.az || parsed.accelZ || 0),
-        gx: Number(parsed.gx || parsed.gyroX || 0),
-        gy: Number(parsed.gy || parsed.gyroY || 0),
-        gz: Number(parsed.gz || parsed.gyroZ || 0),
-      };
-      return buildTelemetryObject(sample);
-    }
-
-    // CSV format: timestamp_ms,ax,ay,az,gx,gy,gz
-    const parts = rawText.split(",").map((p) => p.trim());
-    if (parts.length >= 7) {
-      const ts = parseFloat(parts[0]) || Date.now();
-      const ax = parseFloat(parts[1]) || 0;
-      const ay = parseFloat(parts[2]) || 0;
-      const az = parseFloat(parts[3]) || 0;
-      const gx = parseFloat(parts[4]) || 0;
-      const gy = parseFloat(parts[5]) || 0;
-      const gz = parseFloat(parts[6]) || 0;
-      return buildTelemetryObject({ ts, ax, ay, az, gx, gy, gz });
-    }
-  } catch (err) {
-    console.debug("[useBluetooth] Payload parse error:", err);
-  }
-  return null;
-}
 
 function buildTelemetryObject(sample) {
   const mag = Math.sqrt(sample.ax ** 2 + sample.ay ** 2 + sample.az ** 2);
@@ -133,6 +46,89 @@ function buildTelemetryObject(sample) {
   };
 }
 
+function parsePayload(dataView) {
+  if (!dataView || dataView.byteLength === 0) return null;
+
+  try {
+    const byteLen = dataView.byteLength;
+
+    // 1. Batch Binary Payload (112 bytes = 4 × 28 bytes)
+    if (byteLen >= 112) {
+      const SAMPLE_BYTES = 28;
+      const count = Math.floor(byteLen / SAMPLE_BYTES);
+      const samples = [];
+
+      for (let i = 0; i < count; i++) {
+        const offset = i * SAMPLE_BYTES;
+        const ts = dataView.getUint32(offset, true);
+        const ax = dataView.getFloat32(offset + 4, true);
+        const ay = dataView.getFloat32(offset + 8, true);
+        const az = dataView.getFloat32(offset + 12, true);
+        const gx = dataView.getFloat32(offset + 16, true);
+        const gy = dataView.getFloat32(offset + 20, true);
+        const gz = dataView.getFloat32(offset + 24, true);
+        samples.push({ ts, ax, ay, az, gx, gy, gz });
+      }
+
+      if (samples.length > 0) {
+        const lastSample = samples[samples.length - 1];
+        const res = buildTelemetryObject(lastSample);
+        res.batch = samples;
+        return res;
+      }
+    }
+
+    // 2. Single Sample Binary (28 bytes)
+    if (byteLen >= 28 && byteLen < 112) {
+      const ts = dataView.getUint32(0, true);
+      const ax = dataView.getFloat32(4, true);
+      const ay = dataView.getFloat32(8, true);
+      const az = dataView.getFloat32(12, true);
+      const gx = dataView.getFloat32(16, true);
+      const gy = dataView.getFloat32(20, true);
+      const gz = dataView.getFloat32(24, true);
+      const single = { ts, ax, ay, az, gx, gy, gz };
+      const res = buildTelemetryObject(single);
+      res.batch = [single];
+      return res;
+    }
+
+    // 3. Text / CSV / JSON string payload
+    const decoder = new TextDecoder("utf-8");
+    const rawText = decoder.decode(dataView).trim();
+    if (!rawText) return null;
+
+    if (rawText.startsWith("{") && rawText.endsWith("}")) {
+      const parsed = JSON.parse(rawText);
+      const sample = {
+        ts: Number(parsed.ts || parsed.timestamp_ms || Date.now()),
+        ax: Number(parsed.ax || parsed.accelX || 0),
+        ay: Number(parsed.ay || parsed.accelY || 0),
+        az: Number(parsed.az || parsed.accelZ || 0),
+        gx: Number(parsed.gx || parsed.gyroX || 0),
+        gy: Number(parsed.gy || parsed.gyroY || 0),
+        gz: Number(parsed.gz || parsed.gyroZ || 0),
+      };
+      return buildTelemetryObject(sample);
+    }
+
+    const parts = rawText.split(",").map((p) => p.trim());
+    if (parts.length >= 7) {
+      const ts = parseFloat(parts[0]) || Date.now();
+      const ax = parseFloat(parts[1]) || 0;
+      const ay = parseFloat(parts[2]) || 0;
+      const az = parseFloat(parts[3]) || 0;
+      const gx = parseFloat(parts[4]) || 0;
+      const gy = parseFloat(parts[5]) || 0;
+      const gz = parseFloat(parts[6]) || 0;
+      return buildTelemetryObject({ ts, ax, ay, az, gx, gy, gz });
+    }
+  } catch (err) {
+    console.debug("[useBluetooth] Payload parse error:", err);
+  }
+  return null;
+}
+
 // ─── Connection states ────────────────────────────────────────────────────────
 export const BLE_STATE = {
   IDLE: "idle",
@@ -144,23 +140,31 @@ export const BLE_STATE = {
   UNSUPPORTED: "unsupported",
 };
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+export const HARDWARE_TRANSPORT = {
+  BLE: "ble",
+  SERIAL: "serial",
+  NONE: "none",
+};
+
 export function useBluetooth() {
-  const [bleState, setBleState] = useState(() =>
-    typeof navigator !== "undefined" && navigator.bluetooth
-      ? BLE_STATE.IDLE
-      : BLE_STATE.UNSUPPORTED
-  );
+  const [bleState, setBleState] = useState(BLE_STATE.DISCONNECTED);
   const [deviceName, setDeviceName] = useState(null);
+  const [transportType, setTransportType] = useState(HARDWARE_TRANSPORT.NONE);
   const [bleData, setBleData] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
 
   const deviceRef = useRef(null);
   const serverRef = useRef(null);
   const charRef = useRef(null);
+  const serialPortRef = useRef(null);
+  const serialReaderRef = useRef(null);
+  const serialKeepReadingRef = useRef(false);
 
-  const isSupported =
+  const isBleSupported =
     typeof navigator !== "undefined" && Boolean(navigator.bluetooth);
+  const isSerialSupported =
+    typeof navigator !== "undefined" && Boolean(navigator.serial);
+  const isSupported = isBleSupported || isSerialSupported;
 
   const handleNotification = useCallback((event) => {
     const parsed = parsePayload(event.target.value);
@@ -168,19 +172,20 @@ export function useBluetooth() {
   }, []);
 
   const handleDisconnect = useCallback(() => {
+    serialKeepReadingRef.current = false;
     setBleState(BLE_STATE.DISCONNECTED);
     setDeviceName(null);
+    setTransportType(HARDWARE_TRANSPORT.NONE);
     setBleData(null);
     charRef.current = null;
     serverRef.current = null;
   }, []);
 
-  const connect = useCallback(async () => {
-    if (!isSupported) {
-      setErrorMessage(
-        "Web Bluetooth requires Chrome or Edge (on HTTPS or localhost)."
-      );
-      setBleState(BLE_STATE.UNSUPPORTED);
+  // ─── 1. Connect Original Physical Bluetooth BLE Device ─────────────────────────
+  const connectBle = useCallback(async () => {
+    if (!isBleSupported) {
+      setErrorMessage("Web Bluetooth is not supported in this browser. Please use Chrome or Edge.");
+      setBleState(BLE_STATE.ERROR);
       return;
     }
 
@@ -196,66 +201,60 @@ export function useBluetooth() {
         DEV_INFO_SERVICE_UUID,
       ];
 
-      // Request device with acceptAllDevices: true so ALL nearby BLE devices
-      // (ESP32, TremorAI-Glove, Nordic UART, etc.) appear in the scan dialog
+      // Request physical BLE device from browser picker (targeted filter with fallback)
       let device = null;
       try {
+        device = await navigator.bluetooth.requestDevice({
+          filters: [
+            { name: "TremorAI-Glove" },
+            { namePrefix: "Tremor" },
+            { namePrefix: "ESP" },
+            { services: [TREMOR_SERVICE_UUID] },
+          ],
+          optionalServices,
+        });
+      } catch (filterErr) {
+        if (filterErr.name === "NotFoundError" || filterErr.name === "AbortError") {
+          throw filterErr;
+        }
         device = await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
           optionalServices,
         });
-      } catch (reqErr) {
-        // Fallback to namePrefix filter if acceptAllDevices is restricted by browser policy
-        if (reqErr.name !== "NotFoundError" && reqErr.name !== "AbortError") {
-          device = await navigator.bluetooth.requestDevice({
-            filters: [
-              { namePrefix: "Tremor" },
-              { namePrefix: "ESP32" },
-              { namePrefix: "Neuro" },
-              { namePrefix: "Glove" },
-            ],
-            optionalServices,
-          });
-        } else {
-          throw reqErr;
-        }
       }
 
       if (!device) {
-        setBleState(BLE_STATE.IDLE);
+        setBleState(BLE_STATE.DISCONNECTED);
         return;
       }
 
       deviceRef.current = device;
-      setDeviceName(device.name || "ESP32 Device");
+      setDeviceName(device.name || "TremorAI-Glove");
+      setTransportType(HARDWARE_TRANSPORT.BLE);
       device.addEventListener("gattserverdisconnected", handleDisconnect);
 
       setBleState(BLE_STATE.CONNECTING);
       const server = await device.gatt.connect();
       serverRef.current = server;
 
-      // ── Discover Service and Characteristic with fallback ──
       let activeChar = null;
 
-      // 1. Try Custom Tremor AI GATT service
       try {
         const tremorService = await server.getPrimaryService(TREMOR_SERVICE_UUID);
         activeChar = await tremorService.getCharacteristic(TREMOR_TX_CHAR_UUID);
       } catch {
-        // Continue to fallback
+        // Fallback to NUS or generic notify
       }
 
-      // 2. Try Nordic UART Service
       if (!activeChar) {
         try {
           const nusService = await server.getPrimaryService(NUS_SERVICE_UUID);
           activeChar = await nusService.getCharacteristic(NUS_TX_CHAR_UUID);
         } catch {
-          // Continue to generic discovery
+          // Fallback to discovering characteristics
         }
       }
 
-      // 3. Generic primary services scan for any notify characteristic
       if (!activeChar) {
         try {
           const services = await server.getPrimaryServices();
@@ -276,7 +275,7 @@ export function useBluetooth() {
 
       if (!activeChar) {
         throw new Error(
-          "Connected to ESP32, but could not find a telemetry streaming characteristic."
+          `Connected to "${device.name || "BLE Device"}", but no telemetry GATT characteristic was found.`
         );
       }
 
@@ -287,40 +286,153 @@ export function useBluetooth() {
       setBleState(BLE_STATE.CONNECTED);
     } catch (err) {
       if (err.name === "NotFoundError" || err.name === "AbortError") {
-        // User closed or cancelled the scan picker
-        setBleState(BLE_STATE.IDLE);
+        setBleState(BLE_STATE.DISCONNECTED);
       } else {
-        const msg =
-          err.message || "Failed to scan or connect to Bluetooth device.";
-        console.error("[useBluetooth] Connection error:", err);
+        const msg = err.message || "Failed to connect to physical Bluetooth device.";
+        console.error("[useBluetooth] BLE Connection error:", err);
         setErrorMessage(msg);
         setBleState(BLE_STATE.ERROR);
       }
     }
-  }, [isSupported, handleNotification, handleDisconnect]);
+  }, [isBleSupported, handleNotification, handleDisconnect]);
 
-  const disconnect = useCallback(() => {
-    if (charRef.current) {
-      charRef.current.removeEventListener(
-        "characteristicvaluechanged",
-        handleNotification
-      );
-      charRef.current.stopNotifications().catch(() => {});
+  // ─── 2. Connect Original Physical USB Serial Device (ESP32) ───────────────────
+  const connectSerial = useCallback(async () => {
+    if (!isSerialSupported) {
+      setErrorMessage("Web Serial is not supported in this browser. Please use Chrome or Edge.");
+      setBleState(BLE_STATE.ERROR);
+      return;
     }
+
+    setErrorMessage(null);
+    setBleState(BLE_STATE.SCANNING);
+
+    try {
+      // Prompt user to pick physical USB serial port
+      const port = await navigator.serial.requestPort();
+      if (!port) {
+        setBleState(BLE_STATE.DISCONNECTED);
+        return;
+      }
+
+      setBleState(BLE_STATE.CONNECTING);
+      await port.open({ baudRate: 115200 });
+
+      serialPortRef.current = port;
+      setDeviceName("ESP32 USB Serial (115200 baud)");
+      setTransportType(HARDWARE_TRANSPORT.SERIAL);
+      setBleState(BLE_STATE.CONNECTED);
+
+      serialKeepReadingRef.current = true;
+      const textDecoder = new TextDecoderStream();
+      port.readable.pipeTo(textDecoder.writable).catch(() => {});
+      const reader = textDecoder.readable.getReader();
+      serialReaderRef.current = reader;
+
+      let lineBuffer = "";
+      (async () => {
+        try {
+          while (serialKeepReadingRef.current) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            if (value) {
+              lineBuffer += value;
+              const lines = lineBuffer.split("\n");
+              lineBuffer = lines.pop() || "";
+
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith("#")) continue;
+
+                const parts = trimmed.split(",").map((p) => p.trim());
+                if (parts.length >= 7) {
+                  const ts = parseFloat(parts[0]) || Date.now();
+                  const ax = parseFloat(parts[1]) || 0;
+                  const ay = parseFloat(parts[2]) || 0;
+                  const az = parseFloat(parts[3]) || 0;
+                  const gx = parseFloat(parts[4]) || 0;
+                  const gy = parseFloat(parts[5]) || 0;
+                  const gz = parseFloat(parts[6]) || 0;
+                  setBleData(buildTelemetryObject({ ts, ax, ay, az, gx, gy, gz }));
+                }
+              }
+            }
+          }
+        } catch (readErr) {
+          console.debug("[useBluetooth] Serial read loop ended:", readErr);
+        } finally {
+          handleDisconnect();
+        }
+      })();
+    } catch (err) {
+      if (err.name === "NotFoundError" || err.name === "AbortError") {
+        setBleState(BLE_STATE.DISCONNECTED);
+      } else {
+        const msg = err.message || "Failed to open physical USB Serial port.";
+        console.error("[useBluetooth] Serial Connection error:", err);
+        setErrorMessage(msg);
+        setBleState(BLE_STATE.ERROR);
+      }
+    }
+  }, [isSerialSupported, handleDisconnect]);
+
+  // Generic connect router for compatibility
+  const connect = useCallback(
+    async (option = null) => {
+      if (option === "serial" || option?.type === "serial") {
+        return connectSerial();
+      }
+      return connectBle();
+    },
+    [connectBle, connectSerial]
+  );
+
+  const disconnect = useCallback(async () => {
+    serialKeepReadingRef.current = false;
+
+    if (serialReaderRef.current) {
+      try {
+        await serialReaderRef.current.cancel();
+      } catch {}
+      serialReaderRef.current = null;
+    }
+
+    if (serialPortRef.current) {
+      try {
+        await serialPortRef.current.close();
+      } catch {}
+      serialPortRef.current = null;
+    }
+
+    if (charRef.current) {
+      try {
+        charRef.current.removeEventListener(
+          "characteristicvaluechanged",
+          handleNotification
+        );
+        await charRef.current.stopNotifications();
+      } catch {}
+      charRef.current = null;
+    }
+
     if (deviceRef.current?.gatt?.connected) {
       deviceRef.current.gatt.disconnect();
     }
+
     if (deviceRef.current) {
       deviceRef.current.removeEventListener(
         "gattserverdisconnected",
         handleDisconnect
       );
+      deviceRef.current = null;
     }
+
     handleDisconnect();
   }, [handleNotification, handleDisconnect]);
 
   useEffect(() => {
     return () => {
+      serialKeepReadingRef.current = false;
       if (deviceRef.current?.gatt?.connected) {
         deviceRef.current.gatt.disconnect();
       }
@@ -330,11 +442,18 @@ export function useBluetooth() {
   return {
     bleState,
     deviceName,
+    transportType,
     bleData,
     errorMessage,
+    isBleSupported,
+    isSerialSupported,
     isSupported,
     connect,
+    connectBle,
+    connectSerial,
     disconnect,
   };
 }
+
+
 
