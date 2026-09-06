@@ -89,11 +89,6 @@ export default function TremorSidebar({
       label: "Log Medication Dose",
       icon: PillMedicationIcon,
     },
-    {
-      id: "suggested-regimen",
-      label: "Suggested Regimen",
-      icon: PillMedicationIcon,
-    },
   ];
 
   return (
