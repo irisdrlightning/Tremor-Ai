@@ -450,7 +450,7 @@ export default function KinematicsGraphsPanel({
 
         {/* Metric Pills Under Graph */}
         {activeGraph === "fft" ? (
-          <div className="mt-4 grid grid-cols-4 gap-2 text-center md:grid-cols-7 font-mono">
+          <div className="mt-4 grid grid-cols-2 xs:grid-cols-2 sm-compact:grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1.5 sm:gap-2 text-center font-mono">
             <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 DOMINANT
@@ -505,7 +505,7 @@ export default function KinematicsGraphsPanel({
             </div>
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-4 gap-2 text-center md:grid-cols-7 font-mono">
+          <div className="mt-4 grid grid-cols-2 xs:grid-cols-2 sm-compact:grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1.5 sm:gap-2 text-center font-mono">
             <div className="rounded-xl border border-[#152326] bg-black p-2">
               <span className="block text-[9px] uppercase tracking-wider text-[#8a9992]">
                 AX (G)
@@ -553,7 +553,7 @@ export default function KinematicsGraphsPanel({
       </section>
 
       {/* Row of 3 Lower Condition Cards */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 grid-cols-1 sm-compact:grid-cols-2 md:grid-cols-3">
         {/* Card 1: AI Detection - Solid Black Aesthetic */}
         <article className="flex flex-col justify-between rounded-3xl border border-[#10B981] bg-black p-5 text-white shadow-sm">
           <div className="flex items-start justify-between">

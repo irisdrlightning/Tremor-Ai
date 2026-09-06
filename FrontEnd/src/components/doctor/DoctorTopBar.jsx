@@ -57,15 +57,15 @@ export default function DoctorTopBar({
 
   return (
     <header
-      className={`h-16 shrink-0 flex items-center justify-between px-6 border-b border-[#152326] bg-transparent select-none z-30 ${className}`}
+      className={`h-14 sm:h-16 shrink-0 flex items-center justify-between px-3 xs:px-4 sm:px-6 border-b border-[#152326] bg-transparent select-none z-30 ${className}`}
     >
       {/* Left Section: Status Dot + Title + Category Tag Pill (Matches Patient Dashboard Pattern in Image 2) */}
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <span className="w-2 h-2 shrink-0 rounded-full bg-[#10B981]" />
-        <h1 className="text-base md:text-lg font-semibold text-white tracking-tight truncate">
+        <h1 className="text-sm xs:text-base md:text-lg font-semibold text-white tracking-tight truncate">
           {displayTitle}
         </h1>
-        <span className="bg-black border border-[#152326] text-slate-400 text-[11px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full shrink-0">
+        <span className="hidden sm-compact:inline-block bg-black border border-[#152326] text-slate-400 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest px-2 sm:px-2.5 py-0.5 rounded-full shrink-0">
           {displayCategory}
         </span>
       </div>

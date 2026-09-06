@@ -58,7 +58,7 @@ export default function DoctorLayout({
         />
 
         {/* Dynamic Sub-Route Inner Viewport */}
-        <main className="flex-1 min-w-0 overflow-y-auto">
+        <main className="flex-1 min-w-0 overflow-y-auto pb-20 lg:pb-0">
           {children}
         </main>
       </div>

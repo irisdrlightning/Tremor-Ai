@@ -43,6 +43,15 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Responsive Breakpoints: 325px, 520px, Mobile (640px), Tablet (768px), Laptop (1024px), Desktop (1280px), Wide (1536px) */
+  --breakpoint-xs: 325px;
+  --breakpoint-sm-compact: 520px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
 }
 
 :root {
@@ -113,6 +122,73 @@
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
+  }
+}
+
+/* ==============================================================================
+ * Tremor AI - Explicit Device & Resolution Responsive Rules
+ * 325px (Micro Mobile) | 520px (Compact Mobile) | 640px (Mobile)
+ * 768px (Tablet) | 1024px (Laptop) | 1280px (Desktop) | 1536px (Wide)
+ * ============================================================================== */
+
+/* Micro screens (<= 325px) */
+@media (max-width: 325px) {
+  html {
+    font-size: 13px;
+  }
+  .responsive-p-shell {
+    padding: 0.5rem !important;
+  }
+  .responsive-stack-325 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .responsive-hide-325 {
+    display: none !important;
+  }
+}
+
+/* Compact mobile (<= 520px) */
+@media (max-width: 520px) {
+  .responsive-grid-520 {
+    grid-template-columns: 1fr !important;
+  }
+  .responsive-p-mobile {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+/* Standard Mobile (<= 640px) */
+@media (max-width: 640px) {
+  .responsive-mobile-full {
+    width: 100% !important;
+  }
+}
+
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .responsive-tablet-stack {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Laptop (1024px - 1279px) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .responsive-laptop-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.9fr) !important;
+  }
+}
+
+/* Desktop & Wide (>= 1280px and >= 1536px) */
+@media (min-width: 1280px) {
+  .responsive-desktop-container {
+    max-width: 1280px;
+  }
+}
+@media (min-width: 1536px) {
+  .responsive-desktop-container {
+    max-width: 1536px;
   }
 }
 

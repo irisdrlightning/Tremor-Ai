@@ -43,8 +43,9 @@ export default function DoctorSidebar({
   ];
 
   return (
+    <>
     <aside
-      className={`border border-[#152326] bg-[#000000] rounded-full py-6 px-3 flex flex-col items-center justify-between w-16 md:w-20 h-[calc(100vh-2rem)] sticky top-4 self-start shrink-0 select-none shadow-2xl z-20 ${className}`}
+      className={`hidden lg:flex border border-[#152326] bg-[#000000] rounded-full py-6 px-3 flex-col items-center justify-between w-16 md:w-20 h-[calc(100vh-2rem)] sticky top-4 self-start shrink-0 select-none shadow-2xl z-20 ${className}`}
     >
       {/* Top Logo Block: Inset solid black squircle with solid emerald T mark */}
       <div className="flex flex-col items-center pt-1">
@@ -58,13 +59,13 @@ export default function DoctorSidebar({
           <img
             src={iconSrc}
             alt="Tremor AI"
-            className="h-full w-full object-contain"
+            className="w-full h-full object-contain"
           />
         </button>
       </div>
 
-      {/* Centered Navigation Icon Group */}
-      <nav className="flex flex-col items-center gap-4 my-auto">
+      {/* Center Navigation Actions: Uniform 20px Stroke Width Minimal Icons */}
+      <nav className="flex flex-col items-center gap-6 my-auto">
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
           const Icon = item.icon;
@@ -107,5 +108,44 @@ export default function DoctorSidebar({
         </button>
       </div>
     </aside>
+
+    {/* Mobile & Tablet Bottom Navigation Bar (Screens < 1024px, 325px - 768px) */}
+    <nav className="fixed bottom-0 left-0 right-0 z-40 flex lg:hidden items-center justify-around border-t border-[#152326] bg-black/95 backdrop-blur-md px-3 py-2 select-none safe-area-pb">
+      {navItems.map((item) => {
+        const isActive = activeTab === item.id;
+        const Icon = item.icon;
+
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onSelectTab(item.id)}
+            className="flex flex-col items-center gap-1 p-1 text-xs"
+          >
+            <div className={`p-2 rounded-xl transition-colors ${isActive ? "bg-[#10B981] text-black" : "text-slate-400"}`}>
+              <Icon size={18} strokeWidth={1.8} />
+            </div>
+            <span className={`text-[10px] font-mono tracking-tight ${isActive ? "text-[#10B981] font-semibold" : "text-slate-500"}`}>
+              {item.id === "analyser" ? "Trends" : item.id === "sync" ? "Sync" : item.id === "reports" ? "Reports" : "Regimen"}
+            </span>
+          </button>
+        );
+      })}
+
+      <button
+        type="button"
+        onClick={onSignOut}
+        title="Sign Out"
+        className="flex flex-col items-center gap-1 p-1 text-xs text-slate-500 hover:text-[#ef4444]"
+      >
+        <div className="p-2 rounded-xl text-slate-400 hover:text-[#ef4444]">
+          <Power size={18} strokeWidth={1.8} />
+        </div>
+        <span className="text-[10px] font-mono tracking-tight text-slate-500">
+          Exit
+        </span>
+      </button>
+    </nav>
+    </>
   );
 }

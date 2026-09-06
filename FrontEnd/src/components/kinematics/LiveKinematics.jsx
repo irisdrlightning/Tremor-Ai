@@ -278,13 +278,13 @@ function HandImageCard({ subjectData, nodes }) {
 
 function OverviewCard({ subjectData, nodes }) {
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 md:p-8">
-      <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight md:text-5xl">
+    <section className="rounded-2xl sm:rounded-3xl border border-border bg-card p-4 sm-compact:p-5 sm:p-6 md:p-8">
+      <h1 className="font-display text-2xl xs:text-3xl sm:text-4xl font-bold leading-[1.05] tracking-tight md:text-5xl">
         Overview
         <br />
         Conditions
       </h1>
-      <p className="mt-3 flex items-center gap-2 font-mono-tech text-xs uppercase tracking-widest text-muted-foreground">
+      <p className="mt-2 sm:mt-3 flex items-center gap-2 font-mono-tech text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground truncate">
         <span className="h-1.5 w-1.5 rounded-full bg-primary" />
         Subject: {subjectData.name} ({subjectData.id})
       </p>
@@ -836,8 +836,8 @@ export default function LiveKinematics({ onSignOut }) {
   const displayedConditions = isDeviceConnected ? conditionsData : STANDBY_CONDITIONS;
 
   return (
-    <div className="min-h-screen bg-[#000000] text-[#ededed] p-4 md:p-6 lg:p-8">
-      <div className="mx-auto flex max-w-[1500px] gap-6">
+    <div className="min-h-screen bg-[#000000] text-[#ededed] p-2 xs:p-3 sm-compact:p-4 sm:p-5 md:p-6 lg:p-8 pb-20 lg:pb-8">
+      <div className="mx-auto flex w-full max-w-[1536px] gap-4 lg:gap-6">
         {/* Universal Tremor AI Navigation Sidebar Component */}
         <TremorSidebar
           activeTab={activeTab}
@@ -845,7 +845,7 @@ export default function LiveKinematics({ onSignOut }) {
           onSignOut={onSignOut || logout}
         />
 
-        <main className="min-w-0 flex-1 space-y-6">
+        <main className="min-w-0 flex-1 space-y-4 sm:space-y-6">
           {activeTab === "analytics" ? (
             <MedicationAnalytics
               activeTab={activeTab}
@@ -894,7 +894,7 @@ export default function LiveKinematics({ onSignOut }) {
                 onSignOut={onSignOut || logout}
               />
 
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)]">
+              <div className="grid gap-4 sm:gap-5 grid-cols-1 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)] 2xl:gap-6">
                 {/* 3D Hand Model & OverviewCard (Untouched dependency, exactly preserved) */}
                 <OverviewCard subjectData={currentSubject} nodes={currentNodes} />
 

@@ -89,19 +89,19 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-2xl border border-[#152326] bg-black shadow-2xl shadow-black/80 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-2 xs:p-3 sm:p-4 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg rounded-2xl border border-[#152326] bg-black shadow-2xl shadow-black/80 overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#152326] bg-black px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-full border border-[#10B981] bg-black font-mono text-sm font-bold text-[#10B981]">
+        <div className="flex items-center justify-between border-b border-[#152326] bg-black px-4 sm:px-6 py-3.5 sm:py-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <span className="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-full border border-[#10B981] bg-black font-mono text-xs sm:text-sm font-bold text-[#10B981]">
               {formData.initials || (isDoctor ? "ER" : "GP")}
             </span>
-            <div>
-              <h3 className="text-base font-bold text-[#ededed]">
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold text-[#ededed] truncate">
                 {isDoctor ? "Doctor & Clinician Profile" : "User & Patient Profile"}
               </h3>
-              <p className="font-mono text-[10px] text-[#8a9992]">
+              <p className="font-mono text-[9px] sm:text-[10px] text-[#8a9992] truncate">
                 Portal Role: <span className="text-[#10B981] uppercase">{role}</span> • {formData.id}
               </p>
             </div>
@@ -109,14 +109,14 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
           <button
             type="button"
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-[#152326] text-[#8a9992] hover:text-[#ededed] hover:border-[#10B981] transition-colors cursor-pointer"
+            className="grid h-7 w-7 sm:h-8 sm:w-8 shrink-0 place-items-center rounded-lg border border-[#152326] text-[#8a9992] hover:text-[#ededed] hover:border-[#10B981] transition-colors cursor-pointer"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
         </div>
 
         {/* Scrollable Form Body */}
-        <form onSubmit={handleSave} className="overflow-y-auto p-6 space-y-4 flex-1">
+        <form onSubmit={handleSave} className="overflow-y-auto p-4 sm:p-6 space-y-3.5 sm:space-y-4 flex-1">
           {/* Row 1: Full Name & Initials */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2 space-y-1.5">

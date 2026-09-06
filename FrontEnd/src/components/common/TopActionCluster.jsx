@@ -30,7 +30,7 @@ export default function TopActionCluster({
   const handleProfile = onProfileClick || onOpenProfile;
 
   return (
-    <div className={`flex items-center gap-3 shrink-0 ${className}`}>
+    <div className={`flex items-center gap-1.5 xs:gap-2 sm:gap-3 shrink-0 ${className}`}>
       {/* 1. Bluetooth Icon Action */}
       <button
         id="top-action-bluetooth-btn"
@@ -38,9 +38,9 @@ export default function TopActionCluster({
         aria-label="Bluetooth Connection"
         title="Hardware BLE Connection"
         onClick={handleBluetooth}
-        className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-[#262626] bg-black text-white hover:border-[#404040] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        className="flex h-8 w-8 xs:h-9 xs:w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-[#262626] bg-black text-white hover:border-[#404040] hover:scale-105 active:scale-95 transition-all cursor-pointer"
       >
-        <Bluetooth className="h-5 w-5 stroke-[1.8] text-white" />
+        <Bluetooth className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-5 sm:w-5 stroke-[1.8] text-white" />
       </button>
 
       {/* 2. Notifications Icon Action */}
@@ -50,9 +50,9 @@ export default function TopActionCluster({
         aria-label="Notifications"
         title="Notifications & Clinical Alerts"
         onClick={handleNotifications}
-        className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-[#262626] bg-black text-white hover:border-[#404040] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        className="flex h-8 w-8 xs:h-9 xs:w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-[#262626] bg-black text-white hover:border-[#404040] hover:scale-105 active:scale-95 transition-all cursor-pointer"
       >
-        <Bell className="h-5 w-5 stroke-[1.8] text-white" />
+        <Bell className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-5 sm:w-5 stroke-[1.8] text-white" />
       </button>
 
       {/* 3. Profile / User Silhouette Icon Action */}
@@ -62,9 +62,9 @@ export default function TopActionCluster({
         aria-label="User Profile"
         title="User Profile & Settings"
         onClick={handleProfile}
-        className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-[#262626] bg-black text-white hover:border-[#404040] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        className="flex h-8 w-8 xs:h-9 xs:w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-[#262626] bg-black text-white hover:border-[#404040] hover:scale-105 active:scale-95 transition-all cursor-pointer"
       >
-        <User className="h-5 w-5 stroke-[1.8] text-white" />
+        <User className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-5 sm:w-5 stroke-[1.8] text-white" />
       </button>
     </div>
   );

@@ -89,6 +89,7 @@ export default function TremorSidebar({
   ];
 
   return (
+    <>
     <aside
       className={`hidden lg:flex w-16 md:w-20 h-[calc(100vh-2rem)] sticky top-4 self-start shrink-0 flex-col items-center justify-between rounded-full bg-[#000000] border border-[#152326] py-6 px-2 shadow-2xl z-20 select-none ${className}`}
     >
@@ -153,5 +154,62 @@ export default function TremorSidebar({
         </button>
       </div>
     </aside>
+
+    {/* Mobile & Tablet Bottom Navigation Bar (Screens < 1024px, 325px - 768px) */}
+    <nav className="fixed bottom-0 left-0 right-0 z-40 flex lg:hidden items-center justify-around border-t border-[#152326] bg-black/95 backdrop-blur-md px-3 py-2 select-none safe-area-pb">
+      <button
+        type="button"
+        onClick={() => setActiveTab("kinematics")}
+        className="flex flex-col items-center gap-1 p-1 text-xs"
+      >
+        <div className={`p-2 rounded-xl transition-colors ${activeTab === "kinematics" ? "bg-[#10B981] text-black" : "text-slate-400"}`}>
+          <PulseWaveformIcon className="h-4 w-4" />
+        </div>
+        <span className={`text-[10px] font-mono tracking-tight ${activeTab === "kinematics" ? "text-[#10B981] font-semibold" : "text-slate-500"}`}>
+          Kinematics
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setActiveTab("analytics")}
+        className="flex flex-col items-center gap-1 p-1 text-xs"
+      >
+        <div className={`p-2 rounded-xl transition-colors ${activeTab === "analytics" ? "bg-[#10B981] text-black" : "text-slate-400"}`}>
+          <BarChartIcon className="h-4 w-4" />
+        </div>
+        <span className={`text-[10px] font-mono tracking-tight ${activeTab === "analytics" ? "text-[#10B981] font-semibold" : "text-slate-500"}`}>
+          Analytics
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setActiveTab("log-medicine")}
+        className="flex flex-col items-center gap-1 p-1 text-xs"
+      >
+        <div className={`p-2 rounded-xl transition-colors ${activeTab === "log-medicine" ? "bg-[#10B981] text-black" : "text-slate-400"}`}>
+          <PillMedicationIcon className="h-4 w-4" />
+        </div>
+        <span className={`text-[10px] font-mono tracking-tight ${activeTab === "log-medicine" ? "text-[#10B981] font-semibold" : "text-slate-500"}`}>
+          Medication
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={onSignOut}
+        title="Sign Out"
+        className="flex flex-col items-center gap-1 p-1 text-xs text-slate-500 hover:text-[#ef4444]"
+      >
+        <div className="p-2 rounded-xl text-slate-400 hover:text-[#ef4444]">
+          <Power className="h-4 w-4 stroke-[2]" />
+        </div>
+        <span className="text-[10px] font-mono tracking-tight text-slate-500">
+          Exit
+        </span>
+      </button>
+    </nav>
+    </>
   );
 }
