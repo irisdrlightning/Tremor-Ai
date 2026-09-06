@@ -31,20 +31,13 @@ class DoseEntryRequest(BaseModel):
     tremorHz: Optional[float] = None
     note: Optional[str] = None
 
+from backend.database import load_dose_logs_data, save_dose_logs_data
+
 def load_stored_dose_logs() -> List[Dict[str, Any]]:
-    if not os.path.exists(DOSE_LOGS_FILE):
-        return []
-    try:
-        with open(DOSE_LOGS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data if isinstance(data, list) else []
-    except Exception:
-        return []
+    return load_dose_logs_data()
 
 def save_stored_dose_logs(logs: List[Dict[str, Any]]) -> None:
-    os.makedirs(os.path.dirname(DOSE_LOGS_FILE), exist_ok=True)
-    with open(DOSE_LOGS_FILE, "w", encoding="utf-8") as f:
-        json.dump(logs, f, indent=2)
+    save_dose_logs_data(logs)
 
 def build_dynamic_medication_analytics(patient_id: str = "TR-90241") -> Dict[str, Any]:
     """

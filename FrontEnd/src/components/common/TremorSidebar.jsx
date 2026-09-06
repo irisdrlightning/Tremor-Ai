@@ -1,3 +1,4 @@
+import React from "react";
 import { Power } from "lucide-react";
 import { tremorIconBase64 } from "@/assets/tremorIconBase64";
 import tremorIcon from "@/assets/tremor-icon.png";
@@ -6,8 +7,9 @@ import tremorIcon from "@/assets/tremor-icon.png";
  * Custom Minimalist SVG Icons precisely matching the reference design:
  * 1. PulseWaveformIcon: Minimal Parkinson's kinematic tremor pulse wave
  * 2. BarChartIcon: 3 vertical discrete level bars
+ * 3. PillMedicationIcon: Minimal Parkinson's medication capsule
  */
-function PulseWaveformIcon({ className = "h-4 w-4" }) {
+function PulseWaveformIcon({ className = "h-5 w-5" }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -23,7 +25,7 @@ function PulseWaveformIcon({ className = "h-4 w-4" }) {
   );
 }
 
-function BarChartIcon({ className = "h-4 w-4" }) {
+function BarChartIcon({ className = "h-5 w-5" }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -37,7 +39,7 @@ function BarChartIcon({ className = "h-4 w-4" }) {
   );
 }
 
-function PillMedicationIcon({ className = "h-4 w-4" }) {
+function PillMedicationIcon({ className = "h-5 w-5" }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -56,14 +58,9 @@ function PillMedicationIcon({ className = "h-4 w-4" }) {
 
 /**
  * Universal Tremor AI Navigation Sidebar Component
- * Pixel-tailored to the reference screenshot:
- * - Elongated capsule pill with smooth dark obsidian background (#030705)
- * - Subtle perimeter border (rgba(255, 255, 255, 0.05))
- * - Top: High-contrast rounded square holding the teal Tremor "T" glyph
- * - Center:
- *     - Active state: Vibrant round solid teal/emerald circle (#00d592) with black kinematic pulse icon
- *     - Inactive state: Muted, minimalist discrete icons (#606d67)
- * - Bottom: Subtle circular power button with thin ring
+ * - Static Vertical Anchoring: Fixed height capsule sticky in viewport
+ * - Standardized Button Box Models: Inactive and active states maintain identical 48x48px dimensions
+ * - Prevents layout regressions across all routes (Kinematics, Analytics, Log Medication)
  */
 export default function TremorSidebar({
   activeTab = "kinematics",
@@ -93,59 +90,66 @@ export default function TremorSidebar({
 
   return (
     <aside
-      className={`hidden w-[64px] shrink-0 flex-col items-center justify-between rounded-[36px] bg-[#030605] border border-[rgba(255,255,255,0.06)] py-6 shadow-2xl lg:flex min-h-[calc(100vh-4rem)] select-none ${className}`}
+      className={`hidden lg:flex w-16 md:w-20 h-[calc(100vh-2rem)] sticky top-4 self-start shrink-0 flex-col items-center justify-between rounded-full bg-[#000000] border border-[#152326] py-6 px-2 shadow-2xl z-20 select-none ${className}`}
     >
-      {/* Top: Glowing Tremor AI Emblem in Rounded Squircle Frame */}
-      <div className="flex flex-col items-center pt-1">
+      {/* Top Zone: Fixed Container for Logo */}
+      <div className="flex flex-col items-center pt-1 shrink-0">
         <button
           type="button"
           onClick={() => setActiveTab("kinematics")}
           title="Tremor AI Overview"
-          className="group relative flex h-11 w-11 items-center justify-center rounded-[18px] bg-[#070f0b] border border-[#00d592]/25 p-2 shadow-[0_0_16px_rgba(0,213,146,0.12)] transition-all hover:border-[#00d592]/60 hover:scale-105 active:scale-95"
+          aria-label="Tremor AI Overview"
+          className="group relative flex h-12 w-12 items-center justify-center rounded-full bg-black border border-[#10B981] p-2.5 transition-all hover:scale-105 active:scale-95 cursor-pointer"
         >
           <img
             src={iconSrc}
             alt="Tremor AI emblem"
-            className="h-full w-full object-contain filter drop-shadow-[0_0_6px_rgba(0,213,146,0.4)]"
+            className="h-full w-full object-contain"
           />
         </button>
       </div>
 
-      {/* Middle: Navigation Stack with Solid Circular Active State */}
-      <nav className="flex flex-col items-center gap-7 my-auto">
+      {/* Center Navigation Zone: Statically Centered with Strict Uniform Spacing */}
+      <nav className="flex flex-col items-center gap-6 my-auto shrink-0">
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
           const Icon = item.icon;
 
           return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveTab(item.id)}
-              title={item.label}
-              aria-label={item.label}
-              className={`relative flex items-center justify-center rounded-full transition-all duration-300 ${
-                isActive
-                  ? "h-11 w-11 bg-[#00d592] text-[#02140d] shadow-[0_0_24px_rgba(0,213,146,0.45)] scale-105"
-                  : "h-9 w-9 text-[#586860] hover:text-[#ededed] hover:bg-[#0a1410] active:scale-95"
-              }`}
-            >
-              <Icon className={isActive ? "h-5 w-5 stroke-[2.4]" : "h-4 w-4"} />
-            </button>
+            <div key={item.id} className="relative group flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => setActiveTab(item.id)}
+                title={item.label}
+                aria-label={item.label}
+                className={`flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 cursor-pointer ${
+                  isActive
+                    ? "bg-[#10B981] text-black font-bold shadow-none"
+                    : "bg-transparent text-slate-400 hover:text-white hover:bg-black/60"
+                }`}
+              >
+                <Icon className={isActive ? "h-5 w-5 stroke-[2.4]" : "h-5 w-5 stroke-[2]"} />
+              </button>
+
+              {/* Tooltip HUD */}
+              <span className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 hidden group-hover:block rounded-lg bg-black border border-[#152326] px-2.5 py-1 text-xs font-semibold text-[#10B981] whitespace-nowrap shadow-xl z-50">
+                {item.label}
+              </span>
+            </div>
           );
         })}
       </nav>
 
-      {/* Bottom: Circular Outline Power Button */}
-      <div className="flex flex-col items-center pb-1">
+      {/* Bottom Zone: Fixed Container for Power / Sign Out */}
+      <div className="flex flex-col items-center pb-1 shrink-0">
         <button
           type="button"
           onClick={onSignOut}
           title="Sign Out / Power"
           aria-label="Sign out"
-          className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#070e0a] text-[#586860] transition-all hover:border-[#00d592]/40 hover:text-[#00d592] hover:bg-[#0c1611] active:scale-95"
+          className="group relative flex h-11 w-11 items-center justify-center rounded-full border border-[#152326] bg-black text-slate-400 transition-all hover:border-[#10B981] hover:text-[#10B981] active:scale-95 cursor-pointer"
         >
-          <Power className="h-3.5 w-3.5 stroke-[2.2] transition-transform group-hover:scale-110" />
+          <Power className="h-4 w-4 stroke-[2.2] transition-transform group-hover:scale-110" />
         </button>
       </div>
     </aside>

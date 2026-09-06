@@ -45,6 +45,7 @@ import NotificationsModal from "@/components/kinematics/NotificationsModal";
 import UserProfileModal from "@/components/common/UserProfileModal";
 import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
 import TremorSidebar from "@/components/common/TremorSidebar";
+import TopActionCluster from "@/components/common/TopActionCluster";
 
 
 const icons = {
@@ -93,54 +94,12 @@ function TopBar({
         <TremorHeaderBrand title="Live Kinematics" subtitle="Real-Time Telemetry" />
       </div>
 
-      {/* Action Icons: Bluetooth, Notifications, and Profile avatar */}
-      <div className="flex shrink-0 items-center gap-2 md:gap-3">
-        {/* BLE Connect Button / Hardware Status */}
-        <div className="flex flex-col items-end gap-0.5">
-          <button
-            id="ble-connect-btn"
-            type="button"
-            aria-label={bleLabel}
-            title={bleLabel}
-            disabled={isBusy || isUnsupported}
-            onClick={isConnected ? onDisconnect : onConnect}
-            className={[
-              "grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary/50 hover:text-primary",
-              isConnected ? "border-primary text-primary bg-primary/10 shadow-[0_0_12px_rgba(0,229,153,0.2)]" : "",
-            ].join(" ")}
-          >
-            <BleIcon
-              className={[
-                "h-4 w-4 shrink-0",
-                isBusy ? "animate-pulse" : "",
-              ].join(" ")}
-            />
-          </button>
-          {errorMessage ? (
-            <span className="font-mono-tech text-[10px] text-destructive pr-1">{errorMessage}</span>
-          ) : null}
-        </div>
-
-        <button
-          type="button"
-          aria-label="Notifications"
-          title="Notifications & Alerts"
-          onClick={onOpenNotifications}
-          className="relative grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-transform hover:scale-105 active:scale-95"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-destructive animate-pulse" />
-        </button>
-
-        <button
-          type="button"
-          onClick={onOpenProfile || onSignOut}
-          title="Edit Profile Details & Information"
-          className="grid h-10 w-10 place-items-center rounded-full border border-primary/50 bg-card font-mono-tech text-xs font-bold text-primary shadow-sm hover:border-primary hover:scale-105 active:scale-95 transition-all cursor-pointer"
-        >
-          {initials}
-        </button>
-      </div>
+      {/* Canonical 3-Circle Header Action Cluster */}
+      <TopActionCluster
+        onOpenBluetooth={onOpenWearables || onConnect}
+        onOpenNotifications={onOpenNotifications}
+        onOpenProfile={onOpenProfile}
+      />
     </header>
   );
 }
@@ -149,7 +108,7 @@ function SectionTitle({ children, actions }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
       <h2 className="flex min-w-0 items-center gap-2 font-display text-base font-semibold">
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#10B981]" />
         <span className="truncate">{children}</span>
       </h2>
       {actions}
@@ -229,14 +188,11 @@ function HandImageCard({ subjectData, nodes }) {
   const imgSrc = handScanBase64 || handScan || "/hand-scan.png";
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-3xl bg-shell/70 border border-border/80 flex items-center justify-center select-none group shadow-inner">
-      {/* Background Radiance */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
-
+    <div className="relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-3xl bg-black border border-[#152326] flex items-center justify-center select-none group">
       {/* Top Clinical Badge */}
       <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-1.5 font-mono-tech text-[10px]">
-        <span className="flex items-center gap-1 rounded-full bg-card/90 border border-primary/40 px-2.5 py-1 text-primary shadow-sm backdrop-blur">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+        <span className="flex items-center gap-1 rounded-full bg-black border border-[#10B981] px-3 py-1 text-xs font-semibold text-[#10B981]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
           <span>Kinematic Scan</span>
         </span>
       </div>
@@ -264,12 +220,12 @@ function HandImageCard({ subjectData, nodes }) {
             <div className="relative flex items-center justify-center">
               <span
                 className={`animate-ping absolute inline-flex h-4 w-4 rounded-full ${
-                  isPeak ? "bg-primary opacity-75" : "bg-teal-400 opacity-50"
+                  isPeak ? "bg-[#10B981] opacity-75" : "bg-slate-400 opacity-50"
                 }`}
               />
               <span
-                className={`relative inline-flex items-center justify-center rounded-full h-4 w-4 border-2 border-background shadow-md transition-transform hover:scale-125 ${
-                  isPeak ? "bg-primary text-primary-foreground" : "bg-card text-foreground"
+                className={`relative inline-flex items-center justify-center rounded-full h-4 w-4 border-2 border-black transition-transform hover:scale-125 ${
+                  isPeak ? "bg-[#10B981] text-black" : "bg-black text-white"
                 }`}
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-current" />
@@ -277,10 +233,10 @@ function HandImageCard({ subjectData, nodes }) {
 
               {/* Frequency Tag Badge */}
               <span
-                className={`absolute left-full ml-1.5 whitespace-nowrap rounded-md px-1.5 py-0.5 font-mono-tech text-[10px] font-bold shadow-sm backdrop-blur border transition-all ${
+                className={`absolute left-full ml-1.5 whitespace-nowrap rounded-md px-1.5 py-0.5 font-mono-tech text-[10px] font-bold border transition-all ${
                   isPeak
-                    ? "bg-primary/20 border-primary/60 text-primary"
-                    : "bg-card/85 border-border/80 text-foreground"
+                    ? "bg-black border-[#10B981] text-[#10B981]"
+                    : "bg-black border-[#152326] text-white"
                 }`}
               >
                 {node.freq}
@@ -289,23 +245,23 @@ function HandImageCard({ subjectData, nodes }) {
 
             {/* Telemetry Tooltip */}
             <div
-              className={`absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap rounded-xl bg-card/95 border border-primary/40 px-3 py-1.5 text-[11px] font-mono-tech shadow-xl backdrop-blur transition-all pointer-events-none z-30 ${
+              className={`absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap rounded-xl bg-black border border-[#152326] px-3 py-1.5 text-[11px] font-mono-tech transition-all pointer-events-none z-30 ${
                 isSelected
                   ? "opacity-100 scale-100"
                   : "opacity-0 scale-95 group-hover/node:opacity-100 group-hover/node:scale-100"
               }`}
             >
-              <div className="font-bold text-foreground flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <div className="font-bold text-white flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
                 {node.name}
               </div>
-              <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
+              <div className="mt-0.5 flex items-center gap-2 text-[10px] text-slate-400">
                 <span>
-                  Freq: <strong className="text-primary font-bold">{node.freq}</strong>
+                  Freq: <strong className="text-[#10B981] font-bold">{node.freq}</strong>
                 </span>
                 <span>•</span>
                 <span>
-                  Amp: <strong>{node.amp}</strong>
+                  Amp: <strong className="text-white">{node.amp}</strong>
                 </span>
               </div>
             </div>
@@ -368,18 +324,18 @@ function ConditionCard({ item }) {
   const Icon = icons[item.icon] ?? Droplet;
   const highlight = item.variant === "highlight";
 
-  // Dynamic tag coloring
-  let tagColorClass = "text-primary bg-primary/10 border-primary/20";
+  // Dynamic tag coloring: Solid Black Surfaces with crisp borders
+  let tagColorClass = "text-[#10B981] bg-black border-[#10B981]";
   if (highlight) {
-    tagColorClass = "bg-primary-foreground/15 text-primary-foreground border-transparent";
+    tagColorClass = "bg-black text-[#10B981] border-[#10B981]";
   } else if (item.tag === "MODERATE") {
-    tagColorClass = "text-warning bg-warning/10 border-warning/20";
+    tagColorClass = "text-warning bg-black border-warning/40";
   } else if (item.tag === "HIGH" || item.tag === "SEVERE" || item.tag === "PARKINSON'S" || item.tag === "CONFIRMED") {
-    tagColorClass = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+    tagColorClass = "text-[#10B981] bg-black border-[#10B981]";
   } else if (item.tag === "OTHER DISORDER" || item.tag === "ACTION TREMOR" || item.tag === "MILD") {
-    tagColorClass = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+    tagColorClass = "text-amber-400 bg-black border-amber-500/40";
   } else if (item.tag === "HEALTHY" || item.tag === "BASELINE" || item.tag === "FILTERED" || item.tag === "PENDING" || item.tag === "STANDBY" || item.tag === "NOT SCORED" || item.tag === "MINIMAL") {
-    tagColorClass = "text-teal-400 bg-teal-500/10 border-teal-500/20";
+    tagColorClass = "text-teal-400 bg-black border-teal-500/40";
   }
 
   return (
@@ -387,7 +343,7 @@ function ConditionCard({ item }) {
       className={[
         "flex min-h-56 flex-col justify-between rounded-3xl border p-5 transition-all duration-300",
         highlight
-          ? "border-primary bg-primary text-primary-foreground shadow-[0_0_24px_rgba(0,229,153,0.15)]"
+          ? "border-[#10B981] bg-[#10B981] text-black"
           : "border-border bg-card text-foreground shadow-sm hover:border-border/80",
       ].join(" ")}
     >
@@ -395,7 +351,7 @@ function ConditionCard({ item }) {
         <span
           className={[
             "grid h-9 w-9 place-items-center rounded-full",
-            highlight ? "bg-primary-foreground/15 text-primary-foreground" : "bg-secondary text-primary",
+            highlight ? "bg-black text-[#10B981]" : "bg-black border border-[#10B981] text-[#10B981]",
           ].join(" ")}
         >
           <Icon className="h-4 w-4" />
@@ -880,7 +836,7 @@ export default function LiveKinematics({ onSignOut }) {
   const displayedConditions = isDeviceConnected ? conditionsData : STANDBY_CONDITIONS;
 
   return (
-    <div className="min-h-screen bg-[#060908] text-[#ededed] p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-[#000000] text-[#ededed] p-4 md:p-6 lg:p-8">
       <div className="mx-auto flex max-w-[1500px] gap-6">
         {/* Universal Tremor AI Navigation Sidebar Component */}
         <TremorSidebar

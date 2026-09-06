@@ -32,11 +32,39 @@ class CheckpointRequest(BaseModel):
     note: Optional[str] = "Live BLE Hardware Reading"
     day: Optional[int] = 30
 
+PATIENTS_DIRECTORY = {
+    "TR-90241": {
+        "name": "George Peter",
+        "age": 67,
+        "diagnosis": "Parkinson's Disease (Stage II)",
+        "device_name": "TremorAI-Ring-7842 (MPU6050 100Hz BLE)",
+        "physician": "Dr. Emily Rochers, MD (Movement Disorders)"
+    },
+    "TR-90242": {
+        "name": "Biromon Jr.",
+        "age": 62,
+        "diagnosis": "Parkinson's Disease (Stage II)",
+        "device_name": "TremorAI-Ring-7842 (MPU6050 100Hz BLE)",
+        "physician": "Dr. Emily Rochers, MD (Movement Disorders)"
+    },
+    "TR-90243": {
+        "name": "Eleanor Vance",
+        "age": 71,
+        "diagnosis": "Parkinson's Disease (Stage III)",
+        "device_name": "TremorAI-Ring-7842 (MPU6050 100Hz BLE)",
+        "physician": "Dr. Emily Rochers, MD (Movement Disorders)"
+    }
+}
+
 @router.get("/doctor-pdf")
-def get_doctor_pdf_report(patient_id: str = Query("TR-90241")):
+def get_doctor_pdf_report(
+    patient_id: str = Query("TR-90241"),
+    from_date: Optional[str] = Query(None),
+    to_date: Optional[str] = Query(None)
+):
     """
-    Generate and stream the 30-day Neurologist Clinical Summary PDF Report
-    incorporating live hardware checkpoints and medication response trends.
+    Generate and stream the Neurologist Clinical Summary PDF Report for a specified
+    date-range period incorporating live hardware checkpoints and medication response trends.
     """
     try:
         os.makedirs(REPORTS_DIR, exist_ok=True)
@@ -45,7 +73,7 @@ def get_doctor_pdf_report(patient_id: str = Query("TR-90241")):
             REPORTS_DIR, f"TremorAI_Neurologist_Report_{patient_id}_{timestamp_suffix}.pdf"
         )
 
-        # 1. Synthesize baseline 30-day timeline
+        # 1. Synthesize baseline longitudinal timeline
         timeline_df, doses_list = generate_30_day_longitudinal_data(patient_id=patient_id)
 
         # 2. Merge persistent hardware checkpoints if available
@@ -74,14 +102,19 @@ def get_doctor_pdf_report(patient_id: str = Query("TR-90241")):
         # 3. Analyze Medication Effectiveness & Flare intervals
         effectiveness_result = analyze_medication_effectiveness(timeline_df, doses_list)
 
-        # 4. Generate Clinical PDF via ReportLab
-        patient_meta = {
-            "name": "George Peter",
-            "age": 67,
-            "diagnosis": "Parkinson's Disease (Stage II)",
-            "device_name": "TremorAI-Glove (MPU6050 100Hz BLE)",
-            "physician": "Dr. Rita Sharma, MD (Movement Disorders)"
-        }
+        # 4. Patient Metadata with Date-Range Period
+        patient_meta = PATIENTS_DIRECTORY.get(patient_id, {
+            "name": f"Patient ({patient_id})",
+            "age": 65,
+            "diagnosis": "Parkinson's Disease",
+            "device_name": "TremorAI Smart Ring (MPU6050 100Hz BLE)",
+            "physician": "Dr. Emily Rochers, MD (Movement Disorders)"
+        }).copy()
+        
+        if from_date and to_date:
+            patient_meta["report_period"] = f"{from_date} to {to_date}"
+        else:
+            patient_meta["report_period"] = "Last 30 Days (Continuous Kinematics)"
         
         generate_monthly_doctor_pdf(
             output_pdf_path=output_pdf_path,

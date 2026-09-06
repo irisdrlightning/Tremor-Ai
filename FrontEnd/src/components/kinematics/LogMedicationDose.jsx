@@ -2,7 +2,10 @@ import { Bell, Check, CheckCircle2, Clock, Download, HardDrive, Info, Phone, Rad
 import { useState, useEffect } from "react";
 import api from "@/services/api";
 import UserProfileModal from "@/components/common/UserProfileModal";
+import NotificationsModal from "@/components/kinematics/NotificationsModal";
+import WearableConnectModal from "@/components/kinematics/WearableConnectModal";
 import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
+import TopActionCluster from "@/components/common/TopActionCluster";
 import { BLE_STATE } from "@/hooks/useBluetooth";
 
 export default function LogMedicationDose({
@@ -25,6 +28,8 @@ export default function LogMedicationDose({
   const [isExtracting, setIsExtracting] = useState(false);
   const [showCallModal, setShowCallModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showWearableModal, setShowWearableModal] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [targetDose, setTargetDose] = useState({ levodopa: 100, carbidopa: 25 });
   const [dosesTaken, setDosesTaken] = useState(1);
@@ -165,9 +170,9 @@ export default function LogMedicationDose({
     <div className="flex flex-col gap-6 max-w-[1440px]">
       {/* Clinician Direct Call Modal */}
       {showCallModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-sm rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[#0c100e] p-6">
-            <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-[#152326] bg-black p-6">
+            <div className="flex items-center justify-between border-b border-[#152326] pb-3">
               <h4 className="text-sm font-bold text-[#ededed]">Connect to Attending Physician</h4>
               <button
                 type="button"
@@ -178,7 +183,7 @@ export default function LogMedicationDose({
               </button>
             </div>
             <div className="mt-4 space-y-3">
-              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] p-3 text-xs">
+              <div className="rounded-xl border border-[#152326] bg-black p-3 text-xs">
                 <p className="font-semibold text-[#ededed]">Dr. Emily Rochers</p>
                 <p className="text-[#8a9992] mt-0.5">Movement Disorder Specialist • On Call</p>
               </div>
@@ -188,7 +193,7 @@ export default function LogMedicationDose({
                   alert("Calling attending clinic at +1 (555) 019-2834...");
                   setShowCallModal(false);
                 }}
-                className="w-full rounded-xl bg-[#00e599] py-2.5 text-xs font-bold text-[#021a11]"
+                className="w-full rounded-xl bg-[#10B981] py-2.5 text-xs font-bold text-black hover:bg-[#059669] transition-colors"
               >
                 Initiate Tele-consult
               </button>
@@ -202,35 +207,25 @@ export default function LogMedicationDose({
         {/* Universal Tremor AI Brand Header */}
         <TremorHeaderBrand title="Log Medication Dose" subtitle="Clinical Rx" />
 
-        {/* Action Buttons: Bluetooth, Notifications, and Profile avatar */}
-        <div className="flex shrink-0 items-center gap-2 md:gap-3">
-          <button
-            type="button"
-            title="Bluetooth Status"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] hover:border-[rgba(255,255,255,0.18)] transition-colors"
-          >
-            <Clock className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => alert("No critical medication alerts at this time. Telemetry within normal limits.")}
-            aria-label="Notifications"
-            title="Notifications & Alerts"
-            className="relative grid h-10 w-10 place-items-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] transition-transform hover:scale-105 active:scale-95"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#00e599]" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowProfileModal(true)}
-            title="Edit Patient / User Profile Details"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono-tech text-xs font-bold text-[#00e599] shadow-sm hover:border-[#00e599] hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            {initials}
-          </button>
-        </div>
+        {/* Canonical 3-Circle Header Action Cluster */}
+        <TopActionCluster
+          onOpenBluetooth={() => setShowWearableModal(true)}
+          onOpenNotifications={() => setShowNotificationsModal(true)}
+          onOpenProfile={() => setShowProfileModal(true)}
+        />
       </header>
+
+      {/* Wearable Hardware BLE Modal */}
+      <WearableConnectModal
+        isOpen={showWearableModal}
+        onClose={() => setShowWearableModal(false)}
+      />
+
+      {/* Notifications Modal */}
+      <NotificationsModal
+        isOpen={showNotificationsModal}
+        onClose={() => setShowNotificationsModal(false)}
+      />
 
       {/* User Profile & Demographic Editing Modal */}
       <UserProfileModal
@@ -239,9 +234,9 @@ export default function LogMedicationDose({
       />
 
       {/* Page Title & Patient Metadata - Asymmetric Columns 2-8 sitting */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 border-b border-[rgba(255,255,255,0.08)] pb-5">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 border-b border-[#152326] pb-5">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-wider text-[#00e599]">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#10B981]">
             PATIENT TR-90241 • GEORGE PETER
           </p>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#ededed] mt-1">
@@ -256,10 +251,10 @@ export default function LogMedicationDose({
         {/* LEFT COLUMN: Formulation & Quick Adjuster (Cols 1-6) */}
         <div className="lg:col-span-6 space-y-6">
           {/* Card 1: Rx Formulation — interactive medication entry */}
-          <article className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
+          <article className="rounded-2xl border border-[#152326] bg-black p-6">
             <div className="flex items-center justify-between font-mono text-[10px]">
               <span className="uppercase text-[#8a9992]">Rx Formulation</span>
-              <span className="text-[#00e599] font-medium">Prescribed 3x/Day</span>
+              <span className="text-[#10B981] font-medium">Prescribed 3x/Day</span>
             </div>
 
             {/* Medication Name Input with Suggestions */}
@@ -271,7 +266,7 @@ export default function LogMedicationDose({
                 >
                   MEDICATION NAME
                 </label>
-                <span className="font-mono text-[9px] text-[#00e599]">Type custom or pick suggestion</span>
+                <span className="font-mono text-[9px] text-[#10B981]">Type custom or pick suggestion</span>
               </div>
               
               <div className="relative">
@@ -282,7 +277,7 @@ export default function LogMedicationDose({
                   value={medicationName}
                   onChange={(e) => setMedicationName(e.target.value)}
                   placeholder="e.g. Ropinirole (Requip), Sinemet, or enter custom name"
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-4 py-3 text-sm font-semibold text-[#ededed] placeholder:text-[#8a9992]/60 focus:border-[#00e599] focus:outline-none transition-colors"
+                  className="w-full rounded-xl border border-[#152326] bg-black px-4 py-3 text-sm font-semibold text-[#ededed] placeholder:text-[#8a9992]/60 focus:border-[#10B981] focus:outline-none transition-colors"
                 />
                 <datalist id="medication-suggestions">
                   <option value="Ropinirole (Requip)" />
@@ -313,8 +308,8 @@ export default function LogMedicationDose({
                     onClick={() => setMedicationName(sugg)}
                     className={`rounded-md px-2 py-0.5 font-mono text-[9px] transition-colors border ${
                       medicationName === sugg
-                        ? "border-[#00e599] bg-[#00e599]/15 text-[#00e599] font-bold"
-                        : "border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed] hover:border-[rgba(255,255,255,0.16)]"
+                        ? "border-[#10B981] bg-black text-[#10B981] font-bold"
+                        : "border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed] hover:border-[#10B981]/40"
                     }`}
                   >
                     {sugg}
@@ -340,10 +335,10 @@ export default function LogMedicationDose({
                   value={dosageQty}
                   onChange={(e) => setDosageQty(e.target.value)}
                   placeholder="e.g. 100"
-                  className="flex-1 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-4 py-3 text-sm font-bold text-[#ededed] placeholder:text-[#8a9992] focus:border-[#00e599]/60 focus:outline-none transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                  className="flex-1 rounded-xl border border-[#152326] bg-black px-4 py-3 text-sm font-bold text-[#ededed] placeholder:text-[#8a9992] focus:border-[#10B981] focus:outline-none transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 {/* Unit toggle pills */}
-                <div className="flex items-center gap-1 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-2">
+                <div className="flex items-center gap-1 rounded-xl border border-[#152326] bg-black px-2">
                   {UNITS.map((u) => (
                     <button
                       key={u}
@@ -351,7 +346,7 @@ export default function LogMedicationDose({
                       onClick={() => setDosageUnit(u)}
                       className={`rounded-lg px-2.5 py-1.5 font-mono text-[10px] font-bold transition-colors ${
                         dosageUnit === u
-                          ? "bg-[#00e599] text-[#021a11]"
+                          ? "bg-[#10B981] text-black"
                           : "text-[#8a9992] hover:text-[#ededed]"
                       }`}
                     >
@@ -363,9 +358,9 @@ export default function LogMedicationDose({
             </div>
 
             {/* Will Log tag */}
-            <div className="mt-4 flex items-center justify-between pt-2 border-t border-[rgba(255,255,255,0.06)] font-mono text-xs">
+            <div className="mt-4 flex items-center justify-between pt-2 border-t border-[#152326] font-mono text-xs">
               <span className="text-[10px] uppercase tracking-wider text-[#8a9992]">WILL LOG</span>
-              <span className="font-semibold text-[#00e599]">
+              <span className="font-semibold text-[#10B981]">
                 {medicationName || "Ropinirole (Requip)"}
                 {dosageQty ? ` (${dosageQty} ${dosageUnit})` : ""}
               </span>
@@ -373,7 +368,7 @@ export default function LogMedicationDose({
           </article>
 
           {/* Card 2: Quick Time Adjuster & Action */}
-          <article className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
+          <article className="rounded-2xl border border-[#152326] bg-black p-6">
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-[#ededed]">Quick Time Adjuster</span>
               <span className="font-mono text-[10px] text-[#8a9992]">Next scheduled 13:00</span>
@@ -386,8 +381,8 @@ export default function LogMedicationDose({
                 onClick={() => setQuickTime("just-now")}
                 className={`rounded-xl py-3 text-xs font-semibold transition-colors border ${
                   quickTime === "just-now"
-                    ? "border-[#00e599] bg-[#141a17] text-[#00e599]"
-                    : "border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed]"
+                    ? "border-[#10B981] bg-black text-[#10B981]"
+                    : "border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed]"
                 }`}
               >
                 Just Now
@@ -397,8 +392,8 @@ export default function LogMedicationDose({
                 onClick={() => setQuickTime("15m")}
                 className={`rounded-xl py-3 text-xs font-semibold transition-colors border ${
                   quickTime === "15m"
-                    ? "border-[#00e599] bg-[#141a17] text-[#00e599]"
-                    : "border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed]"
+                    ? "border-[#10B981] bg-black text-[#10B981]"
+                    : "border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed]"
                 }`}
               >
                 15m ago
@@ -408,24 +403,24 @@ export default function LogMedicationDose({
                 onClick={() => setQuickTime("30m")}
                 className={`rounded-xl py-3 text-xs font-semibold transition-colors border ${
                   quickTime === "30m"
-                    ? "border-[#00e599] bg-[#141a17] text-[#00e599]"
-                    : "border-[rgba(255,255,255,0.08)] bg-[#0c100e] text-[#8a9992] hover:text-[#ededed]"
+                    ? "border-[#10B981] bg-black text-[#10B981]"
+                    : "border-[#152326] bg-black text-[#8a9992] hover:text-[#ededed]"
                 }`}
               >
                 30m ago
               </button>
             </div>
 
-            {/* Log Dose Button matching Image 5 */}
+            {/* Log Dose Button */}
             <button
               type="button"
               onClick={handleLogDose}
               disabled={isSubmitting}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00e599] py-3.5 text-sm font-bold text-[#021a11] transition-transform active:scale-[0.99] shadow-[0_4px_16px_rgba(0,229,153,0.25)] hover:bg-[#00c985] disabled:opacity-80"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#10B981] py-3.5 text-sm font-bold text-black transition-all active:scale-[0.99] hover:bg-[#059669] disabled:opacity-80"
             >
               {ringSynced ? (
                 <>
-                  <HardDrive className="h-4 w-4 stroke-[2.5] text-[#021a11]" />
+                  <HardDrive className="h-4 w-4 stroke-[2.5] text-black" />
                   <span>Dose Recorded &amp; Stored to Ring Flash!</span>
                 </>
               ) : doseLogged ? (
@@ -444,7 +439,7 @@ export default function LogMedicationDose({
               )}
             </button>
             {isHardwareConnected && (
-              <p className="mt-2 text-center font-mono text-[9px] text-[#00e599] flex items-center justify-center gap-1.5">
+              <p className="mt-2 text-center font-mono text-[9px] text-[#10B981] flex items-center justify-center gap-1.5">
                 <HardDrive className="h-3 w-3" />
                 <span>Connected to {deviceName || "Wearable"} • Dose copies to Ring Memory for doctor extraction</span>
               </p>
@@ -455,13 +450,13 @@ export default function LogMedicationDose({
         {/* RIGHT COLUMN: Today's Regimen, Safety Protocol & Side-Effect Watchlist (Cols 7-12) */}
         <div className="lg:col-span-6 space-y-6">
           {/* Card 3: Today's Regimen */}
-          <article className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
+          <article className="rounded-2xl border border-[#152326] bg-black p-6">
             <div className="flex items-center justify-between font-mono text-[10px]">
               <div className="flex items-center gap-2">
                 <span className="uppercase tracking-wider font-bold text-[#ededed]">
                   TODAY'S REGIMEN
                 </span>
-                <span className="rounded-full bg-[#00e599]/15 border border-[#00e599]/30 px-2 py-0.5 text-[#00e599] font-bold">
+                <span className="rounded-full bg-black border border-[#10B981] px-2.5 py-0.5 text-[#10B981] font-bold font-mono text-[10px]">
                   ACTIVE
                 </span>
               </div>
@@ -497,33 +492,33 @@ export default function LogMedicationDose({
                   {targetDose.carbidopa}{" "}
                   <span className="text-xs font-normal text-[#8a9992]">mg</span>
                 </p>
-                <span className="font-mono text-[9px] uppercase tracking-wider text-[#00e599] block mt-0.5">
+                <span className="font-mono text-[9px] uppercase tracking-wider text-[#10B981] block mt-0.5">
                   Target Dose (Active Regimen)
                 </span>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center gap-2 text-xs text-[#00e599]">
+            <div className="mt-4 pt-3 border-t border-[#152326] flex items-center gap-2 text-xs text-[#10B981]">
               <Check className="h-3.5 w-3.5 stroke-[3]" />
               <span>Current baseline</span>
             </div>
           </article>
 
           {/* Card 4: Safety Protocol Notice */}
-          <article className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-4 flex items-start gap-3">
-            <Info className="h-4 w-4 text-[#00e599] shrink-0 mt-0.5" />
+          <article className="rounded-xl border border-[#152326] bg-black p-4 flex items-start gap-3">
+            <Info className="h-4 w-4 text-[#10B981] shrink-0 mt-0.5" />
             <p className="text-[11px] leading-relaxed text-[#8a9992]">
               <strong className="text-[#ededed]">Safety Protocol:</strong> Take with a full glass of water. If a dose is missed by over 2 hours, proceed directly with normal titration without doubling up. Kinematics stream syncs automatically at next calibration checkpoint.
             </p>
           </article>
 
-          {/* Card 5: Clinical Side-Effect Watchlist (Matching Image 5) */}
-          <article className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">
+          {/* Card 5: Clinical Side-Effect Watchlist */}
+          <article className="rounded-2xl border border-[#152326] bg-black p-6">
             <div className="flex items-center justify-between">
               <span className="font-mono text-[10px] uppercase tracking-wider font-bold text-[#ededed]">
                 CLINICAL SIDE-EFFECT WATCHLIST
               </span>
-              <span className="font-mono text-[9px] text-[#8a9992] bg-[#141a17] border border-[rgba(255,255,255,0.08)] px-2 py-0.5 rounded">
+              <span className="font-mono text-[9px] text-[#8a9992] bg-black border border-[#152326] px-2 py-0.5 rounded">
                 Levodopa / Carbidopa (100/25 mg)
               </span>
             </div>
@@ -531,7 +526,7 @@ export default function LogMedicationDose({
             {/* 4 Clinical Watchlist Cards in 2x2 Grid */}
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Peak Dyskinesia */}
-              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-3.5">
+              <div className="rounded-xl border border-[#152326] bg-black p-3.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#ededed]">Peak Dyskinesia</span>
                   <span className="text-[#f59e0b] font-mono text-sm">⚠</span>
@@ -542,7 +537,7 @@ export default function LogMedicationDose({
               </div>
 
               {/* Postural Dizziness */}
-              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-3.5">
+              <div className="rounded-xl border border-[#152326] bg-black p-3.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#ededed]">Postural Dizziness</span>
                   <span className="text-[#38bdf8] font-mono text-sm">🌀</span>
@@ -553,10 +548,10 @@ export default function LogMedicationDose({
               </div>
 
               {/* Nausea / GI Upset */}
-              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-3.5">
+              <div className="rounded-xl border border-[#152326] bg-black p-3.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#ededed]">Nausea / GI Upset</span>
-                  <span className="text-[#00e599] font-mono text-sm">〰</span>
+                  <span className="text-[#10B981] font-mono text-sm">〰</span>
                 </div>
                 <p className="mt-1.5 text-[10px] leading-relaxed text-[#8a9992]">
                   Gastric sensitivity from peripheral dopamine receptor conversion.
@@ -564,7 +559,7 @@ export default function LogMedicationDose({
               </div>
 
               {/* Sudden Somnolence */}
-              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#070b09] p-3.5">
+              <div className="rounded-xl border border-[#152326] bg-black p-3.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#ededed]">Sudden Somnolence</span>
                   <span className="text-[#a855f7] font-mono text-sm">🌙</span>
@@ -580,10 +575,10 @@ export default function LogMedicationDose({
 
       {/* Dose History Log */}
       {doseLog.length > 0 && (
-        <section className="space-y-3 border-t border-[rgba(255,255,255,0.08)] pt-6">
+        <section className="space-y-3 border-t border-[#152326] pt-6">
           <div className="flex flex-wrap items-center justify-between gap-3 px-1">
             <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
               <h3 className="text-xs font-semibold text-[#ededed]">Dose History &amp; Ring Synchronized Log</h3>
             </div>
             <div className="flex items-center gap-2">
@@ -594,7 +589,7 @@ export default function LogMedicationDose({
                 type="button"
                 onClick={handleExtractFromRing}
                 disabled={isExtracting || !isHardwareConnected}
-                className="flex items-center gap-1.5 rounded-lg border border-[#00e599]/30 bg-[#00e599]/10 px-2.5 py-1 font-mono text-[10px] font-bold text-[#00e599] hover:bg-[#00e599]/20 hover:border-[#00e599]/60 transition-colors disabled:opacity-40"
+                className="flex items-center gap-1.5 rounded-lg border border-[#10B981] bg-black px-2.5 py-1 font-mono text-[10px] font-bold text-[#10B981] hover:bg-black transition-colors disabled:opacity-40"
                 title={isHardwareConnected ? "Extract offline doses stored in Ring Flash memory" : "Connect Ring to extract on-device doses"}
               >
                 <RefreshCw className={`h-3 w-3 ${isExtracting ? "animate-spin" : ""}`} />
@@ -604,7 +599,7 @@ export default function LogMedicationDose({
               <button
                 type="button"
                 onClick={handleClearHistory}
-                className="flex items-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141a17] px-2.5 py-1 font-mono text-[10px] font-medium text-[#8a9992] hover:text-[#ef4444] hover:border-[#ef4444]/40 transition-colors"
+                className="flex items-center gap-1.5 rounded-lg border border-[#152326] bg-black px-2.5 py-1 font-mono text-[10px] font-medium text-[#8a9992] hover:text-[#ef4444] hover:border-[#ef4444]/40 transition-colors"
                 title="Clear recorded dose history"
               >
                 <Trash2 className="h-3 w-3" />
@@ -617,7 +612,7 @@ export default function LogMedicationDose({
             {doseLog.map((entry) => {
               const motorColor =
                 entry.motorState === "on-state"
-                  ? "#00e599"
+                  ? "#10B981"
                   : entry.motorState === "wearing-off"
                   ? "#f59e0b"
                   : "#ef4444";
@@ -626,11 +621,11 @@ export default function LogMedicationDose({
               return (
                 <article
                   key={entry.id}
-                  className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] px-4 py-3"
+                  className="flex items-center justify-between rounded-xl border border-[#152326] bg-black px-4 py-3"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#141a17]">
-                      <Clock className="h-3.5 w-3.5 text-[#00e599]" />
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-black border border-[#152326]">
+                      <Clock className="h-3.5 w-3.5 text-[#10B981]" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -647,7 +642,7 @@ export default function LogMedicationDose({
                           )}
                         </p>
                         {isRingStored && (
-                          <span className="inline-flex items-center gap-1 rounded bg-[#00e599]/15 border border-[#00e599]/30 px-1.5 py-0.2 font-mono text-[8px] font-bold text-[#00e599]">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-black border border-[#10B981] px-2 py-0.5 font-mono text-[8px] font-bold text-[#10B981]">
                             <HardDrive className="h-2.5 w-2.5" />
                             <span>Ring Synced</span>
                           </span>
@@ -667,7 +662,7 @@ export default function LogMedicationDose({
                       {entry.motorState.replace("-", " ")}
                     </span>
                     <div className="mt-0.5">
-                      <Check className="h-3 w-3 text-[#00e599] ml-auto" />
+                      <Check className="h-3 w-3 text-[#10B981] ml-auto" />
                     </div>
                   </div>
                 </article>

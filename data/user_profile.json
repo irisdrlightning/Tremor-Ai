@@ -1,9 +1,9 @@
 {
   "doctor": {
-    "name": "George Peter",
-    "initials": "GP",
+    "name": "John Abraham",
+    "initials": "JA",
     "id": "TR-90241",
-    "email": null,
+    "email": "e.rochers@tremor.ai",
     "role": null,
     "age": 67,
     "gender": "Male",
@@ -18,7 +18,7 @@
     "id": "TR-90241",
     "email": "george.peter@patient.tremor.ai",
     "role": null,
-    "age": 67,
+    "age": 55,
     "gender": "Male",
     "diagnosis": "Parkinson's Disease (Stage II)",
     "phone": "+1 (555) 019-2834",

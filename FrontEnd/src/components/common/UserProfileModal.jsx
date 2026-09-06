@@ -90,11 +90,11 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[#0c100e] shadow-2xl shadow-black/80 overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-lg rounded-2xl border border-[#152326] bg-black shadow-2xl shadow-black/80 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] bg-[#070b09] px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[#152326] bg-black px-6 py-4">
           <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/60 bg-[#141a17] font-mono text-sm font-bold text-[#00e599] shadow-[0_0_12px_rgba(0,229,153,0.25)]">
+            <span className="grid h-10 w-10 place-items-center rounded-full border border-[#10B981] bg-black font-mono text-sm font-bold text-[#10B981]">
               {formData.initials || (isDoctor ? "ER" : "GP")}
             </span>
             <div>
@@ -102,14 +102,14 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                 {isDoctor ? "Doctor & Clinician Profile" : "User & Patient Profile"}
               </h3>
               <p className="font-mono text-[10px] text-[#8a9992]">
-                Portal Role: <span className="text-[#00e599] uppercase">{role}</span> • {formData.id}
+                Portal Role: <span className="text-[#10B981] uppercase">{role}</span> • {formData.id}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-[rgba(255,255,255,0.08)] text-[#8a9992] hover:text-[#ededed] hover:border-[rgba(255,255,255,0.2)] transition-colors cursor-pointer"
+            className="grid h-8 w-8 place-items-center rounded-lg border border-[#152326] text-[#8a9992] hover:text-[#ededed] hover:border-[#10B981] transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -128,7 +128,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                 required
                 value={formData.name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none transition-colors"
+                className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none transition-colors"
               />
             </div>
             <div className="space-y-1.5">
@@ -140,7 +140,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                 maxLength={4}
                 value={formData.initials}
                 onChange={(e) => setFormData((p) => ({ ...p, initials: e.target.value.toUpperCase() }))}
-                className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-center font-mono font-bold text-[#00e599] focus:border-[#00e599] focus:outline-none"
+                className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-center font-mono font-bold text-[#10B981] focus:border-[#10B981] focus:outline-none"
               />
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                     type="text"
                     value={formData.id}
                     onChange={(e) => setFormData((p) => ({ ...p, id: e.target.value }))}
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] font-mono focus:border-[#00e599] focus:outline-none"
+                    className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] font-mono focus:border-[#10B981] focus:outline-none"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -168,7 +168,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                     type="text"
                     value={formData.department}
                     onChange={(e) => setFormData((p) => ({ ...p, department: e.target.value }))}
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none"
+                    className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
                   />
                 </div>
               </div>
@@ -181,7 +181,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                   type="text"
                   value={formData.specialization}
                   onChange={(e) => setFormData((p) => ({ ...p, specialization: e.target.value }))}
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none"
+                  className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
                 />
               </div>
 
@@ -193,7 +193,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                   type="text"
                   value={formData.hospital}
                   onChange={(e) => setFormData((p) => ({ ...p, hospital: e.target.value }))}
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none"
+                  className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
                 />
               </div>
             </>
@@ -208,7 +208,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                     type="text"
                     value={formData.id}
                     onChange={(e) => setFormData((p) => ({ ...p, id: e.target.value }))}
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] font-mono focus:border-[#00e599] focus:outline-none"
+                    className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] font-mono focus:border-[#10B981] focus:outline-none"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -219,7 +219,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                     type="number"
                     value={formData.age}
                     onChange={(e) => setFormData((p) => ({ ...p, age: parseInt(e.target.value) || 0 }))}
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none"
+                    className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -229,7 +229,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                   <select
                     value={formData.gender}
                     onChange={(e) => setFormData((p) => ({ ...p, gender: e.target.value }))}
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3 py-2.5 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none"
+                    className="w-full rounded-xl border border-[#152326] bg-black px-3 py-2.5 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -246,7 +246,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                   type="text"
                   value={formData.diagnosis}
                   onChange={(e) => setFormData((p) => ({ ...p, diagnosis: e.target.value }))}
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none"
+                  className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
                 />
               </div>
             </>
@@ -262,7 +262,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                 type="text"
                 value={formData.phone}
                 onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
-                className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none"
+                className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
               />
             </div>
             <div className="space-y-1.5">
@@ -273,7 +273,7 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
-                className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none"
+                className="w-full rounded-xl border border-[#152326] bg-black px-3.5 py-2.5 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none"
               />
             </div>
           </div>
@@ -287,19 +287,19 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
               rows={2}
               value={formData.notes}
               onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
-              className="w-full rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#141a17] p-3 text-sm text-[#ededed] focus:border-[#00e599] focus:outline-none resize-none"
+              className="w-full rounded-xl border border-[#152326] bg-black p-3 text-sm text-[#ededed] focus:border-[#10B981] focus:outline-none resize-none"
             />
           </div>
 
           {savedSuccess && (
-            <div className="rounded-xl border border-[#00e599]/40 bg-[#00e599]/10 p-3 text-center text-xs font-semibold text-[#00e599] flex items-center justify-center gap-2">
+            <div className="rounded-xl border border-[#10B981] bg-black p-3 text-center text-xs font-semibold text-[#10B981] flex items-center justify-center gap-2">
               <Check className="h-4 w-4" />
               <span>Profile details saved successfully.</span>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="pt-2 flex items-center justify-between border-t border-[rgba(255,255,255,0.08)]">
+          <div className="pt-2 flex items-center justify-between border-t border-[#152326]">
             <button
               type="button"
               onClick={handleLogoutClick}
@@ -313,14 +313,14 @@ export default function UserProfileModal({ isOpen, onClose, onSignOut }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl border border-[rgba(255,255,255,0.12)] bg-transparent px-4 py-2 text-xs font-semibold text-[#8a9992] hover:text-[#ededed] transition-colors cursor-pointer"
+                className="rounded-xl border border-[#152326] bg-transparent px-4 py-2 text-xs font-semibold text-[#8a9992] hover:text-[#ededed] transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSaving}
-                className="flex items-center gap-2 rounded-xl bg-[#00e599] px-5 py-2 text-xs font-bold text-[#060908] hover:bg-[#00c986] shadow-[0_0_15px_rgba(0,229,153,0.3)] transition-all cursor-pointer disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-[#10B981] px-5 py-2 text-xs font-bold text-black hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
               >
                 <Save className="h-3.5 w-3.5" />
                 <span>{isSaving ? "Saving…" : "Save Changes"}</span>
