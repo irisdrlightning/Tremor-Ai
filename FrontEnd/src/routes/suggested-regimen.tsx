@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import SuggestedRegimen from "@/components/kinematics/SuggestedRegimen";
-import { RoleProvider, useRole } from "@/context/RoleContext";
+import DoctorPortal from "@/components/doctor/DoctorPortal";
+import { useRole } from "@/context/RoleContext";
 
 export const Route = createFileRoute("/suggested-regimen")({
   head: () => ({
@@ -17,14 +17,14 @@ export const Route = createFileRoute("/suggested-regimen")({
   component: SuggestedRegimenRouteComponent,
 });
 
-function SuggestedRegimenView() {
+function SuggestedRegimenRouteComponent() {
   const navigate = useNavigate();
-  const { role, user, setIsAuthenticated } = useRole();
+  const { role, setIsAuthenticated } = useRole();
 
   // Strictly restrict this view: only doctor should have access, not the patient
   if (role !== "doctor") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white p-4">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white p-4 font-sans">
         <div className="max-w-md rounded-2xl border border-[#152326] bg-[#0b1112] p-6 text-center space-y-4 shadow-2xl">
           <div className="mx-auto h-12 w-12 rounded-xl bg-black border border-[#10B981] text-[#10B981] flex items-center justify-center font-bold text-lg font-mono">
             Rx
@@ -44,25 +44,10 @@ function SuggestedRegimenView() {
     );
   }
 
-  const handleNavigate = (tabId: string) => {
-    if (tabId === "log-medicine" || tabId === "kinematics") {
-      navigate({ to: "/" });
-    }
-  };
-
   return (
-    <SuggestedRegimen
-      initials={user?.initials || "RS"}
+    <DoctorPortal
+      initialTab="suggested-regimen"
       onSignOut={() => setIsAuthenticated(false)}
-      onNavigate={handleNavigate}
     />
-  );
-}
-
-function SuggestedRegimenRouteComponent() {
-  return (
-    <RoleProvider initialRole="doctor">
-      <SuggestedRegimenView />
-    </RoleProvider>
   );
 }

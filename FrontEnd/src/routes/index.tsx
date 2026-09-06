@@ -50,9 +50,5 @@ function DashboardContent() {
 }
 
 function Index() {
-  return (
-    <RoleProvider initialRole="doctor">
-      <DashboardContent />
-    </RoleProvider>
-  );
+  return <DashboardContent />;
 }
