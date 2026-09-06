@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import UserProfileModal from "@/components/common/UserProfileModal";
 
 export default function SuggestedRegimen({
   activeTab = "suggested-regimen",
@@ -23,6 +24,7 @@ export default function SuggestedRegimen({
 }) {
   const [confirmed, setConfirmed] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [shiftMinutes, setShiftMinutes] = useState(30);
   const [nocturnalMg, setNocturnalMg] = useState(100);
   const [activeDoseIdx, setActiveDoseIdx] = useState(null);
@@ -154,11 +156,22 @@ export default function SuggestedRegimen({
             <Bell className="h-4 w-4" />
             <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
           </button>
-          <span className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono-tech text-xs font-bold text-[#00e599] shadow-sm">
+          <button
+            type="button"
+            onClick={() => setShowProfileModal(true)}
+            title="Edit Patient / User Profile Details"
+            className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono-tech text-xs font-bold text-[#00e599] shadow-sm hover:border-[#00e599] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
             {initials}
-          </span>
+          </button>
         </div>
       </header>
+
+      {/* User Profile & Demographic Editing Modal */}
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
 
       {/* Hero Header Card: AI Titration Engine Suggestion */}
       <section className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0c100e] p-6">

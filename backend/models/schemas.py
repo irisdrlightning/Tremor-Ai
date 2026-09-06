@@ -4,10 +4,20 @@ from pydantic import BaseModel
 class UserProfile(BaseModel):
     name: str
     initials: str
+    id: Optional[str] = "TR-90241"
+    email: Optional[str] = None
+    role: Optional[str] = None
+    age: Optional[int] = 67
+    gender: Optional[str] = "Male"
+    diagnosis: Optional[str] = "Parkinson's Disease (Stage II)"
+    phone: Optional[str] = "+1 (555) 019-2834"
+    attendingPhysician: Optional[str] = "Dr. Rita Sharma, MD"
+    notes: Optional[str] = "Resting tremor predominant, right arm onset."
 
 class AuthMeResponse(BaseModel):
     role: str
     user: UserProfile
+    isAuthenticated: bool = True
 
 class LoginRequest(BaseModel):
     portal: str = "patient"  # "patient" or "doctor"
@@ -19,6 +29,7 @@ class LoginResponse(BaseModel):
     role: str
     user: UserProfile
     token: Optional[str] = "stub-jwt-token-tremor-ai"
+    message: Optional[str] = "Authentication successful"
 
 class SubjectOverview(BaseModel):
     name: str
@@ -76,6 +87,7 @@ class LiveGloveTelemetry(BaseModel):
     nodes: List[FrequencyNode]
     waveform: List[float]
     rawImu: Optional[Dict[str, float]] = None
+    conditions: Optional[List[ConditionItem]] = None
 
 class DoseLogRequest(BaseModel):
     patientId: str

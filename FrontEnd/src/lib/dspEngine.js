@@ -72,6 +72,8 @@ export class LiveDspEngine {
     this.gyroY = new Float32Array(bufferSize);
     this.gyroZ = new Float32Array(bufferSize);
     this.sampleCount = 0;
+    this.consecutiveTremorFrames = 0;
+    this.stableLabel = "healthy";
   }
 
   pushSample(sample) {
@@ -205,42 +207,47 @@ export class LiveDspEngine {
       maxPsd = 0.0;
     }
 
-    // 5. ML Classifier Simulation matching trained model
+    // 5. ML Classifier with Hysteresis matching trained Parkinson's model
     let predictedLabel = "healthy";
     let pdProbability = 0.0;
-    let confidence = 0.95;
+    let confidence = 0.0;
     let aiTag = "HEALTHY";
     let aiValue = "Normal / Resting";
     let aiFooter = "PHYSIOLOGICAL BASELINE";
 
     if (isStationary) {
+      this.consecutiveTremorFrames = 0;
+      this.stableLabel = "healthy";
       predictedLabel = "healthy";
       pdProbability = 0.02;
-      confidence = 0.98;
       aiTag = "HEALTHY";
       aiValue = "Normal / Resting";
       aiFooter = "PHYSIOLOGICAL BASELINE";
     } else if (dominantFreq >= 3.5 && dominantFreq <= 6.5 && (powerRatio >= 0.25 || tremorPower >= 0.0005)) {
-      predictedLabel = "pd";
-      pdProbability = Math.min(0.99, 0.70 + powerRatio * 0.28);
-      confidence = Math.round(pdProbability * 100);
-      aiTag = "PARKINSON'S";
-      aiValue = "Parkinson's (PD)";
-      aiFooter = `CONFIRMED ${confidence}%`;
-    } else if (dominantFreq > 6.5 && dominantFreq <= 10.0 && actionPower >= 0.0006) {
-      predictedLabel = "other";
-      pdProbability = 0.03;
-      confidence = 94;
-      aiTag = "ESSENTIAL TREMOR";
-      aiValue = "Essential Tremor";
-      aiFooter = `ACTION TREMOR (${dominantFreq.toFixed(1)} HZ)`;
+      this.consecutiveTremorFrames++;
+      if (this.consecutiveTremorFrames >= 2) {
+        this.stableLabel = "pd";
+        predictedLabel = "pd";
+        pdProbability = Math.min(0.99, 0.70 + powerRatio * 0.28);
+        confidence = Math.round(pdProbability * 100);
+        aiTag = "PARKINSON'S";
+        aiValue = "Parkinson's (PD)";
+        aiFooter = `${confidence}%`;
+      } else {
+        predictedLabel = "healthy";
+        pdProbability = 0.05;
+        aiTag = "HEALTHY";
+        aiValue = "Normal / Resting";
+        aiFooter = "PHYSIOLOGICAL BASELINE";
+      }
     } else {
+      this.consecutiveTremorFrames = Math.max(0, this.consecutiveTremorFrames - 1);
+      this.stableLabel = "healthy";
       predictedLabel = "healthy";
       pdProbability = 0.04;
-      confidence = 96;
       aiTag = "HEALTHY";
       aiValue = "Voluntary Motion";
-      aiFooter = "PHYSIOLOGICAL MOVEMENT";
+      aiFooter = "PHYSIOLOGICAL BASELINE";
     }
 
     // 6. Transparent MDS-UPDRS Severity Score (0-100)
@@ -281,13 +288,25 @@ export class LiveDspEngine {
       updrsActiveSteps = 4;
     }
 
-    // Power Ratio Tag
+    // Power Ratio Tag & Footer
     let powerTag = "LOW";
-    if (isStationary) powerTag = "PENDING";
-    else if (powerRatioPct >= 65) powerTag = "HIGH";
-    else if (powerRatioPct >= 35) powerTag = "MODERATE";
-    else if (powerRatioPct > 0) powerTag = "LOW";
-    else powerTag = "PENDING";
+    let spectralFooter = "NORMAL BAND";
+    if (isStationary) {
+      powerTag = "PENDING";
+      spectralFooter = "STANDBY";
+    } else if (powerRatioPct >= 65) {
+      powerTag = "HIGH";
+      spectralFooter = "ELEVATED";
+    } else if (powerRatioPct >= 35) {
+      powerTag = "MODERATE";
+      spectralFooter = "NORMAL BAND";
+    } else if (powerRatioPct > 0) {
+      powerTag = "LOW";
+      spectralFooter = "PHYSIOLOGICAL";
+    } else {
+      powerTag = "PENDING";
+      spectralFooter = "STANDBY";
+    }
 
     // Power spectrum bar height simulations for UI
     const bar1 = Math.max(15, Math.min(100, Math.round(voluntaryPower * 1000 + 20)));
@@ -310,16 +329,6 @@ export class LiveDspEngine {
       psdCurve: Array.from(psd.slice(0, 64)), // 0 to 25 Hz bins
       conditions: [
         {
-          id: "spectral",
-          tag: powerTag,
-          icon: "droplet",
-          label: "Power Ratio",
-          value: String(powerRatioPct),
-          unit: "%",
-          variant: "bars",
-          bars: [bar1, bar2, bar3, bar4, bar5, bar6],
-        },
-        {
           id: "ai",
           tag: aiTag,
           icon: "scan",
@@ -329,12 +338,24 @@ export class LiveDspEngine {
           variant: "highlight",
         },
         {
+          id: "spectral",
+          tag: powerTag,
+          icon: "droplet",
+          label: "Tremor Band Power",
+          value: String(powerRatioPct),
+          unit: "%",
+          footer: spectralFooter,
+          variant: "bars",
+          bars: [bar1, bar2, bar3, bar4, bar5, bar6],
+        },
+        {
           id: "updrs",
           tag: updrsTag,
           icon: "chart",
-          label: "MDS-UPDRS",
+          label: "Score Card",
           value: String(finalSeverity),
           unit: "/100",
+          footer: updrsTag,
           variant: "steps",
           activeSteps: updrsActiveSteps,
         },

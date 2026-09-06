@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.routers import auth, kinematics, medication, telemetry_ws
+from backend.routers import auth, kinematics, medication, telemetry_ws, reports
 
 app = FastAPI(
     title="Tremor AI API",
@@ -23,6 +23,7 @@ app.include_router(auth.router)
 app.include_router(kinematics.router)
 app.include_router(medication.router)
 app.include_router(telemetry_ws.router)
+app.include_router(reports.router)
 
 @app.get("/")
 def root():
@@ -36,6 +37,8 @@ def root():
             "/api/schedule",
             "/api/sensor-nodes",
             "/api/medication/analytics",
+            "/api/reports/doctor-pdf",
+            "/api/reports/session-pdf",
             "/ws/live-telemetry",
         ],
     }

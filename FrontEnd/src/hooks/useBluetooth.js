@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import api from "@/services/api";
 
 // ─── BLE UUIDs ────────────────────────────────────────────────────────────────
 const TREMOR_SERVICE_UUID = "6f3c1200-1a2b-4c3d-9e8f-000000000001";
@@ -156,6 +157,7 @@ export function useBluetooth() {
   const deviceRef = useRef(null);
   const serverRef = useRef(null);
   const charRef = useRef(null);
+  const commandCharRef = useRef(null);
   const serialPortRef = useRef(null);
   const serialReaderRef = useRef(null);
   const serialKeepReadingRef = useRef(false);
@@ -167,7 +169,46 @@ export function useBluetooth() {
   const isSupported = isBleSupported || isSerialSupported;
 
   const handleNotification = useCallback((event) => {
-    const parsed = parsePayload(event.target.value);
+    const dataView = event.target.value;
+    // Check if device sent text-based dose or sync line
+    try {
+      const decoder = new TextDecoder("utf-8");
+      const rawText = decoder.decode(dataView).trim();
+      if (rawText.startsWith("# SYNC_DOSE,")) {
+        const parts = rawText.replace("# SYNC_DOSE,", "").split(",").map((p) => p.trim());
+        if (parts.length >= 5) {
+          const tsUnix = parseInt(parts[0]) || Math.floor(Date.now() / 1000);
+          const medName = parts[1] || "Levodopa / Carbidopa";
+          const levo = parseInt(parts[2]) || 100;
+          const carbi = parseInt(parts[3]) || 25;
+          const motorState = parts[4] || "on-state";
+          const dateObj = new Date(tsUnix * 1000);
+
+          const doseRecord = {
+            id: tsUnix * 1000,
+            patientId: "TR-90241",
+            medicationName: medName,
+            dosageQty: `${levo}/${carbi}`,
+            dosageUnit: "mg",
+            levodopa: levo,
+            carbidopa: carbi,
+            timing: "synced-from-wearable",
+            timingLabel: "Synced from Ring",
+            motorState,
+            loggedAt: dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            loggedDate: dateObj.toLocaleDateString([], { month: "short", day: "numeric" }),
+            note: "Extracted from Ring Flash Memory",
+          };
+          api.logDose(doseRecord).catch(() => {});
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("tremor:dose-synced", { detail: doseRecord }));
+          }
+        }
+        return;
+      }
+    } catch {}
+
+    const parsed = parsePayload(dataView);
     if (parsed) setBleData(parsed);
   }, []);
 
@@ -178,6 +219,7 @@ export function useBluetooth() {
     setTransportType(HARDWARE_TRANSPORT.NONE);
     setBleData(null);
     charRef.current = null;
+    commandCharRef.current = null;
     serverRef.current = null;
   }, []);
 
@@ -238,10 +280,14 @@ export function useBluetooth() {
       serverRef.current = server;
 
       let activeChar = null;
+      let activeCmdChar = null;
 
       try {
         const tremorService = await server.getPrimaryService(TREMOR_SERVICE_UUID);
         activeChar = await tremorService.getCharacteristic(TREMOR_TX_CHAR_UUID);
+        try {
+          activeCmdChar = await tremorService.getCharacteristic(TREMOR_CMD_CHAR_UUID);
+        } catch {}
       } catch {
         // Fallback to NUS or generic notify
       }
@@ -250,6 +296,9 @@ export function useBluetooth() {
         try {
           const nusService = await server.getPrimaryService(NUS_SERVICE_UUID);
           activeChar = await nusService.getCharacteristic(NUS_TX_CHAR_UUID);
+          try {
+            activeCmdChar = await nusService.getCharacteristic(NUS_RX_CHAR_UUID);
+          } catch {}
         } catch {
           // Fallback to discovering characteristics
         }
@@ -265,7 +314,12 @@ export function useBluetooth() {
             );
             if (notifyChar) {
               activeChar = notifyChar;
-              break;
+            }
+            const writeChar = chars.find(
+              (c) => c.properties.write || c.properties.writeWithoutResponse
+            );
+            if (writeChar && !activeCmdChar) {
+              activeCmdChar = writeChar;
             }
           }
         } catch {
@@ -280,6 +334,7 @@ export function useBluetooth() {
       }
 
       charRef.current = activeChar;
+      commandCharRef.current = activeCmdChar;
       await activeChar.startNotifications();
       activeChar.addEventListener("characteristicvaluechanged", handleNotification);
 
@@ -342,7 +397,68 @@ export function useBluetooth() {
 
               for (const line of lines) {
                 const trimmed = line.trim();
-                if (!trimmed || trimmed.startsWith("#")) continue;
+                if (!trimmed) continue;
+
+                // Check for Offline History Sync lines from ESP32
+                if (trimmed.startsWith("# SYNC_DAY,")) {
+                  const parts = trimmed.replace("# SYNC_DAY,", "").split(",").map((p) => p.trim());
+                  if (parts.length >= 5) {
+                    const day = parseInt(parts[0]) || 1;
+                    const peakHz = parseFloat(parts[1]) || 0.0;
+                    const meanRms = parseFloat(parts[2]) || 0.0;
+                    const sev = parseInt(parts[4]) || 0;
+                    api.recordCheckpoint({
+                      day,
+                      tremor_rate: peakHz,
+                      rms: meanRms,
+                      severity_score: sev,
+                      predicted_label: sev > 30 ? "pd" : "healthy",
+                      note: `Offline Hardware Day ${day} Sync`,
+                    }).catch(() => {});
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("tremor:day-synced", {
+                        detail: { day, peakHz, meanRms, sev }
+                      }));
+                    }
+                  }
+                  continue;
+                }
+
+                // Check for Stored Medication Dose Sync from Ring
+                if (trimmed.startsWith("# SYNC_DOSE,")) {
+                  const parts = trimmed.replace("# SYNC_DOSE,", "").split(",").map((p) => p.trim());
+                  if (parts.length >= 5) {
+                    const tsUnix = parseInt(parts[0]) || Math.floor(Date.now() / 1000);
+                    const medName = parts[1] || "Levodopa / Carbidopa";
+                    const levo = parseInt(parts[2]) || 100;
+                    const carbi = parseInt(parts[3]) || 25;
+                    const motorState = parts[4] || "on-state";
+                    const dateObj = new Date(tsUnix * 1000);
+
+                    const doseRecord = {
+                      id: tsUnix * 1000,
+                      patientId: "TR-90241",
+                      medicationName: medName,
+                      dosageQty: `${levo}/${carbi}`,
+                      dosageUnit: "mg",
+                      levodopa: levo,
+                      carbidopa: carbi,
+                      timing: "synced-from-wearable",
+                      timingLabel: "Synced from Ring",
+                      motorState,
+                      loggedAt: dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                      loggedDate: dateObj.toLocaleDateString([], { month: "short", day: "numeric" }),
+                      note: "Extracted from Ring Flash Memory",
+                    };
+                    api.logDose(doseRecord).catch(() => {});
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("tremor:dose-synced", { detail: doseRecord }));
+                    }
+                  }
+                  continue;
+                }
+
+                if (trimmed.startsWith("#")) continue;
 
                 const parts = trimmed.split(",").map((p) => p.trim());
                 if (parts.length >= 7) {
@@ -375,6 +491,57 @@ export function useBluetooth() {
       }
     }
   }, [isSerialSupported, handleDisconnect]);
+
+  // ─── 3. Write Medication Dose to Ring Flash Storage ───────────────────────────
+  const sendDoseToWearable = useCallback(async (doseData) => {
+    if (bleState !== BLE_STATE.CONNECTED) {
+      return { success: false, reason: "Device not connected" };
+    }
+
+    const tsUnix = doseData.timestamp_unix || Math.floor((doseData.id || Date.now()) / 1000);
+    const medName = doseData.medicationName || "Levodopa / Carbidopa";
+    const levo = doseData.levodopa || 100;
+    const carbi = doseData.carbidopa || 25;
+    const motorState = doseData.motorState || "on-state";
+    const cmdStr = `CMD:LOG_DOSE,${tsUnix},${medName},${levo},${carbi},${motorState}`;
+
+    try {
+      const encoder = new TextEncoder();
+      if (transportType === HARDWARE_TRANSPORT.BLE && commandCharRef.current) {
+        await commandCharRef.current.writeValue(encoder.encode(cmdStr));
+        return { success: true, transport: "ble" };
+      } else if (transportType === HARDWARE_TRANSPORT.SERIAL && serialPortRef.current?.writable) {
+        const writer = serialPortRef.current.writable.getWriter();
+        await writer.write(encoder.encode(cmdStr + "\n"));
+        writer.releaseLock();
+        return { success: true, transport: "serial" };
+      }
+    } catch (err) {
+      console.warn("[useBluetooth] Failed to send dose to wearable:", err);
+      return { success: false, error: err.message };
+    }
+    return { success: false, reason: "No writable channel" };
+  }, [bleState, transportType]);
+
+  // ─── 4. Request History & Dose Burst Extraction from Ring ─────────────────────
+  const syncHistoryFromDevice = useCallback(async () => {
+    if (bleState !== BLE_STATE.CONNECTED) return false;
+    try {
+      const encoder = new TextEncoder();
+      if (transportType === HARDWARE_TRANSPORT.BLE && commandCharRef.current) {
+        await commandCharRef.current.writeValue(encoder.encode("CMD:SYNC_HISTORY"));
+        return true;
+      } else if (transportType === HARDWARE_TRANSPORT.SERIAL && serialPortRef.current?.writable) {
+        const writer = serialPortRef.current.writable.getWriter();
+        await writer.write(encoder.encode("CMD:SYNC_HISTORY\n"));
+        writer.releaseLock();
+        return true;
+      }
+    } catch (err) {
+      console.warn("[useBluetooth] Failed to trigger device sync:", err);
+    }
+    return false;
+  }, [bleState, transportType]);
 
   // Generic connect router for compatibility
   const connect = useCallback(
@@ -415,6 +582,8 @@ export function useBluetooth() {
       charRef.current = null;
     }
 
+    commandCharRef.current = null;
+
     if (deviceRef.current?.gatt?.connected) {
       deviceRef.current.gatt.disconnect();
     }
@@ -452,6 +621,8 @@ export function useBluetooth() {
     connectBle,
     connectSerial,
     disconnect,
+    sendDoseToWearable,
+    syncHistoryFromDevice,
   };
 }
 

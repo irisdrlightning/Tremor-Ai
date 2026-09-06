@@ -12,6 +12,7 @@ import {
   Phone,
   Plus,
   Radio,
+  RefreshCw,
   Search,
   Sliders,
   TrendingDown,
@@ -21,6 +22,7 @@ import { useEffect, useState } from "react";
 import { medicationAnalyticsData as initialMedicationData } from "@/data/mockMedicationAnalytics";
 import api from "@/services/api";
 import NotificationsModal from "@/components/kinematics/NotificationsModal";
+import UserProfileModal from "@/components/common/UserProfileModal";
 import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
 
 export default function MedicationAnalytics({
@@ -29,20 +31,65 @@ export default function MedicationAnalytics({
   initials = "RS",
   liveData = null,
   bleData = null,
+  bleState = null,
+  deviceName = null,
+  syncHistoryFromDevice = null,
 }) {
   const [data, setData] = useState(initialMedicationData);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [autoSync, setAutoSync] = useState(true);
+
+  const fetchAnalytics = async () => {
+    try {
+      const res = await api.getMedicationAnalytics();
+      if (res) setData(res);
+    } catch (err) {
+      console.warn("Error fetching analytics", err);
+    }
+  };
 
   useEffect(() => {
-    let active = true;
-    api.getMedicationAnalytics().then((res) => {
-      if (active && res) {
-        setData(res);
-      }
-    });
+    fetchAnalytics();
+  }, []);
+
+  // Listen for hardware telemetry & dose sync events from Ring
+  useEffect(() => {
+    const handleSyncEvent = () => {
+      fetchAnalytics();
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("tremor:dose-synced", handleSyncEvent);
+      window.addEventListener("tremor:day-synced", handleSyncEvent);
+    }
     return () => {
-      active = false;
+      if (typeof window !== "undefined") {
+        window.removeEventListener("tremor:dose-synced", handleSyncEvent);
+        window.removeEventListener("tremor:day-synced", handleSyncEvent);
+      }
     };
   }, []);
+
+  // Periodic Auto-Sync from backend / hardware
+  useEffect(() => {
+    if (!autoSync) return;
+    const interval = setInterval(() => {
+      fetchAnalytics();
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [autoSync]);
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    if (typeof syncHistoryFromDevice === "function") {
+      try {
+        await syncHistoryFromDevice();
+      } catch (err) {
+        console.warn("Hardware sync trigger error:", err);
+      }
+    }
+    await fetchAnalytics();
+    setTimeout(() => setIsSyncing(false), 700);
+  };
 
   // Derive live values (BLE priority > WebSocket)
   const liveImu  = bleData?.raw ?? liveData?.rawImu ?? null;
@@ -55,7 +102,9 @@ export default function MedicationAnalytics({
   const [filterActive, setFilterActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
 
   // UPDRS gauge geometry
@@ -63,12 +112,26 @@ export default function MedicationAnalytics({
   const updrsMax = data.subject.updrsMax;
   const percentage = Math.min(Math.max(updrsVal / updrsMax, 0), 1);
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     setExporting(true);
-    setTimeout(() => {
+    try {
+      await api.downloadDoctorReportPdf(data.subject.id || "TR-90241");
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 4000);
+    } catch (err) {
+      console.error("PDF export error", err);
+    } finally {
       setExporting(false);
-      window.open("http://localhost:8501", "_blank");
-    }, 800);
+    }
+  };
+
+  const handleExportDaySessionPDF = async () => {
+    if (!selectedDay) return;
+    try {
+      await api.downloadSessionReportPdf(data.subject.id || "TR-90241");
+    } catch (err) {
+      console.error("Day session PDF export error", err);
+    }
   };
 
   const handleLogDose = () => {
@@ -89,8 +152,20 @@ export default function MedicationAnalytics({
         {/* Universal Tremor AI Brand Header */}
         <TremorHeaderBrand title="Medication Analytics" subtitle="Longitudinal" />
 
-        {/* Action Buttons: Bluetooth, Notifications, and Profile avatar */}
+        {/* Action Buttons: Sync, Bluetooth, Notifications, and Profile avatar */}
         <div className="flex shrink-0 items-center gap-2 md:gap-3">
+          {/* Sync Device Button */}
+          <button
+            type="button"
+            onClick={handleManualSync}
+            disabled={isSyncing}
+            title={isSyncing ? "Syncing telemetry from device..." : "Sync Device Records"}
+            className="flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.08)] bg-[#0c100e] px-3 py-2 font-mono text-[11px] font-bold text-[#00e599] hover:bg-[#141a17] hover:border-[#00e599]/40 transition-all active:scale-95 disabled:opacity-75"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin text-[#00e599]" : "text-[#00e599]"}`} />
+            <span className="hidden sm:inline">{isSyncing ? "Syncing..." : "Sync Device"}</span>
+          </button>
+
           <button
             type="button"
             title="Bluetooth Status"
@@ -108,11 +183,22 @@ export default function MedicationAnalytics({
             <Bell className="h-4 w-4" />
             <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#ef4444] animate-pulse" />
           </button>
-          <span className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono text-xs font-bold text-[#00e599] shadow-sm">
+          <button
+            type="button"
+            onClick={() => setShowProfileModal(true)}
+            title="Edit Patient / User Profile Details"
+            className="grid h-10 w-10 place-items-center rounded-full border border-[#00e599]/50 bg-[#0c100e] font-mono text-xs font-bold text-[#00e599] shadow-sm hover:border-[#00e599] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
             {initials}
-          </span>
+          </button>
         </div>
       </header>
+
+      {/* User Profile & Demographic Editing Modal */}
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
 
       {/* Main Grid Content Layout: 12-Column Grid */}
       <div className="grid gap-6 lg:grid-cols-12 items-stretch">
@@ -370,9 +456,24 @@ export default function MedicationAnalytics({
                 <span className="h-1.5 w-1.5 rounded-full bg-[#00e599]" />
                 <h3 className="text-base font-bold text-[#ededed]">30-Day Response Timeline</h3>
               </div>
-              <span className="font-mono text-[10px] font-semibold text-[#8a9992]">
-                {data.timeline.rangeLabel}
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAutoSync(!autoSync)}
+                  className={`flex items-center gap-1.5 rounded-md px-2 py-0.5 font-mono text-[9px] font-bold border transition-colors ${
+                    autoSync
+                      ? "border-[#00e599]/30 bg-[#00e599]/15 text-[#00e599]"
+                      : "border-[rgba(255,255,255,0.08)] bg-[#141a17] text-[#8a9992]"
+                  }`}
+                  title={autoSync ? "Auto-sync enabled (updating real-time)" : "Auto-sync disabled (click to enable)"}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${autoSync ? "bg-[#00e599] animate-pulse" : "bg-[#8a9992]"}`} />
+                  <span>{autoSync ? "AUTO SYNC" : "MANUAL"}</span>
+                </button>
+                <span className="font-mono text-[10px] font-semibold text-[#8a9992]">
+                  {data.timeline.rangeLabel}
+                </span>
+              </div>
             </div>
             <p className="mt-1 text-xs text-[#8a9992]">{data.timeline.subtitle}</p>
 
@@ -421,24 +522,79 @@ export default function MedicationAnalytics({
             </div>
           </div>
 
-          {/* Export Action & Verification Footer */}
-          <div className="mt-6 space-y-3">
-            <button
-              type="button"
-              onClick={handleExportPDF}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#00e599] py-3 text-xs font-bold text-[#021a11] transition-transform active:scale-[0.99]"
-            >
-              <span>
-                {exporting ? "Generating PDF Stream..." : "Export Neurologist PDF Report"}
-              </span>
-              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
-            </button>
+            {/* Selected Day Telemetry Inspector */}
+            {selectedDay ? (
+              <div className="mt-4 rounded-xl border border-[#00e599]/30 bg-[#141a17] p-3 text-xs space-y-2">
+                <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] pb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-[#00e599]" />
+                    <span className="font-bold text-[#ededed]">Day {selectedDay.day} Telemetry</span>
+                    <span className="text-[10px] text-[#8a9992]">({selectedDay.dateStr || `Day ${selectedDay.day}`})</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDay(null)}
+                    className="text-[#8a9992] hover:text-[#ededed]"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2 font-mono text-[10px]">
+                  <div className="rounded-lg bg-[#0c100e] p-1.5 border border-[rgba(255,255,255,0.05)]">
+                    <span className="text-[#8a9992] block text-[8px]">SEVERITY</span>
+                    <span className="font-bold text-[#ededed]">{selectedDay.severityScore || selectedDay.val}/100</span>
+                  </div>
+                  <div className="rounded-lg bg-[#0c100e] p-1.5 border border-[rgba(255,255,255,0.05)]">
+                    <span className="text-[#8a9992] block text-[8px]">PEAK FREQ</span>
+                    <span className="font-bold text-[#00e599]">{selectedDay.peakHz || 4.88} Hz</span>
+                  </div>
+                  <div className="rounded-lg bg-[#0c100e] p-1.5 border border-[rgba(255,255,255,0.05)]">
+                    <span className="text-[#8a9992] block text-[8px]">RMS AMP</span>
+                    <span className="font-bold text-[#ededed]">{selectedDay.rms || "0.142"}g</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[10px] pt-1">
+                  <span className={`px-1.5 py-0.5 rounded font-mono text-[9px] font-bold ${selectedDay.isFlare ? "bg-red-500/20 text-red-400 border border-red-500/30" : "bg-[#00e599]/15 text-[#00e599]"}`}>
+                    {selectedDay.status || "Controlled"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleExportDaySessionPDF}
+                    className="flex items-center gap-1 text-[#00e599] hover:underline font-mono text-[9px]"
+                  >
+                    <Download className="h-3 w-3" /> Day PDF Report
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
-            <div className="flex items-center justify-between font-mono text-[9px] text-[#8a9992]">
-              <span>{data.timeline.footer.format}</span>
-              <span className="text-[#00e599]">{data.timeline.footer.hash}</span>
+            {/* Export Action & Verification Footer */}
+            <div className="mt-4 space-y-2">
+              <button
+                type="button"
+                disabled={exporting}
+                onClick={handleExportPDF}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#00e599] py-3 text-xs font-bold text-[#021a11] transition-transform active:scale-[0.99] disabled:opacity-75 shadow-[0_0_15px_rgba(0,229,153,0.2)] hover:bg-[#00c985]"
+              >
+                <span>
+                  {exporting
+                    ? "Compiling Neurologist PDF..."
+                    : exportSuccess
+                    ? "PDF Report Downloaded!"
+                    : "Export Neurologist PDF Report"}
+                </span>
+                {exportSuccess ? (
+                  <Check className="h-3.5 w-3.5 stroke-[2.5]" />
+                ) : (
+                  <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
+                )}
+              </button>
+
+              <div className="flex items-center justify-between font-mono text-[9px] text-[#8a9992]">
+                <span>{data.timeline.footer.format}</span>
+                <span className="text-[#00e599]">{data.timeline.footer.hash}</span>
+              </div>
             </div>
-          </div>
         </section>
       </div>
 

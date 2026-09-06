@@ -1,0 +1,23 @@
+[
+  {
+    "checkpoint_id": "LIVE_CKPT_001",
+    "patient_id": "TR-90241",
+    "timestamp_unix": 1788656892.2648356,
+    "iso_timestamp": "2026-09-06T06:38:12.264884",
+    "time_str": "2026-09-06 06:38:12",
+    "day": 30,
+    "time_label": "06:38",
+    "source": "ble_hardware",
+    "predicted_label": "pd",
+    "confidence": 0.94,
+    "pd_probability": 0.9,
+    "severity_score": 42.0,
+    "grade": "Moderate",
+    "dominant_frequency": 5.12,
+    "tremor_band_power": 0.035,
+    "signal_amplitude_rms": 0.142,
+    "jerk_rms": 12.0,
+    "clinical_note": "Live Physical Sensor Reading (BLE Glove COM4)",
+    "is_physical_sensor": true
+  }
+]

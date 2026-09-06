@@ -1,4 +1,4 @@
-﻿{
+{
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
     "python.analysis.extraPaths": [
         "${workspaceFolder}",
@@ -7,5 +7,13 @@
     "python.autoComplete.extraPaths": [
         "${workspaceFolder}",
         "${workspaceFolder}/.venv/Lib/site-packages"
-    ]
+    ],
+    "files.associations": {
+        "*.ino": "arduino"
+    },
+    "clang.diagnostic.enable": false,
+    "clang.enable": false,
+    "clangd.enabled": false,
+    "C_Cpp.errorSquiggles": "disabled",
+    "C_Cpp.intelliSenseEngine": "disabled"
 }

@@ -1,0 +1,41 @@
+{
+  "DR-10822": {
+    "portal": "doctor",
+    "email": "dr.sharma@tremor.ai",
+    "passcode_hashes": [
+      "fe7a4e450bc1b7f35f27036dc74d9413ef6f69c4968337c65f30e3ace5597063",
+      "5637d61e25c997d5f4d0aa7f8a45f8094eab9f39cc72dced56c65c382e8733b0",
+      "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+      "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"
+    ],
+    "name": "Dr. Rita Sharma",
+    "initials": "RS",
+    "role": "Movement Disorder Specialist",
+    "age": 48,
+    "gender": "Female",
+    "diagnosis": "Attending Neurologist",
+    "phone": "+1 (555) 019-2834",
+    "attendingPhysician": "Clinical Movement Center",
+    "notes": "Board-certified Movement Disorders specialist."
+  },
+  "TR-90241": {
+    "portal": "patient",
+    "email": "george.peter@patient.tremor.ai",
+    "passcode_hashes": [
+      "11534f175d900cbacaf62b37de22c8845350c711e6afcd2d640cf6465bf11ddd",
+      "c44519a7aef4f490b000320e4e55b9b525860a96924e0e518e26a10467d0096b",
+      "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+      "9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c",
+      "c44519a7aef4f490b000320e4e55b9b525860a96924e0e518e26a10467d0096b"
+    ],
+    "name": "George Peter",
+    "initials": "GP",
+    "role": "Parkinson's Stage II Participant",
+    "age": 67,
+    "gender": "Male",
+    "diagnosis": "Parkinson's Disease (Stage II)",
+    "phone": "+1 (555) 019-2834",
+    "attendingPhysician": "Dr. Rita Sharma, MD",
+    "notes": "Resting tremor predominant, right arm onset."
+  }
+}

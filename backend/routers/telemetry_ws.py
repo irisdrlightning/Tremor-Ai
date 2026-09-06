@@ -115,15 +115,62 @@ def generate_telemetry_frame(t: float) -> LiveGloveTelemetry:
         math.sin(2 * math.pi * base_freq * (t + i * 0.01)) for i in range(12)
     ]
 
-    # Simulated IMU acceleration and angular velocity
+    # Simulated IMU acceleration and angular velocity matching clinical ranges
     raw_imu = {
-        "ax": round(0.28 * math.sin(2 * math.pi * base_freq * t), 4),
-        "ay": round(0.22 * math.cos(2 * math.pi * base_freq * t), 4),
-        "az": round(0.98 + 0.05 * math.sin(2 * math.pi * base_freq * t), 4),
-        "gx": round(15.2 * math.sin(2 * math.pi * base_freq * t), 2),
-        "gy": round(12.4 * math.cos(2 * math.pi * base_freq * t), 2),
-        "gz": round(3.1 * math.sin(2 * math.pi * base_freq * t), 2),
+        "ax": round(0.279 + 0.04 * math.sin(2 * math.pi * base_freq * t), 4),
+        "ay": round(-0.020 + 0.03 * math.cos(2 * math.pi * base_freq * t), 4),
+        "az": round(1.030 + 0.05 * math.sin(2 * math.pi * base_freq * t), 4),
+        "gx": round(15.1 + 1.2 * math.sin(2 * math.pi * base_freq * t), 2),
+        "gy": round(-1.1 + 0.8 * math.cos(2 * math.pi * base_freq * t), 2),
+        "gz": round(3.1 + 0.6 * math.sin(2 * math.pi * base_freq * t), 2),
     }
+
+    # Live Clinical Conditions & Metrics
+    power_ratio = int(round(84 + 3 * math.sin(0.15 * t)))
+    updrs_score = int(round(42 + 2 * math.sin(0.1 * t)))
+    vol_noise = round(0.8 + 0.1 * math.sin(0.2 * t), 1)
+
+    from backend.models.schemas import ConditionItem
+    live_conditions = [
+        ConditionItem(
+            id="ai",
+            tag="CONFIRMED",
+            icon="scan",
+            label="AI Detection",
+            value="Parkinson's",
+            footer="94.2%",
+            variant="highlight"
+        ),
+        ConditionItem(
+            id="spectral",
+            tag="SPECTRAL",
+            icon="droplet",
+            label="Tremor Band Power",
+            value=str(power_ratio),
+            unit="%",
+            footer="NORMAL BAND",
+            variant="bars"
+        ),
+        ConditionItem(
+            id="updrs",
+            tag="MODERATE",
+            icon="chart",
+            label="Score Card",
+            value=str(updrs_score),
+            unit="/100",
+            footer="MODERATE",
+            variant="steps"
+        ),
+        ConditionItem(
+            id="noise",
+            tag="FILTERED",
+            icon="funnel",
+            label="Voluntary Noise",
+            value=f"{vol_noise:.1f}",
+            unit="Hz",
+            variant="dots"
+        )
+    ]
 
     return LiveGloveTelemetry(
         type="telemetry_update",
@@ -134,6 +181,7 @@ def generate_telemetry_frame(t: float) -> LiveGloveTelemetry:
         nodes=nodes,
         waveform=waveform,
         rawImu=raw_imu,
+        conditions=live_conditions,
     )
 
 @router.websocket("/ws/live-telemetry")

@@ -42,6 +42,7 @@ import { LiveDspEngine } from "@/lib/dspEngine";
 import WearableConnectModal from "@/components/kinematics/WearableConnectModal";
 import KinematicsGraphsPanel from "@/components/kinematics/KinematicsGraphsPanel";
 import NotificationsModal from "@/components/kinematics/NotificationsModal";
+import UserProfileModal from "@/components/common/UserProfileModal";
 import TremorHeaderBrand from "@/components/common/TremorHeaderBrand";
 import TremorSidebar from "@/components/common/TremorSidebar";
 
@@ -65,6 +66,7 @@ function TopBar({
   onDisconnect,
   onOpenWearables,
   onOpenNotifications,
+  onOpenProfile,
   onSignOut,
 }) {
   const isConnected   = bleState === BLE_STATE.CONNECTED;
@@ -129,9 +131,9 @@ function TopBar({
 
         <button
           type="button"
-          onClick={onSignOut}
-          title="User Profile / Sign Out"
-          className="grid h-10 w-10 place-items-center rounded-full border border-primary/50 bg-card font-mono-tech text-xs font-bold text-primary shadow-sm hover:border-primary transition-colors"
+          onClick={onOpenProfile || onSignOut}
+          title="Edit Profile Details & Information"
+          className="grid h-10 w-10 place-items-center rounded-full border border-primary/50 bg-card font-mono-tech text-xs font-bold text-primary shadow-sm hover:border-primary hover:scale-105 active:scale-95 transition-all cursor-pointer"
         >
           {initials}
         </button>
@@ -369,11 +371,11 @@ function ConditionCard({ item }) {
     tagColorClass = "bg-primary-foreground/15 text-primary-foreground border-transparent";
   } else if (item.tag === "MODERATE") {
     tagColorClass = "text-warning bg-warning/10 border-warning/20";
-  } else if (item.tag === "HIGH" || item.tag === "SEVERE" || item.tag === "PARKINSON'S") {
+  } else if (item.tag === "HIGH" || item.tag === "SEVERE" || item.tag === "PARKINSON'S" || item.tag === "CONFIRMED") {
     tagColorClass = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
-  } else if (item.tag === "OTHER DISORDER") {
+  } else if (item.tag === "OTHER DISORDER" || item.tag === "ACTION TREMOR" || item.tag === "MILD") {
     tagColorClass = "text-amber-400 bg-amber-500/10 border-amber-500/20";
-  } else if (item.tag === "HEALTHY" || item.tag === "BASELINE" || item.tag === "FILTERED") {
+  } else if (item.tag === "HEALTHY" || item.tag === "BASELINE" || item.tag === "FILTERED" || item.tag === "PENDING" || item.tag === "STANDBY" || item.tag === "NOT SCORED" || item.tag === "MINIMAL") {
     tagColorClass = "text-teal-400 bg-teal-500/10 border-teal-500/20";
   }
 
@@ -655,6 +657,7 @@ export default function LiveKinematics({ onSignOut }) {
   const [activeTab, setActiveTab] = useState("kinematics");
   const [showWearableModal, setShowWearableModal] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [activeGraph, setActiveGraph] = useState("fft"); // "fft" (Image 3) | "oscilloscope" (Image 4)
   const [psdData, setPsdData] = useState(null);
 
@@ -679,6 +682,8 @@ export default function LiveKinematics({ onSignOut }) {
     connectBle,
     connectSerial,
     disconnect: bleDisconnect,
+    sendDoseToWearable,
+    syncHistoryFromDevice,
   } = useBluetooth();
 
   // Hydrate REST API on mount
@@ -703,7 +708,7 @@ export default function LiveKinematics({ onSignOut }) {
   // Device connection state flag
   const isDeviceConnected = bleState === BLE_STATE.CONNECTED;
 
-  const [liveTremorRate, setLiveTremorRate] = useState("0.0");
+  const [liveTremorRate, setLiveTremorRate] = useState("0.00");
   const [liveRms, setLiveRms] = useState("0.000g");
 
   // Standby conditions when disconnected
@@ -758,11 +763,11 @@ export default function LiveKinematics({ onSignOut }) {
     { id: "node-wrist", name: "Carpal / Wrist", freq: "0.0 Hz", amp: "±0.0 mm", state: "baseline", top: "84%", left: "50%" },
   ];
 
-  // Merge BLE data → WebSocket data → REST data when connected
+  // Merge BLE data → REST data when connected
   const currentSubject = {
     ...subjectData,
     tremorRate: isDeviceConnected
-      ? (liveTremorRate ?? "0.0")
+      ? parseFloat(liveTremorRate || 0).toFixed(2)
       : "0.00",
     rms: isDeviceConnected
       ? (liveRms ?? "0.000g")
@@ -772,32 +777,36 @@ export default function LiveKinematics({ onSignOut }) {
       : "Awaiting Device Connection",
   };
 
+  const rateVal = parseFloat(currentSubject.tremorRate) || 0;
+  const rmsVal = parseFloat(currentSubject.rms) || 0;
+  const isTremorActive = rateVal >= 3.0;
+
   const currentNodes = isDeviceConnected
-    ? (liveData?.nodes || [
-        { id: "node-d1", name: "Thumb (D1)", freq: `${(parseFloat(currentSubject.tremorRate) * 0.98).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 1.8).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "54%", left: "24%" },
-        { id: "node-d2", name: "Index Tip (D2)", freq: `${(parseFloat(currentSubject.tremorRate) * 1.02).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 2.1).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "16%", left: "34%" },
-        { id: "node-d3", name: "Middle Tip (D3)", freq: `${(parseFloat(currentSubject.tremorRate) * 1.00).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 2.3).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "12%", left: "49%" },
-        { id: "node-d4", name: "Ring Tip (D4)", freq: `${(parseFloat(currentSubject.tremorRate) * 0.96).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 1.9).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "18%", left: "64%" },
-        { id: "node-d5", name: "Pinky Tip (D5)", freq: `${(parseFloat(currentSubject.tremorRate) * 0.92).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 1.6).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "32%", left: "78%" },
-        { id: "node-mcp", name: "Metacarpal (MCP)", freq: `${(parseFloat(currentSubject.tremorRate) * 0.95).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 1.2).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "48%", left: "48%" },
-        { id: "node-wrist", name: "Carpal / Wrist", freq: `${(parseFloat(currentSubject.tremorRate) * 1.05).toFixed(1)} Hz`, amp: `±${(parseFloat(currentSubject.rms) * 2.5).toFixed(1)} mm`, state: parseFloat(currentSubject.tremorRate) > 3.0 ? "active" : "baseline", top: "84%", left: "50%" },
-      ])
+    ? [
+        { id: "node-d1", name: "Thumb (D1)", freq: `${(rateVal * 0.98).toFixed(1)} Hz`, amp: `±${(rmsVal * 1.8).toFixed(1)} mm`, state: isTremorActive ? "peak" : "baseline", top: "54%", left: "24%" },
+        { id: "node-d2", name: "Index Tip (D2)", freq: `${(rateVal * 1.02).toFixed(1)} Hz`, amp: `±${(rmsVal * 2.1).toFixed(1)} mm`, state: isTremorActive ? "peak" : "baseline", top: "16%", left: "34%" },
+        { id: "node-d3", name: "Middle Tip (D3)", freq: `${(rateVal * 1.00).toFixed(1)} Hz`, amp: `±${(rmsVal * 2.3).toFixed(1)} mm`, state: isTremorActive ? "peak" : "baseline", top: "12%", left: "49%" },
+        { id: "node-d4", name: "Ring Tip (D4)", freq: `${(rateVal * 0.96).toFixed(1)} Hz`, amp: `±${(rmsVal * 1.9).toFixed(1)} mm`, state: isTremorActive ? "peak" : "baseline", top: "18%", left: "64%" },
+        { id: "node-d5", name: "Pinky Tip (D5)", freq: `${(rateVal * 0.92).toFixed(1)} Hz`, amp: `±${(rmsVal * 1.6).toFixed(1)} mm`, state: isTremorActive ? "peak" : "baseline", top: "32%", left: "78%" },
+        { id: "node-mcp", name: "Metacarpal (MCP)", freq: `${(rateVal * 0.95).toFixed(1)} Hz`, amp: `±${(rmsVal * 1.2).toFixed(1)} mm`, state: isTremorActive ? "normal" : "baseline", top: "48%", left: "48%" },
+        { id: "node-wrist", name: "Carpal / Wrist", freq: `${(rateVal * 1.05).toFixed(1)} Hz`, amp: `±${(rmsVal * 2.5).toFixed(1)} mm`, state: isTremorActive ? "normal" : "baseline", top: "84%", left: "50%" },
+      ]
     : STANDBY_NODES;
 
   // Live IMU for SensorCard (only active when device is connected)
-  const liveImu = isDeviceConnected ? (bleData?.raw ?? liveData?.rawImu ?? null) : null;
+  const liveImu = isDeviceConnected ? (bleData?.raw ?? null) : null;
 
   // Track session peak tremor frequency (highest seen this session)
   const [sessionPeakFreq, setSessionPeakFreq] = useState(null);
   useEffect(() => {
     if (!isDeviceConnected) return;
-    const incoming = parseFloat(liveTremorRate ?? liveData?.tremorRate);
+    const incoming = parseFloat(liveTremorRate);
     if (!isNaN(incoming) && incoming > 0) {
       setSessionPeakFreq((prev) => (prev === null || incoming > prev ? incoming : prev));
     }
-  }, [liveTremorRate, liveData, isDeviceConnected]);
+  }, [liveTremorRate, isDeviceConnected]);
 
-  // Real-time DSP & AI detection processing for BLE and Live Telemetry
+  // Real-time DSP & AI detection processing for BLE Telemetry
   const dspEngineRef = useRef(null);
   if (!dspEngineRef.current) {
     dspEngineRef.current = new LiveDspEngine(256, 100);
@@ -811,8 +820,8 @@ export default function LiveKinematics({ onSignOut }) {
   useEffect(() => {
     if (!isDeviceConnected) return;
 
-    // 1. If BLE batch/raw sample or WebSocket raw IMU arrived, push all samples to client DSP engine
-    const incomingSamples = bleData?.batch || (bleData?.raw ? [bleData.raw] : (liveData?.rawImu ? [liveData.rawImu] : []));
+    // Ingest physical BLE hardware samples into client DSP and sliding inference buffer
+    const incomingSamples = bleData?.batch || (bleData?.raw ? [bleData.raw] : []);
     if (incomingSamples.length > 0) {
       for (const s of incomingSamples) {
         dspEngineRef.current.pushSample(s);
@@ -833,7 +842,7 @@ export default function LiveKinematics({ onSignOut }) {
             setConditionsData(dspResult.conditions);
           }
           if (dspResult.dominantFreq !== undefined) {
-            setLiveTremorRate(String(dspResult.dominantFreq));
+            setLiveTremorRate(parseFloat(dspResult.dominantFreq || 0).toFixed(2));
           }
           if (dspResult.rms) {
             setLiveRms(dspResult.rms);
@@ -853,7 +862,7 @@ export default function LiveKinematics({ onSignOut }) {
             if (res && res.status === "success") {
               if (res.conditions) setConditionsData(res.conditions);
               if (res.dominant_frequency !== undefined) {
-                setLiveTremorRate(res.dominant_frequency.toFixed(1));
+                setLiveTremorRate(parseFloat(res.dominant_frequency || 0).toFixed(2));
               }
               if (res.rms) {
                 setLiveRms(res.rms);
@@ -862,20 +871,8 @@ export default function LiveKinematics({ onSignOut }) {
           })
           .catch(() => {});
       }
-      return;
     }
-
-    // 2. Fallback to live conditions received directly from backend WebSocket
-    if (liveData?.tremorRate) {
-      setLiveTremorRate(liveData.tremorRate);
-    }
-    if (liveData?.rms) {
-      setLiveRms(liveData.rms);
-    }
-    if (liveData?.conditions && Array.isArray(liveData.conditions)) {
-      setConditionsData(liveData.conditions);
-    }
-  }, [bleData, liveData, isDeviceConnected]);
+  }, [bleData, isDeviceConnected]);
 
   const displayedConditions = isDeviceConnected ? conditionsData : STANDBY_CONDITIONS;
 
@@ -897,6 +894,9 @@ export default function LiveKinematics({ onSignOut }) {
               initials={user.initials}
               liveData={liveData}
               bleData={bleData}
+              bleState={bleState}
+              deviceName={deviceName}
+              syncHistoryFromDevice={syncHistoryFromDevice}
             />
           ) : activeTab === "log-medicine" ? (
             <LogMedicationDose
@@ -905,6 +905,10 @@ export default function LiveKinematics({ onSignOut }) {
               initials={user.initials}
               liveData={liveData}
               bleData={bleData}
+              bleState={bleState}
+              deviceName={deviceName}
+              sendDoseToWearable={sendDoseToWearable}
+              syncHistoryFromDevice={syncHistoryFromDevice}
             />
           ) : (
             <>
@@ -920,6 +924,14 @@ export default function LiveKinematics({ onSignOut }) {
                 onDisconnect={bleDisconnect}
                 onOpenWearables={() => setShowWearableModal(true)}
                 onOpenNotifications={() => setShowNotificationsModal(true)}
+                onOpenProfile={() => setShowProfileModal(true)}
+                onSignOut={onSignOut || logout}
+              />
+
+              {/* User Profile & Patient Demographic Editing Modal */}
+              <UserProfileModal
+                isOpen={showProfileModal}
+                onClose={() => setShowProfileModal(false)}
                 onSignOut={onSignOut || logout}
               />
 

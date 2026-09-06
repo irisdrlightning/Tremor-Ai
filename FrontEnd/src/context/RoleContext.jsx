@@ -93,6 +93,28 @@ export function RoleProvider({ children, initialRole = "doctor" }) {
     }
   };
 
+  const updateProfile = async (profileData) => {
+    try {
+      const updated = await api.updateProfile(profileData, role);
+      if (updated) {
+        setUser(updated);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("tremor_auth_user", JSON.stringify(updated));
+        }
+        return updated;
+      }
+    } catch (err) {
+      console.warn("Failed to update profile", err);
+    }
+    // Optimistic fallback update
+    const fallbackUser = { ...user, ...profileData };
+    setUser(fallbackUser);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("tremor_auth_user", JSON.stringify(fallbackUser));
+    }
+    return fallbackUser;
+  };
+
   const value = useMemo(
     () => ({
       role,
@@ -103,6 +125,7 @@ export function RoleProvider({ children, initialRole = "doctor" }) {
       setIsAuthenticated,
       login,
       logout,
+      updateProfile,
     }),
     [role, user, isAuthenticated],
   );

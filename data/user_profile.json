@@ -1,0 +1,28 @@
+{
+  "doctor": {
+    "name": "George Peter",
+    "initials": "GP",
+    "id": "TR-90241",
+    "email": null,
+    "role": null,
+    "age": 67,
+    "gender": "Male",
+    "diagnosis": "Parkinson's Disease (Stage II)",
+    "phone": "+1 (555) 019-2834",
+    "attendingPhysician": "Dr. Rita Sharma, MD",
+    "notes": "Resting tremor predominant, right arm onset."
+  },
+  "patient": {
+    "name": "George Peter",
+    "initials": "GP",
+    "id": "TR-90241",
+    "email": "george.peter@patient.tremor.ai",
+    "role": null,
+    "age": 67,
+    "gender": "Male",
+    "diagnosis": "Parkinson's Disease (Stage II)",
+    "phone": "+1 (555) 019-2834",
+    "attendingPhysician": "Dr. Rita Sharma, MD",
+    "notes": "Resting tremor predominant, right arm onset."
+  }
+}
