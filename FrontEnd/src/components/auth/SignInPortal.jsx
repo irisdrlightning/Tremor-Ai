@@ -291,22 +291,6 @@ export default function SignInPortal({ onAuthenticated = () => {} }) {
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#8a9992]">
               A Wearable AI glove for Monitoring Parkinson&apos;s Patients and Remote Analysis
             </p>
-
-            {/* Quick Demo Credentials Info Pill */}
-            <div className="mt-8 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#08120e] p-3 text-xs space-y-1.5">
-              <div className="flex items-center justify-between text-[10px] font-mono-tech text-[#8a9992] uppercase">
-                <span>Demo Credentials</span>
-                <span className="text-[#00C693]">Pre-Configured</span>
-              </div>
-              <div className="flex items-center justify-between font-mono-tech text-[11px]">
-                <span className="text-[#8a9992]">Patient:</span>
-                <span className="text-[#ededed] font-semibold">TR-90241 • PIN: 90241</span>
-              </div>
-              <div className="flex items-center justify-between font-mono-tech text-[11px]">
-                <span className="text-[#8a9992]">Doctor:</span>
-                <span className="text-[#00C693] font-semibold">DR-10822 • PIN: 10822</span>
-              </div>
-            </div>
           </div>
 
           <div className="mt-8 flex items-center gap-2 font-mono-tech text-xs text-[#00C693]/80">

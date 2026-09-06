@@ -69,6 +69,7 @@ function TopBar({
   onOpenProfile,
   onSignOut,
 }) {
+  const { switchRole } = useRole();
   const isConnected   = bleState === BLE_STATE.CONNECTED;
   const isBusy        = bleState === BLE_STATE.SCANNING || bleState === BLE_STATE.CONNECTING;
   const isUnsupported = bleState === BLE_STATE.UNSUPPORTED;
@@ -88,7 +89,9 @@ function TopBar({
   return (
     <header className="flex flex-wrap items-center justify-between gap-4">
       {/* Universal Tremor AI Brand Header */}
-      <TremorHeaderBrand title="Live Kinematics" subtitle="Real-Time Telemetry" />
+      <div className="flex items-center gap-3">
+        <TremorHeaderBrand title="Live Kinematics" subtitle="Real-Time Telemetry" />
+      </div>
 
       {/* Action Icons: Bluetooth, Notifications, and Profile avatar */}
       <div className="flex shrink-0 items-center gap-2 md:gap-3">

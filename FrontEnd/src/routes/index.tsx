@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import LiveKinematics from "@/components/kinematics/LiveKinematics";
+import DoctorPortal from "@/components/doctor/DoctorPortal";
 import SignInPortal from "@/components/auth/SignInPortal";
 import { RoleProvider, useRole } from "@/context/RoleContext";
 
@@ -31,7 +32,7 @@ function DashboardContent() {
     setMounted(true);
   }, []);
 
-  const { isAuthenticated, setIsAuthenticated } = useRole();
+  const { role, isAuthenticated, setIsAuthenticated } = useRole();
 
   if (!mounted) {
     return <div className="min-h-screen bg-[#060908]" />;
@@ -39,6 +40,10 @@ function DashboardContent() {
 
   if (!isAuthenticated) {
     return <SignInPortal onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
+
+  if (role === "doctor") {
+    return <DoctorPortal onSignOut={() => setIsAuthenticated(false)} />;
   }
 
   return <LiveKinematics onSignOut={() => setIsAuthenticated(false)} />;
