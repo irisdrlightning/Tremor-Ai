@@ -1,0 +1,118 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Linear-inspired Late-2024 Design System for Tremor AI
+ * - Monochromatic dark slate base (oklch)
+ * - Zero purple/indigo gradients, zero soft drop shadows (hard 1px borders only)
+ * - 8px body rhythm with 24px vertical section increments
+ * - Crisp borders: 1px solid rgba(255, 255, 255, 0.08)
+ * - Restrained, high-impact CTA neon mint accent (#00e599)
+ */
+
+@theme inline {
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-shell: var(--shell);
+  --font-display: var(--font-display);
+  --font-mono-tech: var(--font-mono-tech);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --radius: 0.75rem;
+  /* Deep dark neutral slate */
+  --background: #060908;
+  --foreground: #ededed;
+  --card: #0c100e;
+  --card-foreground: #ededed;
+  --popover: #0c100e;
+  --popover-foreground: #ededed;
+  --primary: #00e599;
+  --primary-foreground: #021a11;
+  --secondary: #141a17;
+  --secondary-foreground: #ededed;
+  --muted: #141a17;
+  --muted-foreground: #8a9992;
+  --accent: #19241f;
+  --accent-foreground: #ededed;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --warning: #f59e0b;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #00e599;
+  --shell: #040605;
+
+  /* Typography: Strict sans-serif Space Grotesk + JetBrains Mono */
+  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono-tech: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.dark {
+  --background: #060908;
+  --foreground: #ededed;
+  --card: #0c100e;
+  --card-foreground: #ededed;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    /* Hard borders only - eliminate fuzzy soft box-shadows */
+    box-shadow: none !important;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection and cursor interaction in inputs, textareas, and editable elements */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+}
+
