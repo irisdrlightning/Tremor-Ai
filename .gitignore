@@ -39,3 +39,8 @@ FrontEnd/node_modules/
 FrontEnd/.output/
 FrontEnd/.nitro/
 FrontEnd/.tanstack/
+
+# Secrets & Generated Reports
+.env
+reports/*.pdf
+scratch/

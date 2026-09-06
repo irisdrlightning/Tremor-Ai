@@ -56,47 +56,36 @@ DEFAULT_ACCOUNTS = {
     }
 }
 
+from backend.database import (
+    load_accounts_data,
+    save_accounts_data,
+    load_profile_data,
+    save_profile_data
+)
+
 def load_accounts():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    if not os.path.exists(ACCOUNTS_STORE_FILE):
-        with open(ACCOUNTS_STORE_FILE, "w", encoding="utf-8") as f:
-            json.dump(DEFAULT_ACCOUNTS, f, indent=2)
+    accounts = load_accounts_data()
+    if not accounts:
+        save_accounts_data(DEFAULT_ACCOUNTS)
         return DEFAULT_ACCOUNTS
-    try:
-        with open(ACCOUNTS_STORE_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return DEFAULT_ACCOUNTS
+    return accounts
 
 def save_accounts(accounts):
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(ACCOUNTS_STORE_FILE, "w", encoding="utf-8") as f:
-        json.dump(accounts, f, indent=2)
+    save_accounts_data(accounts)
 
 def load_stored_profile(role: str) -> Optional[UserProfile]:
-    if not os.path.exists(PROFILE_STORE_FILE):
-        return None
-    try:
-        with open(PROFILE_STORE_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            if role in data:
-                return UserProfile(**data[role])
-    except Exception:
-        pass
+    data = load_profile_data()
+    if data and role in data:
+        try:
+            return UserProfile(**data[role])
+        except Exception:
+            pass
     return None
 
 def save_stored_profile(role: str, profile: UserProfile) -> None:
-    os.makedirs(DATA_DIR, exist_ok=True)
-    data = {}
-    if os.path.exists(PROFILE_STORE_FILE):
-        try:
-            with open(PROFILE_STORE_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except Exception:
-            data = {}
+    data = load_profile_data() or {}
     data[role] = profile.dict()
-    with open(PROFILE_STORE_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    save_profile_data(data)
 
 @router.get("/me", response_model=AuthMeResponse)
 def get_current_user(

@@ -20,14 +20,18 @@ LIVE_TELEMETRY_FILE = os.path.join(PROJECT_ROOT, "data", "live_telemetry.json")
 
 def load_live_checkpoints() -> List[Dict[str, Any]]:
     """Load persistent physical hardware checkpoints."""
-    if not os.path.exists(CHECKPOINTS_FILE):
-        return []
     try:
-        with open(CHECKPOINTS_FILE, "r") as f:
-            data = json.load(f)
-            return data if isinstance(data, list) else []
+        from backend.database import load_checkpoints_data
+        return load_checkpoints_data()
     except Exception:
-        return []
+        if not os.path.exists(CHECKPOINTS_FILE):
+            return []
+        try:
+            with open(CHECKPOINTS_FILE, "r") as f:
+                data = json.load(f)
+                return data if isinstance(data, list) else []
+        except Exception:
+            return []
 
 
 def save_live_checkpoint(
@@ -68,21 +72,29 @@ def save_live_checkpoint(
         "is_physical_sensor": True
     }
     
-    checkpoints.append(checkpoint_record)
-    os.makedirs(os.path.dirname(CHECKPOINTS_FILE), exist_ok=True)
-    with open(CHECKPOINTS_FILE, "w") as f:
-        json.dump(checkpoints, f, indent=2)
+    try:
+        from backend.database import save_checkpoint_record
+        save_checkpoint_record(checkpoint_record)
+    except Exception:
+        checkpoints.append(checkpoint_record)
+        os.makedirs(os.path.dirname(CHECKPOINTS_FILE), exist_ok=True)
+        with open(CHECKPOINTS_FILE, "w") as f:
+            json.dump(checkpoints, f, indent=2)
         
     return checkpoint_record
 
 
 def clear_live_checkpoints() -> None:
     """Clear saved physical checkpoints."""
-    if os.path.exists(CHECKPOINTS_FILE):
-        try:
-            os.remove(CHECKPOINTS_FILE)
-        except Exception:
-            pass
+    try:
+        from backend.database import clear_all_checkpoints
+        clear_all_checkpoints()
+    except Exception:
+        if os.path.exists(CHECKPOINTS_FILE):
+            try:
+                os.remove(CHECKPOINTS_FILE)
+            except Exception:
+                pass
 
 
 def get_live_hardware_session_df(sample_count: int = 300) -> Optional[pd.DataFrame]:
