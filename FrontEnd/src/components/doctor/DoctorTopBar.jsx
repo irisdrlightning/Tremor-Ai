@@ -1,49 +1,52 @@
 import React, { useState } from "react";
-import {
-  BarChart2,
-  Bluetooth,
-  Check,
-  ChevronDown,
-  FileDown,
-  Pill,
-  Search,
-  Users,
-} from "lucide-react";
+import { Check, ChevronDown, Search, Users } from "lucide-react";
 import TopActionCluster from "@/components/common/TopActionCluster";
 
 /**
  * DoctorTopBar
- * Enforces 1:1 parity with the Patient Module top navigation shell:
- * - Persistent Top Bar:
- *   * Left Meta: "Doctor Neurologist Portal" + [ CLINICAL ANALYTICS ] pill + "Supervising Clinician: Dr. Rita Sharma"
- *   * Right Action Cluster: Patient Selector Dropdown + Canonical 3-circle TopActionCluster (Bluetooth, Bell, User)
- * - Secondary Route Sub-Tab Bar:
- *   * Exact rounded-full pill styling:
- *     - Active: bg-[#10B981] text-black font-semibold rounded-full px-4 py-1.5 text-xs
- *     - Inactive: bg-black border border-slate-800 text-slate-300 hover:text-white rounded-full px-4 py-1.5 text-xs
- *     - 4 Sub-Tabs: Trend Analyser, Device Sync, Period Reports, Suggested Regimen
- *     - Right: Selected Patient tag
+ * Ultra-clean, single-tier horizontal top bar matching the Patient Dashboard pattern:
+ * - Single-tier: h-16 flex items-center justify-between px-6 bg-transparent border-b border-[#152326]
+ * - Left: Solid small emerald green dot (w-2 h-2 bg-[#10B981]) + Clean white title + Solid black category pill
+ * - Right: Compact patient selector pill (rounded-full bg-black border border-zinc-800) + Canonical 3-action cluster
+ * - Strictly strips out second-tier sub-tabs, clinician sub-labels, and redundant text.
  */
 export default function DoctorTopBar({
   activeTab = "analyser",
-  onSelectTab = () => {},
+  title = null,
+  category = null,
   selectedPatient,
   patients = [],
   selectPatient = () => {},
-  clinicianName = "Dr. Rita Sharma",
   onOpenBluetooth = () => {},
   onOpenNotifications = () => {},
   onOpenProfile = () => {},
+  className = "",
 }) {
   const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const subTabs = [
-    { id: "analyser", label: "Trend Analyser & Summary", icon: BarChart2 },
-    { id: "sync", label: "Device Sync & Ingestion", icon: Bluetooth },
-    { id: "reports", label: "Period Reports & Export", icon: FileDown },
-    { id: "suggested-regimen", label: "Suggested Regimen", icon: Pill },
-  ];
+  const tabMeta = {
+    analyser: {
+      title: "Doctor Neurologist Portal",
+      category: "CLINICAL ANALYTICS",
+    },
+    sync: {
+      title: "Device Sync & Ingestion",
+      category: "RING TELEMETRY",
+    },
+    reports: {
+      title: "Period Reports & Export",
+      category: "TELEMETRY REPORT",
+    },
+    "suggested-regimen": {
+      title: "Suggested Regimen",
+      category: "TITRATION ENGINE",
+    },
+  };
+
+  const currentMeta = tabMeta[activeTab] || tabMeta.analyser;
+  const displayTitle = title || currentMeta.title;
+  const displayCategory = category || currentMeta.category;
 
   const filteredPatients = patients.filter(
     (p) =>
@@ -53,42 +56,40 @@ export default function DoctorTopBar({
   );
 
   return (
-    <header className="sticky top-0 z-30 flex flex-col border-b border-[#152326] bg-[#000000]">
-      {/* Primary Header Row */}
-      <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 border-b border-[#152326]">
-        {/* Left Meta Information */}
-        <div>
-          <h1 className="text-base font-bold text-white tracking-tight flex items-center gap-2.5">
-            <span>Doctor Neurologist Portal</span>
-            <span className="bg-black border border-[#10B981] text-[#10B981] text-xs font-semibold px-2.5 py-0.5 rounded-full">
-              CLINICAL ANALYTICS
-            </span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Supervising Clinician:{" "}
-            <span className="text-slate-200 font-semibold">{clinicianName}</span>
-          </p>
-        </div>
+    <header
+      className={`h-16 shrink-0 flex items-center justify-between px-6 border-b border-[#152326] bg-transparent select-none z-30 ${className}`}
+    >
+      {/* Left Section: Status Dot + Title + Category Tag Pill (Matches Patient Dashboard Pattern in Image 2) */}
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="w-2 h-2 shrink-0 rounded-full bg-[#10B981]" />
+        <h1 className="text-base md:text-lg font-semibold text-white tracking-tight truncate">
+          {displayTitle}
+        </h1>
+        <span className="bg-black border border-[#152326] text-slate-400 text-[11px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full shrink-0">
+          {displayCategory}
+        </span>
+      </div>
 
-        {/* Right Action Controls: Patient Selector + Canonical 3-Circle Action Cluster */}
-        <div className="flex items-center gap-3">
-          {/* Patient Selector Dropdown */}
+      {/* Right Section: Compact Patient Selector + Canonical 3-Circle Action Cluster */}
+      <div className="flex items-center gap-3 shrink-0">
+        {/* Compact Patient Selector Pill */}
+        {selectedPatient && (
           <div className="relative">
             <button
               id="patient-selector-btn"
               type="button"
               onClick={() => setPatientDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-2 rounded-xl border border-[#152326] bg-black px-3.5 py-2 text-xs font-medium text-slate-200 transition-all hover:border-[#10B981] cursor-pointer"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black border border-zinc-800 text-xs font-mono text-white hover:border-zinc-600 transition-colors cursor-pointer"
             >
-              <Users className="h-4 w-4 text-[#10B981]" />
-              <span className="font-semibold text-white">
-                {selectedPatient?.name || "Biromon Jr."}
+              <Users className="h-3.5 w-3.5 text-[#10B981]" />
+              <span className="font-semibold text-white font-sans truncate max-w-[120px] md:max-w-[160px]">
+                {selectedPatient.name}
               </span>
-              <span className="text-slate-400 font-mono">
-                ({selectedPatient?.id || "TR-90242"})
+              <span className="text-slate-400 font-mono text-[11px] hidden sm:inline">
+                ({selectedPatient.id})
               </span>
               <ChevronDown
-                className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
+                className={`h-3 w-3 text-slate-400 transition-transform duration-200 ${
                   patientDropdownOpen ? "rotate-180" : ""
                 }`}
               />
@@ -103,7 +104,7 @@ export default function DoctorTopBar({
                     placeholder="Search patient or ID…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-[#152326] bg-black py-2 pl-8 pr-3 text-xs text-white placeholder:text-slate-500 focus:border-[#10B981] focus:outline-none"
+                    className="w-full rounded-xl border border-[#152326] bg-black py-2 pl-8 pr-3 text-xs text-white placeholder:text-slate-500 focus:border-[#10B981] focus:outline-none font-sans"
                   />
                 </div>
 
@@ -125,7 +126,7 @@ export default function DoctorTopBar({
                         }`}
                       >
                         <div>
-                          <div className="font-semibold text-xs text-white flex items-center gap-1.5">
+                          <div className="font-semibold text-xs text-white flex items-center gap-1.5 font-sans">
                             {p.name}
                             {isSelected && (
                               <Check className="h-3.5 w-3.5 text-[#10B981]" />
@@ -150,51 +151,14 @@ export default function DoctorTopBar({
               </div>
             )}
           </div>
-
-          {/* Canonical 3-Circle Header Action Cluster */}
-          <TopActionCluster
-            onOpenBluetooth={onOpenBluetooth}
-            onOpenNotifications={onOpenNotifications}
-            onOpenProfile={onOpenProfile}
-          />
-        </div>
-      </div>
-
-      {/* Secondary Route Sub-Tab Pill Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-2.5 bg-black">
-        {/* Rounded-full Sub-Tab Pills */}
-        <nav className="flex flex-wrap items-center gap-2">
-          {subTabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => onSelectTab(tab.id)}
-                className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-xs transition-all cursor-pointer ${
-                  isActive
-                    ? "bg-[#10B981] text-black font-semibold shadow-sm"
-                    : "bg-black border border-slate-800 text-slate-300 hover:text-white"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Right Patient Context Tag */}
-        {selectedPatient && (
-          <div className="hidden lg:flex items-center gap-2 text-xs text-slate-400">
-            <span>Selected Patient:</span>
-            <span className="font-bold text-white font-mono bg-black px-2.5 py-1 rounded-full border border-[#152326]">
-              {selectedPatient.name} ({selectedPatient.id})
-            </span>
-          </div>
         )}
+
+        {/* Canonical 3-Circle Header Action Cluster */}
+        <TopActionCluster
+          onOpenBluetooth={onOpenBluetooth}
+          onOpenNotifications={onOpenNotifications}
+          onOpenProfile={onOpenProfile}
+        />
       </div>
     </header>
   );
